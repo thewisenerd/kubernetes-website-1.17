@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html id="docs" lang="ja" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Node上へのPodのスケジューリング - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/ja/docs/concepts/configuration/assign-pod-node/">
+<meta property="og:title" content="Node上へのPodのスケジューリング">
+<meta name="twitter:title" content="Node上へのPodのスケジューリング">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ja/" class="logo" title="プロダクショングレードのコンテナ管理基盤 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ja/docs/" class="active">ドキュメント</a></li>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <li><a href="/ja/case-studies/">ケーススタディ</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    日本語 Japanese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/configuration/assign-pod-node/">English</a></li>
+                
+                    <li><a href="/zh/docs/concepts/configuration/assign-pod-node/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/docs/concepts/configuration/assign-pod-node/">한국어 Korean</a></li>
+                
+                    <li><a href="/id/docs/concepts/configuration/assign-pod-node/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ja/docs/concepts/configuration/assign-pod-node/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ja/docs/concepts/configuration/assign-pod-node/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ja/docs/concepts/configuration/assign-pod-node/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ja/docs/concepts/configuration/assign-pod-node/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ja/docs/concepts/configuration/assign-pod-node/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ja/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Kubernetesの基本を学ぶ</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ja/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>手を動かす準備はできていますか？本チュートリアルでは、Node.jsを使った簡単な"Hello World"を実行するKubernetesクラスタをビルドします。</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ja/docs/home/">ドキュメント</a></h3>
+           <p>チュートリアル、サンプルやドキュメントのリファレンスを使って Kubernetes の利用方法を学んでください。あなたは<a href="/editdocs/" data-auto-burger-exclude>ドキュメントへコントリビュートをする</a>こともできます!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Kubernetesのコードを編集することに興味がありますか？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHubで参照する</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">コミュニティを探す</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>フォーラム</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>イベントカレンダー</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>コンセプト</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ja/docs/home/">ホーム</a></li>
+		
+		
+		<li><a href="/ja/docs/setup/">はじめに</a></li>
+		
+		
+		<li><a href="/ja/docs/concepts/" class="YAH">コンセプト</a></li>
+		
+		
+		<li><a href="/ja/docs/tasks/">タスク</a></li>
+		
+		
+		<li><a href="/ja/docs/tutorials/">チュートリアル</a></li>
+		
+		
+		<li><a href="/ja/docs/reference/">リファレンス</a></li>
+		
+		
+		<li><a href="/ja/docs/contribute/">貢献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="検索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  のドキュメントは積極的にメンテナンスされていません。現在表示されているバージョンはスナップショットです。最新のドキュメントはこちらです: 
+	 <a href="https://kubernetes.io/docs/home/">最新バージョン</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="コンセプト" href="/ja/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="概要">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesとは何か？" href="/ja/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetesのコンポーネント" href="/ja/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API" href="/ja/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetesのオブジェクトについて">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesオブジェクトを理解する" href="/ja/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetesオブジェクト管理" href="/ja/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="名前" href="/ja/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Namespace(名前空間)" href="/ja/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ラベル(Labels)とセレクター(Selectors)" href="/ja/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="アノテーション(Annotations)" href="/ja/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="フィールドセレクター(Field Selectors)" href="/ja/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="推奨ラベル(Recommended Labels)" href="/ja/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetesのアーキテクチャー">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ノード" href="/ja/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="マスターとノード間の通信" href="/ja/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Controllers <small>(EN)</small>" href="/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="クラウドコントローラーマネージャーとそのコンセプト" href="/ja/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="コンテナ">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Images <small>(EN)</small>" href="/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="コンテナ環境変数" href="/ja/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ランタイムクラス(Runtime Class)" href="/ja/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="コンテナライフサイクルフック" href="/ja/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="ワークロード">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pod">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Podについての概観(Pod Overview)" href="/ja/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod" href="/ja/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Podのライフサイクル" href="/ja/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Initコンテナ(Init Containers)" href="/ja/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Preset" href="/ja/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Topology Spread Constraints <small>(EN)</small>" href="/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Disruptions <small>(EN)</small>" href="/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ephemeral Containers <small>(EN)</small>" href="/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="コントローラー">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/ja/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="ReplicationController <small>(EN)</small>" href="/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Deployment" href="/ja/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StatefulSet" href="/ja/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DaemonSet" href="/ja/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ガベージコレクション" href="/ja/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="終了したリソースのためのTTLコントローラー(TTL Controller for Finished Resources)" href="/ja/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Jobs - Run to Completion <small>(EN)</small>" href="/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CronJob" href="/ja/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Service、負荷分散とネットワーキング">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="EndpointSlices <small>(EN)</small>" href="/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service" href="/ja/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Topology <small>(EN)</small>" href="/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ServiceとPodに対するDNS" href="/ja/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="サービスとアプリケーションの接続" href="/ja/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/ja/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ingress Controllers <small>(EN)</small>" href="/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Network Policies <small>(EN)</small>" href="/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Adding entries to Pod /etc/hosts with HostAliases <small>(EN)</small>" href="/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="IPv4/IPv6 dual-stack <small>(EN)</small>" href="/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="ストレージ">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Volumes <small>(EN)</small>" href="/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Persistent Volumes <small>(EN)</small>" href="/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Volume Snapshots <small>(EN)</small>" href="/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CSI Volume Cloning" href="/ja/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Storage Classes <small>(EN)</small>" href="/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="VolumeSnapshotClass" href="/ja/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ボリュームの動的プロビジョニング(Dynamic Volume Provisioning)" href="/ja/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Node-specific Volume Limits <small>(EN)</small>" href="/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="設定">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Bin Packing for Extended Resources <small>(EN)</small>" href="/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="設定のベストプラクティス" href="/ja/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Compute Resources for Containers <small>(EN)</small>" href="/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Overhead <small>(EN)</small>" href="/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Node上へのPodのスケジューリング" href="/ja/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Taints and Tolerations <small>(EN)</small>" href="/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Secrets <small>(EN)</small>" href="/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Organizing Cluster Access Using kubeconfig Files <small>(EN)</small>" href="/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduling Framework <small>(EN)</small>" href="/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Security">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Overview of Cloud Native Security <small>(EN)</small>" href="/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Policies">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Quotas <small>(EN)</small>" href="/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Security Policies <small>(EN)</small>" href="/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="スケジューリング">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesのスケジューラー" href="/ja/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="スケジューラーのパフォーマンスチューニング" href="/ja/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="クラスターの管理">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Administration Overview <small>(EN)</small>" href="/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Certificates <small>(EN)</small>" href="/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloud Providers <small>(EN)</small>" href="/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Resources <small>(EN)</small>" href="/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Logging Architecture <small>(EN)</small>" href="/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Metrics For The Kubernetes Control Plane <small>(EN)</small>" href="/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring kubelet Garbage Collection <small>(EN)</small>" href="/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Proxies in Kubernetes <small>(EN)</small>" href="/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="コントローラーマネージャーの指標" href="/ja/docs/concepts/cluster-administration/controller-metrics/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Addons <small>(EN)</small>" href="/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetesを拡張する">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesクラスターの拡張" href="/ja/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes APIの拡張">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="アグリゲーションレイヤーを使ったKubernetes APIの拡張" href="/ja/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="カスタムリソース" href="/ja/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Compute, Storage, and Networking Extensions">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Network Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="オペレーターパターン" href="/ja/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Catalog <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ja/docs/concepts/configuration/assign-pod-node.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Node上へのPodのスケジューリング</h1>
+
+
+
+<p><a href="/docs/concepts/workloads/pods/pod/">Pod</a>が稼働する<a href="/docs/concepts/architecture/nodes/">Node</a>を特定のものに指定したり、優先条件を指定して制限することができます。
+これを実現するためにはいくつかの方法がありますが、推奨されている方法は<a href="/docs/concepts/overview/working-with-objects/labels/">ラベルでの選択</a>です。
+スケジューラーが最適な配置を選択するため、一般的にはこのような制限は不要です(例えば、複数のPodを別々のNodeへデプロイしたり、Podを配置する際にリソースが不十分なNodeにはデプロイされないことが挙げられます)が、
+SSDが搭載されているNodeにPodをデプロイしたり、同じアベイラビリティーゾーン内で通信する異なるサービスのPodを同じNodeにデプロイする等、柔軟な制御が必要なこともあります。</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#nodeselector">nodeSelector</a></li>
+
+
+
+
+<li><a href="#%e8%a3%9c%e8%b6%b3-%e3%83%93%e3%83%ab%e3%83%88%e3%82%a4%e3%83%b3node%e3%83%a9%e3%83%99%e3%83%ab">補足: ビルトインNodeラベル</a></li>
+
+
+
+
+<li><a href="#node%e3%81%ae%e9%9a%94%e9%9b%a2%e3%82%84%e5%88%b6%e9%99%90">Nodeの隔離や制限</a></li>
+
+
+
+
+<li><a href="#affinity-%e3%81%a8-anti-affinity">Affinity と Anti-Affinity</a></li>
+
+
+
+
+<li><a href="#nodename">nodeName</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e6%ac%a1%e3%81%ae%e9%a0%85%e7%9b%ae">次の項目</a></li>
+
+
+
+</ul>
+
+
+<h2 id="nodeselector">nodeSelector</h2>
+
+<p><code>nodeSelector</code>は、Nodeを選択するための、最も簡単で推奨されている手法です。
+<code>nodeSelector</code>はPodSpecのフィールドです。これはkey-valueペアのマップを特定します。
+あるノードでPodを稼働させるためには、そのノードがラベルとして指定されたkey-valueペアを保持している必要があります(複数のラベルを保持することも可能です)。
+最も一般的な使用方法は、1つのkey-valueペアを付与する方法です。</p>
+
+<p>以下に、<code>nodeSelector</code>の使用例を紹介します。</p>
+
+<h3 id="ステップ0-前提条件">ステップ0: 前提条件</h3>
+
+<p>この例では、KubernetesのPodに関して基本的な知識を有していることと、<a href="https://github.com/kubernetes/kubernetes#documentation" target="_blank">Kubernetesクラスターのセットアップ</a>がされていることが前提となっています。</p>
+
+<h3 id="ステップ1-nodeへのラベルの付与">ステップ1: Nodeへのラベルの付与</h3>
+
+<p><code>kubectl get nodes</code>で、クラスターのノードの名前を取得してください。
+そして、ラベルを付与するNodeを選び、<code>kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;=&lt;label-value&gt;</code>で選択したNodeにラベルを付与します。
+例えば、Nodeの名前が&rsquo;kubernetes-foo-node-1.c.a-robinson.internal&rsquo;、付与するラベルが&rsquo;disktype=ssd&rsquo;の場合、<code>kubectl label nodes kubernetes-foo-node-1.c.a-robinson.internal disktype=ssd</code>によってラベルが付与されます。</p>
+
+<p><code>kubectl get nodes --show-labels</code>によって、ノードにラベルが付与されたかを確認することができます。
+また、<code>kubectl describe node &quot;nodename&quot;</code>から、そのNodeの全てのラベルを表示することもできます。</p>
+
+<h3 id="ステップ2-podへのnodeselectorフィールドの追加">ステップ2: PodへのnodeSelectorフィールドの追加</h3>
+
+<p>該当のPodのconfigファイルに、nodeSelectorのセクションを追加します:
+例として以下のconfigファイルを扱います:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>env:<span style="color:#bbb"> </span>test<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>nginx</code></pre></div>
+<p>nodeSelectorを以下のように追加します:</p>
+
+<table class="includecode" id="pods-pod-nginx-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/ja/examples/pods/pod-nginx.yaml" download="pods/pod-nginx.yaml">
+                    <code>pods/pod-nginx.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-nginx-yaml')" title="Copy pods/pod-nginx.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>env:<span style="color:#bbb"> </span>test<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>imagePullPolicy:<span style="color:#bbb"> </span>IfNotPresent<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>nodeSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>disktype:<span style="color:#bbb"> </span>ssd<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p><code>kubectl apply -f https://k8s.io/examples/pods/pod-nginx.yaml</code>により、Podは先ほどラベルを付与したNodeへスケジュールされます。
+<code>kubectl get pods -o wide</code>で表示される&rdquo;NODE&rdquo;の列から、PodがデプロイされているNodeを確認することができます。</p>
+
+<h2 id="補足-ビルトインnodeラベル">補足: ビルトインNodeラベル</h2>
+
+<p>明示的に<a href="#step-one-attach-label-to-the-node">付与</a>するラベルの他に、事前にNodeへ付与されているものもあります。
+以下のようなラベルが該当します。</p>
+
+<ul>
+<li><code>kubernetes.io/hostname</code></li>
+<li><code>failure-domain.beta.kubernetes.io/zone</code></li>
+<li><code>failure-domain.beta.kubernetes.io/region</code></li>
+<li><code>beta.kubernetes.io/instance-type</code></li>
+<li><code>kubernetes.io/os</code></li>
+<li><code>kubernetes.io/arch</code></li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> これらのラベルは、クラウドプロバイダー固有であり、確実なものではありません。
+例えば、<code>kubernetes.io/hostname</code>の値はNodeの名前と同じである環境もあれば、異なる環境もあります。</div>
+</blockquote>
+
+<h2 id="nodeの隔離や制限">Nodeの隔離や制限</h2>
+
+<p>Nodeにラベルを付与することで、Podは特定のNodeやNodeグループにスケジュールされます。
+これにより、特定のPodを、確かな隔離性や安全性、特性を持ったNodeで稼働させることができます。
+この目的でラベルを使用する際に、Node上のkubeletプロセスに上書きされないラベルキーを選択することが強く推奨されています。
+これは、安全性が損なわれたNodeがkubeletの認証情報をNodeのオブジェクトに設定したり、スケジューラーがそのようなNodeにデプロイすることを防ぎます。</p>
+
+<p><code>NodeRestriction</code>プラグインは、kubeletが<code>node-restriction.kubernetes.io/</code>プレフィックスを有するラベルの設定や上書きを防ぎます。
+Nodeの隔離にラベルのプレフィックスを使用するためには、以下の３点を確認してください。</p>
+
+<ol>
+<li>NodeRestrictionを使用するため、Kubernetesのバージョンがv1.11以上であること。</li>
+<li><a href="/docs/reference/access-authn-authz/node/">Node authorizer</a>を使用していることと、<a href="/docs/reference/access-authn-authz/admission-controllers/#noderestriction">NodeRestriction admission plugin</a>が有効になっていること。</li>
+<li>Nodeに<code>node-restriction.kubernetes.io/</code> プレフィックスのラベルを付与し、そのラベルがnode selectorに指定されていること。
+例えば、<code>example.com.node-restriction.kubernetes.io/fips=true</code> または <code>example.com.node-restriction.kubernetes.io/pci-dss=true</code>のようなラベルです。</li>
+</ol>
+
+<h2 id="affinity-と-anti-affinity">Affinity と Anti-Affinity</h2>
+
+<p><code>nodeSelector</code>はPodの稼働を特定のラベルが付与されたNodeに制限する最も簡単な方法です。
+Affinity/Anti-Affinityでは、より柔軟な指定方法が提供されています。
+拡張機能は以下の通りです。</p>
+
+<ol>
+<li>様々な指定方法がある (&ldquo;AND条件&rdquo;に限らない)</li>
+<li>必須条件ではなく優先条件を指定でき、条件を満たさない場合でもPodをスケジュールさせることができる</li>
+<li>Node自体のラベルではなく、Node(または他のトポロジカルドメイン)上で稼働している他のPodのラベルに対して条件を指定することができ、そのPodと同じ、または異なるドメインで稼働させることができる</li>
+</ol>
+
+<p>Affinityは&rdquo;Node Affinity&rdquo;と&rdquo;Inter-Pod Affinity/Anti-Affinity&rdquo;の2種類から成ります。
+Node affinityは<code>nodeSelector</code>(前述の2つのメリットがあります)に似ていますが、Inter-Pod Affinity/Anti-Affinityは、上記の3番目の機能に記載している通り、NodeのラベルではなくPodのラベルに対して制限をかけます。</p>
+
+<p><code>nodeSelector</code>は問題なく使用することができますが、Node affinityは<code>nodeSelector</code>で指定できる条件を全て実現できるため、将来的には推奨されなくなります。</p>
+
+<h3 id="node-affinity">Node Affinity</h3>
+
+<p>Node Affinityはα機能としてKubernetesのv1.2から導入されました。
+Node Affinityは概念的には、NodeのラベルによってPodがどのNodeにスケジュールされるかを制限する<code>nodeSelector</code>と同様です。</p>
+
+<p>現在は2種類のNode Affinityがあり、<code>requiredDuringSchedulingIgnoredDuringExecution</code>と<code>preferredDuringSchedulingIgnoredDuringExecution</code>です。
+前者はNodeにスケジュールされるPodが条件を満たすことが必須(<code>nodeSelector</code>に似ていますが、より柔軟に条件を指定できます)であり、後者は条件を指定できますが保証されるわけではなく、優先的に考慮されます。
+&ldquo;IgnoredDuringExecution&rdquo;の意味するところは、<code>nodeSelector</code>の機能と同様であり、Nodeのラベルが変更され、Podがその条件を満たさなくなった場合でも
+PodはそのNodeで稼働し続けるということです。
+将来的には、<code>requiredDuringSchedulingIgnoredDuringExecution</code>に、PodのNode Affinityに記された必須要件を満たさなくなったNodeからそのPodを退避させることができる機能を備えた<code>requiredDuringSchedulingRequiredDuringExecution</code>が提供される予定です。</p>
+
+<p>それぞれの使用例として、
+<code>requiredDuringSchedulingIgnoredDuringExecution</code> は、&rdquo;インテルCPUを供えたNode上でPodを稼働させる&rdquo;、
+<code>preferredDuringSchedulingIgnoredDuringExecution</code>は、&rdquo;ゾーンXYZでPodの稼働を試みますが、実現不可能な場合には他の場所で稼働させる&rdquo;
+といった方法が挙げられます。</p>
+
+<p>Node Affinityは、PodSpecの<code>affinity</code>フィールドにある<code>nodeAffinity</code>フィールドで特定します。</p>
+
+<p>Node Affinityを使用したPodの例を以下に示します:</p>
+
+<table class="includecode" id="pods-pod-with-node-affinity-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/ja/examples/pods/pod-with-node-affinity.yaml" download="pods/pod-with-node-affinity.yaml">
+                    <code>pods/pod-with-node-affinity.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-with-node-affinity-yaml')" title="Copy pods/pod-with-node-affinity.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>with-node-affinity<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>affinity:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>nodeAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>requiredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>nodeSelectorTerms:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>kubernetes.io/e2e-az-name<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>e2e-az1<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>e2e-az2<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>preferredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>weight:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>preference:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>another-node-label-key<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>another-node-label-value<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>with-node-affinity<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/pause:<span style="color:#666">2.0</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>このNode Affinityでは、Podはキーが<code>kubernetes.io/e2e-az-name</code>、値が<code>e2e-az1</code>または<code>e2e-az2</code>のラベルが付与されたNodeにしか配置されません。
+加えて、キーが<code>another-node-label-key</code>、値が<code>another-node-label-value</code>のラベルが付与されたNodeが優先されます。</p>
+
+<p>この例ではオペレーター<code>In</code>が使われています。
+Node Affinityでは、<code>In</code>、<code>NotIn</code>、<code>Exists</code>、<code>DoesNotExist</code>、<code>Gt</code>、<code>Lt</code>のオペレーターが使用できます。
+<code>NotIn</code>と<code>DoesNotExist</code>はNode Anti-Affinity、またはPodを特定のNodeにスケジュールさせない場合に使われる<a href="/docs/concepts/configuration/taint-and-toleration/">Taints</a>に使用します。</p>
+
+<p><code>nodeSelector</code>と<code>nodeAffinity</code>の両方を指定した場合、Podは<strong>両方の</strong>条件を満たすNodeにスケジュールされます。</p>
+
+<p><code>nodeAffinity</code>内で複数の<code>nodeSelectorTerms</code>を指定した場合、Podは<strong>いずれかの</strong><code>nodeSelectorTerms</code>を満たしたNodeへスケジュールされます。</p>
+
+<p><code>nodeSelectorTerms</code>内で複数の<code>matchExpressions</code>を指定した場合にはPodは<strong>全ての</strong><code>matchExpressions</code>を満たしたNodeへスケジュールされます。</p>
+
+<p>PodがスケジュールされたNodeのラベルを削除したり変更しても、Podは削除されません。
+言い換えると、AffinityはPodをスケジュールする際にのみ考慮されます。</p>
+
+<p><code>preferredDuringSchedulingIgnoredDuringExecution</code>内の<code>weight</code>フィールドは、1から100の範囲で指定します。
+全ての必要条件(リソースやRequiredDuringScheduling Affinity等)を満たしたNodeに対して、スケジューラーはそのNodeがMatchExpressionsを満たした場合に、このフィルードの&rdquo;weight&rdquo;を加算して合計を計算します。
+このスコアがNodeの他の優先機能のスコアと組み合わせれ、最も高いスコアを有したNodeが優先されます。</p>
+
+<h3 id="inter-pod-affinity-anti-affinity">Inter-Pod Affinity/Anti-Affinity</h3>
+
+<p>Inter-Pod AffinityとAnti-Affinityは、Nodeのラベルではなく、すでにNodeで稼働しているPodのラベルに従ってPodがスケジュールされるNodeを制限します。
+このポリシーは、&rdquo;XにてルールYを満たすPodがすでに稼働している場合、このPodもXで稼働させる(Anti-Affinityの場合は稼働させない)&ldquo;という形式です。
+Yはnamespaceのリストで指定したLabelSelectorで表されます。
+Nodeと異なり、Podはnamespaceで区切られているため(それゆえPodのラベルも暗黙的にnamespaceで区切られます)、Podのラベルを指定するlabel selectorは、どのnamespaceにselectorを適用するかを指定する必要があります。
+概念的に、XはNodeや、ラック、クラウドプロバイダゾーン、クラウドプロバイダのリージョン等を表すトポロジードメインです。
+これらを表すためにシステムが使用するNode Labelのキーである<code>topologyKey</code>を使うことで、トポロジードメインを指定することができます。
+先述のセクション<a href="#interlude-built-in-node-labels">補足: ビルトインNodeラベル</a>にてラベルの例が紹介されています。</p>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> Inter-Pod AffinityとAnti-Affinityは、大規模なクラスター上で使用する際にスケジューリングを非常に遅くする恐れのある多くの処理を要します。
+そのため、数百台以上のNodeから成るクラスターでは使用することを推奨されません。</div>
+</blockquote>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> Pod Anti-Affinityは、Nodeに必ずラベルが付与されている必要があります。
+例えば、クラスターの全てのNodeが、<code>topologyKey</code>で指定されたものに合致する適切なラベルが必要になります。
+それらが付与されていないNodeが存在する場合、意図しない挙動を示すことがあります。</div>
+</blockquote>
+
+<p>Node Affinityと同様に、Pod AffinityとPod Anti-Affinityにも必須条件と優先条件を示す<code>requiredDuringSchedulingIgnoredDuringExecution</code>と<code>preferredDuringSchedulingIgnoredDuringExecution</code>があります。
+前述のNode Affinityのセクションを参照してください。
+<code>requiredDuringSchedulingIgnoredDuringExecution</code>を指定するAffinityの使用例は、&rdquo;Service AのPodとService BのPodが密に通信する際、それらを同じゾーンで稼働させる場合&rdquo;です。
+また、<code>preferredDuringSchedulingIgnoredDuringExecution</code>を指定するAnti-Affinityの使用例は、&rdquo;ゾーンをまたいでPodのサービスを稼働させる場合&rdquo;(Podの数はゾーンの数よりも多いため、必須条件を指定すると合理的ではありません)です。</p>
+
+<p>Inter-Pod Affinityは、PodSpecの<code>affinity</code>フィールド内に<code>podAffinity</code>で指定し、Inter-Pod Anti-Affinityは、<code>podAntiAffinity</code>で指定します。</p>
+
+<h4 id="pod-affinityを使用したpodの例">Pod Affinityを使用したPodの例</h4>
+
+<table class="includecode" id="pods-pod-with-pod-affinity-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/ja/examples/pods/pod-with-pod-affinity.yaml" download="pods/pod-with-pod-affinity.yaml">
+                    <code>pods/pod-with-pod-affinity.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-with-pod-affinity-yaml')" title="Copy pods/pod-with-pod-affinity.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>with-pod-affinity<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>affinity:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>podAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>requiredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>labelSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>security<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>S1<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>topologyKey:<span style="color:#bbb"> </span>failure-domain.beta.kubernetes.io/zone<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>podAntiAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>preferredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>weight:<span style="color:#bbb"> </span><span style="color:#666">100</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>podAffinityTerm:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>labelSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>security<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>-<span style="color:#bbb"> </span>S2<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>topologyKey:<span style="color:#bbb"> </span>kubernetes.io/hostname<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>with-pod-affinity<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/pause:<span style="color:#666">2.0</span><span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>このPodのAffifnityは、Pod AffinityとPod Anti-Affinityを1つずつ定義しています。
+この例では、<code>podAffinity</code>に<code>requiredDuringSchedulingIgnoredDuringExecution</code>、<code>podAntiAffinity</code>に<code>preferredDuringSchedulingIgnoredDuringExecution</code>が設定されています。
+Pod Affinityは、「キーが&rdquo;security&rdquo;、値が&rdquo;S1&rdquo;のラベルが付与されたPodが少なくとも1つは稼働しているNodeが同じゾーンにあれば、PodはそのNodeにスケジュールされる」という条件を指定しています(より正確には、キーが&rdquo;security&rdquo;、値が&rdquo;S1&rdquo;のラベルが付与されたPodが稼働しており、キーが<code>failure-domain.beta.kubernetes.io/zone</code>、値がVであるNodeが少なくとも1つはある状態で、
+Node Nがキー<code>failure-domain.beta.kubernetes.io/zone</code>、値Vのラベルを持つ場合に、PodはNode Nで稼働させることができます)。
+Pod Anti-Affinityは、「すでにあるNode上で、キーが&rdquo;security&rdquo;、値が&rdquo;S2&rdquo;であるPodが稼働している場合に、Podを可能な限りそのNode上で稼働させない」という条件を指定しています
+(<code>topologyKey</code>が<code>failure-domain.beta.kubernetes.io/zone</code>であった場合、キーが&rdquo;security&rdquo;、値が&rdquo;S2&rdquo;であるであるPodが稼働しているゾーンと同じゾーン内のNodeにはスケジュールされなくなります)。
+Pod AffinityとPod Anti-Affinityや、<code>requiredDuringSchedulingIgnoredDuringExecution</code>と<code>preferredDuringSchedulingIgnoredDuringExecution</code>に関する他の使用例は<a href="https://git.k8s.io/community/contributors/design-proposals/scheduling/podaffinity.md" target="_blank">デザインドック</a>を参照してください。</p>
+
+<p>Pod AffinityとPod Anti-Affinityで使用できるオペレーターは、<code>In</code>、<code>NotIn</code>、 <code>Exists</code>、 <code>DoesNotExist</code>です。</p>
+
+<p>原則として、<code>topologyKey</code>には任意のラベルとキーが使用できます。
+しかし、パフォーマンスやセキュリティの観点から、以下の制約があります:</p>
+
+<ol>
+<li>Affinityと、<code>requiredDuringSchedulingIgnoredDuringExecution</code>を指定したPod Anti-Affinityでは、<code>topologyKey</code>を指定しないことは許可されていません。</li>
+<li><code>requiredDuringSchedulingIgnoredDuringExecution</code>を指定したPod Anti-Affinityでは、<code>kubernetes.io/hostname</code>の<code>topologyKey</code>を制限するため、アドミッションコントローラー<code>LimitPodHardAntiAffinityTopology</code>が導入されました。
+トポロジーをカスタマイズする場合には、アドミッションコントローラーを修正または無効化する必要があります。</li>
+<li><code>preferredDuringSchedulingIgnoredDuringExecution</code>を指定したPod Anti-Affinityでは、<code>topologyKey</code>を指定しなかった場合、&rdquo;全てのトポロジー&rdquo;と解釈されます(&ldquo;全てのトポロジー&rdquo;とは、ここでは<code>kubernetes.io/hostname</code>、<code>failure-domain.beta.kubernetes.io/zone</code>、<code>failure-domain.beta.kubernetes.io/region</code>を合わせたものを意味します)。</li>
+<li>上記の場合を除き、<code>topologyKey</code> は任意のラベルとキーを指定することができあます。</li>
+</ol>
+
+<p><code>labelSelector</code>と<code>topologyKey</code>に加え、<code>labelSelector</code>が合致すべき<code>namespaces</code>のリストを特定することも可能です(これは<code>labelSelector</code>と<code>topologyKey</code>を定義することと同等です)。
+省略した場合や空の場合は、AffinityとAnti-Affinityが定義されたPodのnamespaceがデフォルトで設定されます。</p>
+
+<p><code>requiredDuringSchedulingIgnoredDuringExecution</code>が指定されたAffinityとAnti-Affinityでは、<code>matchExpressions</code>に記載された全ての条件が満たされるNodeにPodがスケジュールされます。</p>
+
+<h4 id="実際的なユースケース">実際的なユースケース</h4>
+
+<p>Inter-Pod AffinityとAnti-Affinityは、ReplicaSet、StatefulSet、Deploymentなどのより高レベルなコレクションと併せて使用すると更に有用です。
+Workloadが、Node等の定義された同じトポロジーに共存させるよう、簡単に設定できます。</p>
+
+<h5 id="常に同じnodeで稼働させる場合">常に同じNodeで稼働させる場合</h5>
+
+<p>３つのノードから成るクラスターでは、ウェブアプリケーションはredisのようにインメモリキャッシュを保持しています。
+このような場合、ウェブサーバーは可能な限りキャッシュと共存させることが望ましいです。</p>
+
+<p>ラベル<code>app=store</code>を付与した3つのレプリカから成るredisのdeploymentを記述したyamlファイルを示します。
+Deploymentには、1つのNodeにレプリカを共存させないために<code>PodAntiAffinity</code>を付与しています。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>redis-cache<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>app:<span style="color:#bbb"> </span>store<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">3</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>store<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>affinity:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>podAntiAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>requiredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>labelSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>app<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>-<span style="color:#bbb"> </span>store<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>topologyKey:<span style="color:#bbb"> </span><span style="color:#b44">&#34;kubernetes.io/hostname&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>redis-server<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>redis:<span style="color:#666">3.2</span>-alpine</code></pre></div>
+<p>ウェブサーバーのDeploymentを記載した以下のyamlファイルには、<code>podAntiAffinity</code> と<code>podAffinity</code>が設定されています。
+全てのレプリカが<code>app=store</code>のラベルが付与されたPodと同じゾーンで稼働するよう、スケジューラーに設定されます。
+また、それぞれのウェブサーバーは1つのノードで稼働されないことも保証されます。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>web-server<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>app:<span style="color:#bbb"> </span>web-store<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">3</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>web-store<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>affinity:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>podAntiAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>requiredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>labelSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>app<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>-<span style="color:#bbb"> </span>web-store<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>topologyKey:<span style="color:#bbb"> </span><span style="color:#b44">&#34;kubernetes.io/hostname&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>podAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>requiredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>labelSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>app<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>-<span style="color:#bbb"> </span>store<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>topologyKey:<span style="color:#bbb"> </span><span style="color:#b44">&#34;kubernetes.io/hostname&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>web-app<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>nginx:<span style="color:#666">1.12</span>-alpine</code></pre></div>
+<p>上記2つのDeploymentが生成されると、3つのノードは以下のようになります。</p>
+
+<table>
+<thead>
+<tr>
+<th align="center">node-1</th>
+<th align="center">node-2</th>
+<th align="center">node-3</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="center"><em>webserver-1</em></td>
+<td align="center"><em>webserver-2</em></td>
+<td align="center"><em>webserver-3</em></td>
+</tr>
+
+<tr>
+<td align="center"><em>cache-1</em></td>
+<td align="center"><em>cache-2</em></td>
+<td align="center"><em>cache-3</em></td>
+</tr>
+</tbody>
+</table>
+
+<p>このように、3つの<code>web-server</code>は期待通り自動的にキャッシュと共存しています。</p>
+
+<pre><code>kubectl get pods -o wide
+</code></pre>
+
+<p>出力は以下のようになります:</p>
+
+<pre><code>NAME                           READY     STATUS    RESTARTS   AGE       IP           NODE
+redis-cache-1450370735-6dzlj   1/1       Running   0          8m        10.192.4.2   kube-node-3
+redis-cache-1450370735-j2j96   1/1       Running   0          8m        10.192.2.2   kube-node-1
+redis-cache-1450370735-z73mh   1/1       Running   0          8m        10.192.3.1   kube-node-2
+web-server-1287567482-5d4dz    1/1       Running   0          7m        10.192.2.3   kube-node-1
+web-server-1287567482-6f7v5    1/1       Running   0          7m        10.192.4.3   kube-node-3
+web-server-1287567482-s330j    1/1       Running   0          7m        10.192.3.2   kube-node-2
+</code></pre>
+
+<h5 id="同じnodeに共存させない場合">同じNodeに共存させない場合</h5>
+
+<p>上記の例では <code>PodAntiAffinity</code>を<code>topologyKey: &quot;kubernetes.io/hostname&quot;</code>と合わせて指定することで、redisクラスター内の2つのインスタンスが同じホストにデプロイされない場合を扱いました。
+同様の方法で、Anti-Affinityを用いて高可用性を実現したStatefulSetの使用例は<a href="/docs/tutorials/stateful-application/zookeeper/#tolerating-node-failure">ZooKeeper tutorial</a>を参照してください。</p>
+
+<h2 id="nodename">nodeName</h2>
+
+<p><code>nodeName</code>はNodeの選択を制限する最も簡単な方法ですが、制約があることからあまり使用されません。
+<code>nodeName</code>はPodSpecのフィールドです。
+ここに値が設定されると、schedulerはそのPodを考慮しなくなり、その名前が付与されているNodeのkubeletはPodを稼働させようとします。
+そのため、PodSpecに<code>nodeName</code>が指定されると、上述のNodeの選択方法よりも優先されます。</p>
+
+<p><code>nodeName</code>を使用することによる制約は以下の通りです:</p>
+
+<ul>
+<li>その名前のNodeが存在しない場合、Podは起動されす、自動的に削除される場合があります。</li>
+<li>その名前のNodeにPodを稼働させるためのリソースがない場合、Podの起動は失敗し、理由はOutOfmemoryやOutOfcpuになります。</li>
+<li>クラウド上のNodeの名前は予期できず、変更される可能性があります。</li>
+</ul>
+
+<p><code>nodeName</code>を指定したPodの設定ファイルの例を示します:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>nodeName:<span style="color:#bbb"> </span>kube<span style="color:#666">-01</span></code></pre></div>
+<p>上記のPodはkube-01という名前のNodeで稼働します。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="次の項目">次の項目</h2>
+<p><a href="/docs/concepts/configuration/taint-and-toleration/">Taints</a>を使うことで、NodeはPodを追い出すことができます。</p>
+
+<p><a href="https://git.k8s.io/community/contributors/design-proposals/scheduling/nodeaffinity.md" target="_blank">Node Affinity</a>と
+<a href="https://git.k8s.io/community/contributors/design-proposals/scheduling/podaffinity.md" target="_blank">Inter-Pod Affinity/Anti-Affinity</a>
+には、Taintsの要点に関して様々な背景が紹介されています。</p>
+
+
+
+
+
+
+
+    
+            
+  <h2>フィードバック</h2>
+  <p class="feedback--prompt">このページは役に立ちましたか？ </p>
+  <button class="button feedback--yes">はい</button>
+  <button class="button feedback--no">いいえ</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      問題を報告する</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      改善を提案</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/configuration/assign-pod-node.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ja\/docs\/concepts\/configuration\/assign-pod-node\/",
+    "title" : "Node上へのPodのスケジューリング",
+    "permalink" : "https:\/\/kubernetes.io\/ja\/docs\/concepts\/configuration\/assign-pod-node\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Issue作成</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ja/docs/concepts/configuration/assign-pod-node.md" class="button issue">ページ編集</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    ページの最終更新 November 20, 2019 at 2:25 PM PST by
+    <a href="https://github.com/kubernetes/website/commit/4532bd2bdb4419de4783be084195f18be516ee53/">First Japanese l10n work for release-1.15. (#17693)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/configuration/assign-pod-node.md">ページ履歴</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ja/docs/home/">ホーム</a>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <a href="/ja/case-studies/">ケーススタディ</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>フォーラム</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>イベントカレンダー</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">コントリビュート</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

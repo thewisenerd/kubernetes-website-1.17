@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>PKI 证书和要求 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/setup/best-practices/certificates/">
+<meta property="og:title" content="PKI 证书和要求">
+<meta name="twitter:title" content="PKI 证书和要求">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/setup/best-practices/certificates/">English</a></li>
+                
+                    <li><a href="/ko/docs/setup/best-practices/certificates/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/docs/setup/best-practices/certificates/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/setup/best-practices/certificates/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/setup/best-practices/certificates/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/setup/best-practices/certificates/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/setup/best-practices/certificates/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/setup/best-practices/certificates/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>入门</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/" class="YAH">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="入门" href="/zh/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Kubernetes 发行说明和版本偏差">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 发行说明和版本偏差" href="/zh/docs/setup/release/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 版本及版本倾斜支持策略" href="/zh/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="学习环境">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="学习环境" href="/zh/docs/setup/learning-environment/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Minikube 安装 Kubernetes" href="/zh/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 创建一个单主集群" href="/zh/docs/setup/independent/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="生产环境">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="生产环境" href="/zh/docs/setup/production-environment/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="容器运行时" href="/zh/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Turnkey 云解决方案">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Turnkey 云解决方案" href="/zh/docs/setup/production-environment/turnkey/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on CenturyLink Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Google Compute Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 IBM Cloud Private 在多个云上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 AWS EC2 上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Azure 上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在腾讯云容器服务上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在阿里云上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="使用部署工具安装 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用部署工具安装 Kubernetes" href="/zh/docs/setup/production-environment/tools/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="使用 kubeadm 引导集群">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 kubeadm 引导集群" href="/zh/docs/setup/production-environment/tools/kubeadm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="安装 kubeadm" href="/zh/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="对 kubeadm 进行故障排查" href="/zh/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating a single control-plane cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 定制控制平面配置" href="/zh/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="高可用拓扑选项" href="/zh/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="利用 kubeadm 创建高可用集群" href="/zh/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 创建一个高可用 etcd 集群" href="/zh/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 配置集群中的每个 kubelet" href="/zh/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置您的 kubernetes 集群以自托管控制平台" href="/zh/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with KRIB <small>(EN)</small>" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kops 安装 Kubernetes" href="/zh/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kubespray <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="本地 VMs">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="本地 VMs" href="/zh/docs/setup/production-environment/on-premises-vm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloudstack <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DC/OS 上的 Kubernetes" href="/zh/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="oVirt" href="/zh/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Windows Kubernetes" href="/zh/docs/setup/production-environment/windows/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Intro to Windows support in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Guide for adding Windows Nodes in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 中调度 Windows 容器的指南" href="/zh/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="最佳实践">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="最佳实践" href="/zh/docs/setup/best-practices/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running in multiple zones <small>(EN)</small>" href="/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建大型集群" href="/zh/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="校验节点设置" href="/zh/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI 证书和要求" href="/zh/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/setup/best-practices/certificates.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>PKI 证书和要求</h1>
+
+
+
+<!--
+Kubernetes requires PKI certificates for authentication over TLS.
+If you install Kubernetes with [kubeadm](/docs/reference/setup-tools/kubeadm/kubeadm/), the certificates that your cluster requires are automatically generated.
+You can also generate your own certificates -- for example, to keep your private keys more secure by not storing them on the API server.
+This page explains the certificates that your cluster requires.
+-->
+
+<p>Kubernetes 需要 PKI 证书才能进行基于 TLS 的身份验证。如果您是使用 <a href="/docs/reference/setup-tools/kubeadm/kubeadm/">kubeadm</a> 安装的 Kubernetes，则会自动生成集群所需的证书。您还可以生成自己的证书。例如，不将私钥存储在 API 服务器上，可以让私钥更加安全。此页面说明了集群必需的证书。</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e9%9b%86%e7%be%a4%e6%98%af%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8%e8%af%81%e4%b9%a6%e7%9a%84">集群是如何使用证书的</a></li>
+
+
+
+
+<li><a href="#%e8%af%81%e4%b9%a6%e5%ad%98%e6%94%be%e7%9a%84%e4%bd%8d%e7%bd%ae">证书存放的位置</a></li>
+
+
+
+
+<li><a href="#%e6%89%8b%e5%8a%a8%e9%85%8d%e7%bd%ae%e8%af%81%e4%b9%a6">手动配置证书</a></li>
+
+
+
+
+<li><a href="#%e4%b8%ba%e7%94%a8%e6%88%b7%e5%b8%90%e6%88%b7%e9%85%8d%e7%bd%ae%e8%af%81%e4%b9%a6">为用户帐户配置证书</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<!--
+## How certificates are used by your cluster
+
+Kubernetes requires PKI for the following operations:
+-->
+
+<h2 id="集群是如何使用证书的">集群是如何使用证书的</h2>
+
+<p>Kubernetes 需要 PKI 才能执行以下操作：</p>
+
+<!--
+* Client certificates for the kubelet to authenticate to the API server
+* Server certificate for the API server endpoint
+* Client certificates for administrators of the cluster to authenticate to the API server
+* Client certificates for the API server to talk to the kubelets
+* Client certificate for the API server to talk to etcd
+* Client certificate/kubeconfig for the controller manager to talk to the API server
+* Client certificate/kubeconfig for the scheduler to talk to the API server.
+* Client and server certificates for the [front-proxy][proxy]
+-->
+
+<ul>
+<li>Kubelet 的客户端证书，用于 API 服务器身份验证</li>
+<li>API 服务器端点的证书</li>
+<li>集群管理员的客户端证书，用于 API 服务器身份认证</li>
+<li>API 服务器的客户端证书，用于和 Kubelet 的会话</li>
+<li>API 服务器的客户端证书，用于和 etcd 的会话</li>
+<li>控制器管理器的客户端证书/kubeconfig，用于和 API server 的会话</li>
+<li>调度器的客户端证书/kubeconfig，用于和 API server 的会话</li>
+<li><a href="/docs/tasks/access-kubernetes-api/configure-aggregation-layer/">前端代理</a> 的客户端及服务端证书</li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+`front-proxy` certificates are required only if you run kube-proxy to support [an extension API server](/docs/tasks/access-kubernetes-api/setup-extension-api-server/).
+-->
+
+<p>只有当您运行 kube-proxy 并要支持<a href="/docs/tasks/access-kubernetes-api/setup-extension-api-server/">扩展 API 服务器</a>时，才需要 <code>front-proxy</code> 证书</div>
+</blockquote>
+
+<!--
+etcd also implements mutual TLS to authenticate clients and peers.
+-->
+
+<p>etcd 还实现了双向 TLS 来对客户端和对其他对等节点进行身份验证。</p>
+
+<!--
+## Where certificates are stored
+
+If you install Kubernetes with kubeadm, certificates are stored in `/etc/kubernetes/pki`. All paths in this documentation are relative to that directory.
+-->
+
+<h2 id="证书存放的位置">证书存放的位置</h2>
+
+<p>如果你是通过 kubeadm 安装的 Kubernetes，所有证书都存放在 <code>/etc/kuberntes/pki</code> 目录下。本文所有相关的路径都是基于该路径的相对路径。</p>
+
+<!--
+## Configure certificates manually
+
+If you don't want kubeadm to generate the required certificates, you can create them in either of the following ways.
+-->
+
+<h2 id="手动配置证书">手动配置证书</h2>
+
+<p>如果你不想通过 kubeadm 生成这些必需的证书，你可以通过下面两种方式之一来手动创建他们。</p>
+
+<!--
+### Single root CA
+
+You can create a single root CA, controlled by an administrator. This root CA can then create multiple intermediate CAs, and delegate all further creation to Kubernetes itself.
+-->
+
+<h3 id="单根-ca">单根 CA</h3>
+
+<p>你可以创建一个单根 CA，由管理员控制器它。该根 CA 可以创建多个中间 CA，并将所有进一步的创建委托给 Kubernetes。</p>
+
+<!--
+Required CAs:
+
+| 路径                    | 默认 CN                    | 描述                             |
+|------------------------|---------------------------|----------------------------------|
+| ca.crt,key             | kubernetes-ca             | Kubernetes general CA            |
+| etcd/ca.crt,key        | etcd-ca                   | For all etcd-related functions   |
+| front-proxy-ca.crt,key | kubernetes-front-proxy-ca | For the [front-end proxy][proxy] |
+
+On top of the above CAs, it is also necessary to get a public/private key pair for service account management, `sa.key` and `sa.pub`.
+-->
+
+<p>需要这些 CA：</p>
+
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>默认 CN</th>
+<th>描述</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>ca.crt,key</td>
+<td>kubernetes-ca</td>
+<td>Kubernetes 通用 CA</td>
+</tr>
+
+<tr>
+<td>etcd/ca.crt,key</td>
+<td>etcd-ca</td>
+<td>与 etcd 相关的所有功能</td>
+</tr>
+
+<tr>
+<td>front-proxy-ca.crt,key</td>
+<td>kubernetes-front-proxy-ca</td>
+<td>用于 <a href="/docs/tasks/access-kubernetes-api/configure-aggregation-layer/">前端代理</a></td>
+</tr>
+</tbody>
+</table>
+
+<p>上面的 CA 之外，还需要获取用于服务账户管理的密钥对，也就是 <code>sa.key</code> 和 <code>sa.pub</code>。</p>
+
+<!--
+### All certificates
+
+If you don't wish to copy the CA private keys to your cluster, you can generate all certificates yourself.
+
+Required certificates:
+-->
+
+<h3 id="所有的证书">所有的证书</h3>
+
+<p>如果你不想将 CA 的私钥拷贝至你的集群中，你也可以自己生成全部的证书。</p>
+
+<p>需要这些证书：</p>
+
+<table>
+<thead>
+<tr>
+<th>默认 CN</th>
+<th>父级 CA</th>
+<th>O (位于 Subject 中)</th>
+<th>类型</th>
+<th>主机 (SAN)</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>kube-etcd</td>
+<td>etcd-ca</td>
+<td></td>
+<td>server, client</td>
+<td><code>localhost</code>, <code>127.0.0.1</code></td>
+</tr>
+
+<tr>
+<td>kube-etcd-peer</td>
+<td>etcd-ca</td>
+<td></td>
+<td>server, client</td>
+<td><code>&lt;hostname&gt;</code>, <code>&lt;Host_IP&gt;</code>, <code>localhost</code>, <code>127.0.0.1</code></td>
+</tr>
+
+<tr>
+<td>kube-etcd-healthcheck-client</td>
+<td>etcd-ca</td>
+<td></td>
+<td>client</td>
+<td></td>
+</tr>
+
+<tr>
+<td>kube-apiserver-etcd-client</td>
+<td>etcd-ca</td>
+<td>system:masters</td>
+<td>client</td>
+<td></td>
+</tr>
+
+<tr>
+<td>kube-apiserver</td>
+<td>kubernetes-ca</td>
+<td></td>
+<td>server</td>
+<td><code>&lt;hostname&gt;</code>, <code>&lt;Host_IP&gt;</code>, <code>&lt;advertise_IP&gt;</code>, <code>[1]</code></td>
+</tr>
+
+<tr>
+<td>kube-apiserver-kubelet-client</td>
+<td>kubernetes-ca</td>
+<td>system:masters</td>
+<td>client</td>
+<td></td>
+</tr>
+
+<tr>
+<td>front-proxy-client</td>
+<td>kubernetes-front-proxy-ca</td>
+<td></td>
+<td>client</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<!--
+[1]: any other IP or DNS name you contact your cluster on (as used by [kubeadm][kubeadm] the load balancer stable IP and/or DNS name, `kubernetes`, `kubernetes.default`, `kubernetes.default.svc`,
+`kubernetes.default.svc.cluster`, `kubernetes.default.svc.cluster.local`)
+
+where `kind` maps to one or more of the [x509 key usage][usage] types:
+-->
+
+<p>[1]: 用来连接到集群的不同 IP 或 DNS 名（就像 <a href="/docs/reference/setup-tools/kubeadm/kubeadm/">kubeadm</a> 为负载均衡所使用的固定 IP 或 DNS 名，<code>kubernetes</code>、<code>kubernetes.default</code>、<code>kubernetes.default.svc</code>、<code>kubernetes.default.svc.cluster</code>、<code>kubernetes.default.svc.cluster.local</code>）</p>
+
+<p>其中，<code>kind</code> 对应一种或多种类型的 <a href="https://godoc.org/k8s.io/api/certificates/v1beta1#KeyUsage" target="_blank">x509 密钥用途</a>：</p>
+
+<!--
+| kind   | Key usage                                                                       |
+|--------|---------------------------------------------------------------------------------|
+| server | digital signature, key encipherment, server auth                                |
+| client | digital signature, key encipherment, client auth                                |
+-->
+
+<table>
+<thead>
+<tr>
+<th>kind</th>
+<th>密钥用途</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>server</td>
+<td>数字签名、密钥加密、服务端认证</td>
+</tr>
+
+<tr>
+<td>client</td>
+<td>数字签名、密钥加密、客户端认证</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+Hosts/SAN listed above are the recommended ones for getting a working cluster; if required by a specific setup, it is possible to add additional SANs on all the server certificates.
+-->
+
+<p>上面列出的 Hosts/SAN 是推荐的配置方式；如果需要特殊安装，则可以在所有服务器证书上添加其他 SAN。</div>
+</blockquote>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+For kubeadm users only:
+
+* The scenario where you are copying to your cluster CA certificates without private keys is referred as external CA in the kubeadm documentation.
+* If you are comparing the above list with a kubeadm generated PKI, please be aware that `kube-etcd`, `kube-etcd-peer` and `kube-etcd-healthcheck-client` certificates
+  are not generated in case of external etcd.
+-->
+
+<p>对于 kubeadm 用户：</p>
+
+<ul>
+<li>不使用私钥，将证书复制到集群 CA 的方案，在 kubeadm 文档中将这种方案称为外部 CA。</li>
+<li>如果将以上列表与 kubeadm 生成的 PKI 进行比较，你会注意到，如果使用外部 etcd，则不会生成 <code>kube-etcd</code>、<code>kube-etcd-peer</code> 和 <code>kube-etcd-healthcheck-client</code> 证书。</li>
+</ul></div>
+</blockquote>
+
+<!--
+### Certificate paths
+
+Certificates should be placed in a recommended path (as used by [kubeadm][kubeadm]). Paths should be specified using the given argument regardless of location.
+-->
+
+<h3 id="证书路径">证书路径</h3>
+
+<p>证书应放置在建议的路径中（以便 <a href="/docs/reference/setup-tools/kubeadm/kubeadm/">kubeadm</a>使用）。无论使用什么位置，都应使用给定的参数指定路径。</p>
+
+<table>
+<thead>
+<tr>
+<th>默认 CN</th>
+<th>建议的密钥路径</th>
+<th>建议的证书路径</th>
+<th>命令</th>
+<th>密钥参数</th>
+<th>证书参数</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>etcd-ca</td>
+<td>etcd/ca.key</td>
+<td>etcd/ca.crt</td>
+<td>kube-apiserver</td>
+<td></td>
+<td>&ndash;etcd-cafile</td>
+</tr>
+
+<tr>
+<td>kube-apiserver-etcd-client</td>
+<td>apiserver-etcd-client.key</td>
+<td>apiserver-etcd-client.crt</td>
+<td>kube-apiserver</td>
+<td>&ndash;etcd-keyfile</td>
+<td>&ndash;etcd-certfile</td>
+</tr>
+
+<tr>
+<td>kubernetes-ca</td>
+<td>ca.key</td>
+<td>ca.crt</td>
+<td>kube-apiserver</td>
+<td></td>
+<td>&ndash;client-ca-file</td>
+</tr>
+
+<tr>
+<td>kubernetes-ca</td>
+<td>ca.key</td>
+<td>ca.crt</td>
+<td>kube-controller-manager</td>
+<td>&ndash;cluster-signing-key-file</td>
+<td>&ndash;client-ca-file, &ndash;root-ca-file, &ndash;cluster-signing-cert-file</td>
+</tr>
+
+<tr>
+<td>kube-apiserver</td>
+<td>apiserver.key</td>
+<td>apiserver.crt</td>
+<td>kube-apiserver</td>
+<td>&ndash;tls-private-key-file</td>
+<td>&ndash;tls-cert-file</td>
+</tr>
+
+<tr>
+<td>kube-apiserver-kubelet-client</td>
+<td>apiserver-kubelet-client.key</td>
+<td>apiserver-kubelet-client.crt</td>
+<td>kube-apiserver</td>
+<td>&ndash;kubelet-client-key</td>
+<td>&ndash;kubelet-client-certificate</td>
+</tr>
+
+<tr>
+<td>front-proxy-ca</td>
+<td>front-proxy-ca.key</td>
+<td>front-proxy-ca.crt</td>
+<td>kube-apiserver</td>
+<td></td>
+<td>&ndash;requestheader-client-ca-file</td>
+</tr>
+
+<tr>
+<td>front-proxy-ca</td>
+<td>front-proxy-ca.key</td>
+<td>front-proxy-ca.crt</td>
+<td>kube-controller-manager</td>
+<td></td>
+<td>&ndash;requestheader-client-ca-file</td>
+</tr>
+
+<tr>
+<td>front-proxy-client</td>
+<td>front-proxy-client.key</td>
+<td>front-proxy-client.crt</td>
+<td>kube-apiserver</td>
+<td>&ndash;proxy-client-key-file</td>
+<td>&ndash;proxy-client-cert-file</td>
+</tr>
+
+<tr>
+<td>etcd-ca</td>
+<td>etcd/ca.key</td>
+<td>etcd/ca.crt</td>
+<td>etcd</td>
+<td></td>
+<td>&ndash;trusted-ca-file, &ndash;peer-trusted-ca-file</td>
+</tr>
+
+<tr>
+<td>kube-etcd</td>
+<td>etcd/server.key</td>
+<td>etcd/server.crt</td>
+<td>etcd</td>
+<td>&ndash;key-file</td>
+<td>&ndash;cert-file</td>
+</tr>
+
+<tr>
+<td>kube-etcd-peer</td>
+<td>etcd/peer.key</td>
+<td>etcd/peer.crt</td>
+<td>etcd</td>
+<td>&ndash;peer-key-file</td>
+<td>&ndash;peer-cert-file</td>
+</tr>
+
+<tr>
+<td>etcd-ca</td>
+<td></td>
+<td>etcd/ca.crt</td>
+<td>etcdctl</td>
+<td></td>
+<td>&ndash;cacert</td>
+</tr>
+
+<tr>
+<td>kube-etcd-healthcheck-client</td>
+<td>etcd/healthcheck-client.key</td>
+<td>etcd/healthcheck-client.crt</td>
+<td>etcdctl</td>
+<td>&ndash;key</td>
+<td>&ndash;cert</td>
+</tr>
+</tbody>
+</table>
+
+<!--
+Same considerations apply for the service account key pair:
+-->
+
+<p>注意事项同样适用于服务帐户密钥对：</p>
+
+<table>
+<thead>
+<tr>
+<th>私钥路径</th>
+<th>公钥路径</th>
+<th>命令</th>
+<th>参数</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>sa.key</td>
+<td></td>
+<td>kube-controller-manager</td>
+<td>service-account-private</td>
+</tr>
+
+<tr>
+<td></td>
+<td>sa.pub</td>
+<td>kube-apiserver</td>
+<td>service-account-key</td>
+</tr>
+</tbody>
+</table>
+
+<!--
+## Configure certificates for user accounts
+
+You must manually configure these administrator account and service accounts:
+-->
+
+<h2 id="为用户帐户配置证书">为用户帐户配置证书</h2>
+
+<p>您必须手动配置以下管理员帐户和服务帐户：</p>
+
+<table>
+<thead>
+<tr>
+<th>文件名</th>
+<th>凭据名称</th>
+<th>默认 CN</th>
+<th>O (位于 Subject 中)</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>admin.conf</td>
+<td>default-admin</td>
+<td>kubernetes-admin</td>
+<td>system:masters</td>
+</tr>
+
+<tr>
+<td>kubelet.conf</td>
+<td>default-auth</td>
+<td>system:node:<code>&lt;nodeName&gt;</code> (see note)</td>
+<td>system:nodes</td>
+</tr>
+
+<tr>
+<td>controller-manager.conf</td>
+<td>default-controller-manager</td>
+<td>system:kube-controller-manager</td>
+<td></td>
+</tr>
+
+<tr>
+<td>scheduler.conf</td>
+<td>default-scheduler</td>
+<td>system:kube-scheduler</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+The value of `<nodeName>` for `kubelet.conf` **must** match precisely the value of the node name provided by the kubelet as it registers with the apiserver. For further details, read the [Node Authorization](/docs/reference/access-authn-authz/node/).
+-->
+
+<p><code>kubelet.conf</code> 中 <code>&lt;nodeName&gt;</code> 的值 <strong>必须</strong> 与 kubelet 向 apiserver 注册时提供的节点名称的值完全匹配。有关更多详细信息，请阅读<a href="/docs/reference/access-authn-authz/node/">节点授权</a>。</div>
+</blockquote>
+
+<!--
+1. For each config, generate an x509 cert/key pair with the given CN and O.
+
+1. Run `kubectl` as follows for each config:
+-->
+
+<ol>
+<li><p>对于每个配置，请都使用给定的 CN 和 O 生成 x509 证书/密钥偶对。</p></li>
+
+<li><p>为每个配置运行下面的 <code>kubectl</code> 命令：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b8860b">KUBECONFIG</span><span style="color:#666">=</span>&lt;filename&gt; kubectl config set-cluster default-cluster --server<span style="color:#666">=</span>https://&lt;host ip&gt;:6443 --certificate-authority &lt;path-to-kubernetes-ca&gt; --embed-certs
+<span style="color:#b8860b">KUBECONFIG</span><span style="color:#666">=</span>&lt;filename&gt; kubectl config set-credentials &lt;credential-name&gt; --client-key &lt;path-to-key&gt;.pem --client-certificate &lt;path-to-cert&gt;.pem --embed-certs
+<span style="color:#b8860b">KUBECONFIG</span><span style="color:#666">=</span>&lt;filename&gt; kubectl config set-context default-system --cluster default-cluster --user &lt;credential-name&gt;
+<span style="color:#b8860b">KUBECONFIG</span><span style="color:#666">=</span>&lt;filename&gt; kubectl config use-context default-system</code></pre></div></li>
+</ol>
+
+<!--
+These files are used as follows:
+
+| filename                | command                 | comment                                                               |
+|-------------------------|-------------------------|-----------------------------------------------------------------------|
+| admin.conf              | kubectl                 | Configures administrator user for the cluster                                      |
+| kubelet.conf            | kubelet                 | One required for each node in the cluster.                            |
+| controller-manager.conf | kube-controller-manager | Must be added to manifest in `manifests/kube-controller-manager.yaml` |
+| scheduler.conf          | kube-scheduler          | Must be added to manifest in `manifests/kube-scheduler.yaml`          |
+-->
+
+<p>这些文件用途如下：</p>
+
+<table>
+<thead>
+<tr>
+<th>文件名</th>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>admin.conf</td>
+<td>kubectl</td>
+<td>配置集群的管理员</td>
+</tr>
+
+<tr>
+<td>kubelet.conf</td>
+<td>kubelet</td>
+<td>集群中的每个节点都需要一份</td>
+</tr>
+
+<tr>
+<td>controller-manager.conf</td>
+<td>kube-controller-manager</td>
+<td>必需添加到 <code>manifests/kube-controller-manager.yaml</code> 清单中</td>
+</tr>
+
+<tr>
+<td>scheduler.conf</td>
+<td>kube-scheduler</td>
+<td>必需添加到 <code>manifests/kube-scheduler.yaml</code> 清单中</td>
+</tr>
+</tbody>
+</table>
+
+
+
+<!--
+---
+title: PKI certificates and requirements
+reviewers:
+- sig-cluster-lifecycle
+content_template: templates/concept
+weight: 40
+---
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/best-practices/certificates.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/setup\/best-practices\/certificates\/",
+    "title" : "PKI 证书和要求",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/setup\/best-practices\/certificates\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/setup/best-practices/certificates.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 March 07, 2020 at 6:25 PM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/aa44d74fc9d0162bfa43f1965faf585881ac171e/">translation certificates for zh (#19492)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/best-practices/certificates.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

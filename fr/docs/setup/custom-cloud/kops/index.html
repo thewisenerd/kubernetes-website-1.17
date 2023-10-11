@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html id="docs" lang="fr" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Installer Kubernetes sur AWS avec kops - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="Installation Kubernetes avec kops sur AWS">
+<meta property="og:description" content="Installation Kubernetes avec kops sur AWS">
+<meta name="twitter:description" content="Installation Kubernetes avec kops sur AWS">
+<meta property="og:url" content="https://kubernetes.io/fr/docs/setup/custom-cloud/kops/">
+<meta property="og:title" content="Installer Kubernetes sur AWS avec kops">
+<meta name="twitter:title" content="Installer Kubernetes sur AWS avec kops">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/fr/" class="logo" title="Solution professionnelle d’orchestration de conteneurs - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/fr/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/fr/blog/">Blog</a></li>
+            
+            
+            
+            <li><a href="/fr/partners/">Partenaires</a></li>
+            
+            <li><a href="/fr/community/">Communauté</a></li>
+            
+            <li><a href="/fr/case-studies/">Études de cas</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    Français <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/">English</a></li>
+                
+                    <li><a href="/zh/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/">日本語 Japanese</a></li>
+                
+                    <li><a href="/de/">Deutsch</a></li>
+                
+                    <li><a href="/es/">Español</a></li>
+                
+                    <li><a href="/pt/">Português</a></li>
+                
+                    <li><a href="/id/">Bahasa Indonesia</a></li>
+                
+                    <li><a href="/vi/">Tiếng Việt</a></li>
+                
+                    <li><a href="/ru/">Русский</a></li>
+                
+                    <li><a href="/pl/">Polski</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/fr/docs/setup/custom-cloud/kops/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/fr/docs/setup/custom-cloud/kops/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/fr/docs/setup/custom-cloud/kops/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/fr/docs/setup/custom-cloud/kops/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/fr/docs/setup/custom-cloud/kops/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/fr/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Apprendre les bases de Kubernetes</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/fr/docs/tutorials/hello-minikube/">Démarrer</a></h3>
+           <p>Prêt à mettre les mains dans le cambouis ? Créez un cluster Kubernetes simple qui exécute "Hello World" avec Node.js.</p>>.
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/fr/docs/home/">Documentation</a></h3>
+           <p>Apprenez à utiliser Kubernetes à l'aide d'une documentation conceptuelle, didactique et de référence. Vous pouvez même <a href="/editdocs/" data-auto-burger-exclude>aider en contribuant à la documentation</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/fr/blog/">Blog</a></h3>
+           <p>Lisez les dernières nouvelles à propos de Kubernetes et des conteneurs en général. Obtenez les derniers tutoriels techniques.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Souhaitez vous contribuer au code de Kubernetes ?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>Voir sur GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explorez la communauté</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendrier</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>Installation</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/fr/docs/home/">ACCUEIL</a></li>
+		
+		
+		<li><a href="/fr/docs/setup/" class="YAH">INSTALLATION</a></li>
+		
+		
+		<li><a href="/fr/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/fr/docs/tasks/">TÂCHES</a></li>
+		
+		
+		<li><a href="/fr/docs/tutorials/">TUTORIELS</a></li>
+		
+		
+		<li><a href="/fr/docs/reference/">RÉFÉRENCE</a></li>
+		
+		
+		<li><a href="/fr/docs/contribute/">CONTRIBUER</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Recherche" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation non maintenue. Vous consultez une version statique. Pour une documentation à jour, veuillez consulter: 
+	 <a href="https://kubernetes.io/docs/home/">dernière version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Installation" href="/fr/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Choisir la bonne solution" href="/fr/docs/setup/pick-right-solution/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Environnement d&#39;apprentissage">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installer Kubernetes avec Minikube" href="/fr/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Télécharger Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes version and version skew support policy <small>(EN)</small>" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Construire une release" href="/fr/docs/setup/release/building-from-source/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Déployer des clusters avec kubeadm">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installer kubeadm" href="/fr/docs/setup/independent/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Création d&#39;un Cluster a master unique avec kubeadm" href="/fr/docs/setup/independent/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Personnalisation de la configuration du control plane avec kubeadm" href="/fr/docs/setup/independent/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Options pour la topologie en haute disponibilité" href="/fr/docs/setup/independent/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Création de clusters hautement disponibles avec kubeadm" href="/fr/docs/setup/independent/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configurer un cluster etcd en haute disponibilité avec kubeadm" href="/fr/docs/setup/independent/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuration des kubelet de votre cluster avec kubeadm" href="/fr/docs/setup/independent/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Dépanner kubeadm" href="/fr/docs/setup/independent/troubleshooting-kubeadm/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Production environment">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container runtimes <small>(EN)</small>" href="/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Bootstrapping clusters with kubeadm">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Troubleshooting kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating a single control-plane cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Customizing control plane configuration with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Options for Highly Available topology <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating Highly Available clusters with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up a High Availability etcd cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring each kubelet in your cluster using kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring your kubernetes cluster to self-host the control plane <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with kops <small>(EN)</small>" href="/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with KRIB <small>(EN)</small>" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kubespray <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Turnkey Cloud Solutions">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Alibaba Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on AWS EC2 <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Azure <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on CenturyLink Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Google Compute Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Tencent Kubernetes Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="On-Premises VMs">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloudstack <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes on DC/OS <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="oVirt <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows in Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Intro to Windows support in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Guide for adding Windows Nodes in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Guide for scheduling Windows containers in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Best practices">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running in multiple zones <small>(EN)</small>" href="/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Building large clusters <small>(EN)</small>" href="/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Validate node setup <small>(EN)</small>" href="/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="PKI certificates and requirements <small>(EN)</small>" href="/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Solutions Cloud clés en main">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Solutions Cloud personnalisées">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="CoreOS sur AWS ou GCE" href="/fr/docs/setup/custom-cloud/coreos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installer Kubernetes avec Kubespray (on-premises et fournisseurs de cloud)" href="/fr/docs/setup/custom-cloud/kubespray/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installer Kubernetes sur AWS avec kops" href="/fr/docs/setup/custom-cloud/kops/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="On-Premises VMs">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows dans Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/fr/docs/setup/custom-cloud/kops.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Installer Kubernetes sur AWS avec kops</h1>
+
+
+
+<p>Cette documentation pour un démarrage rapide montre comment facilement installer un cluster Kubernetes sur AWS.
+L&rsquo;outil utilisé est <a href="https://github.com/kubernetes/kops" target="_blank"><code>kops</code></a>.</p>
+
+<p>kops est un système de provisionnement dont les principes sont:</p>
+
+<ul>
+<li>Une installation totalement automatisée</li>
+<li>Utilisation du DNS pour identifier les clusters</li>
+<li>Auto-guérison: tous les composants tournent dans des groupe de mise à l&rsquo;échelle automatique (auto-scaling)</li>
+<li>Support de plusieurs systèmes d&rsquo;exploitation (Debian, Ubuntu 16.04 supportés, Centos &amp; RHEL, Amazon Linux et CoreOS) - se référer à <a href="https://github.com/kubernetes/kops/blob/master/docs/images.md" target="_blank">images.md</a></li>
+<li>Haute disponibilité - se référer à <a href="https://github.com/kubernetes/kops/blob/master/docs/high_availability.md" target="_blank">high_availability.md</a></li>
+<li>Peut provisionner directement, ou générer des manifests terraform - se référer à <a href="https://github.com/kubernetes/kops/blob/master/docs/terraform.md" target="_blank">terraform.md</a></li>
+</ul>
+
+<p>Si ces principes ne vous conviennent pas, vous préférerez probablement construire votre propre cluster selon votre convenance grâce à <a href="/docs/admin/kubeadm/">kubeadm</a>.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#cr%c3%a9er-un-cluster">Créer un cluster</a></li>
+
+
+
+
+<li><a href="#nettoyer">Nettoyer</a></li>
+
+
+
+
+<li><a href="#retour-d-information">Retour d’information</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#a-suivre">A suivre</a></li>
+
+
+
+</ul>
+
+
+<h2 id="créer-un-cluster">Créer un cluster</h2>
+
+<h3 id="1-5-installer-kops">(1/5) Installer kops</h3>
+
+<h4 id="pré-requis">Pré-requis</h4>
+
+<p>Il est nécessaire d&rsquo;avoir <a href="/docs/tasks/tools/install-kubectl/">kubectl</a> d&rsquo;installé pour que kops puisse fonctionner.</p>
+
+<h4 id="installation">Installation</h4>
+
+<p>Télécharger kops à partir de la <a href="https://github.com/kubernetes/kops/releases" target="_blank">page de releases</a> (Il est aussi facile à construire à partir des sources):</p>
+
+<p>Sur macOS:</p>
+
+<p>Téléchargez la dernière version avec la commande:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -LO https://github.com/kubernetes/kops/releases/download/<span style="color:#a2f;font-weight:bold">$(</span>curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d <span style="color:#b44">&#39;&#34;&#39;</span> -f <span style="color:#666">4</span><span style="color:#a2f;font-weight:bold">)</span>/kops-darwin-amd64</code></pre></div>
+<p>Pour télécharger une version spécifique, remplacez le</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#a2f;font-weight:bold">$(</span>curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d <span style="color:#b44">&#39;&#34;&#39;</span> -f <span style="color:#666">4</span><span style="color:#a2f;font-weight:bold">)</span></code></pre></div>
+<p>partie de la commande avec la version spécifique.</p>
+
+<p>Par exemple, pour télécharger la version 1.15.0 de kops, tapez:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -LO  https://github.com/kubernetes/kops/releases/download/1.15.0/kops-darwin-amd64</code></pre></div>
+<p>Rendre le binaire exécutable kops.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">chmod +x kops-darwin-amd64</code></pre></div>
+<p>Déplacez le fichier binaire kops dans votre chemin.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo mv kops-darwin-amd64 /usr/local/bin/kops</code></pre></div>
+<p>Vous pouvez également installer kops en utilisant <a href="https://brew.sh/" target="_blank">Homebrew</a>.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">brew update <span style="color:#666">&amp;&amp;</span> brew install kops</code></pre></div>
+<p>Sur Linux:</p>
+
+<p>Téléchargez la dernière version avec la commande:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -LO https://github.com/kubernetes/kops/releases/download/<span style="color:#a2f;font-weight:bold">$(</span>curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d <span style="color:#b44">&#39;&#34;&#39;</span> -f <span style="color:#666">4</span><span style="color:#a2f;font-weight:bold">)</span>/kops-linux-amd64</code></pre></div>
+<p>Pour télécharger une version spécifique, remplacez le</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#a2f;font-weight:bold">$(</span>curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d <span style="color:#b44">&#39;&#34;&#39;</span> -f <span style="color:#666">4</span><span style="color:#a2f;font-weight:bold">)</span></code></pre></div>
+<p>partie de la commande avec la version spécifique.</p>
+
+<p>Par exemple, pour télécharger la version 1.15.0 de kops, tapez:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -LO  https://github.com/kubernetes/kops/releases/download/1.15.0/kops-linux-amd64</code></pre></div>
+<p>Rendre le binaire exécutable kops</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">chmod +x kops-linux-amd64</code></pre></div>
+<p>Déplacez le fichier binaire kops dans votre chemin.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo mv kops-linux-amd64 /usr/local/bin/kops</code></pre></div>
+<p>Vous pouvez également installer kops en utilisant <a href="https://docs.brew.sh/Homebrew-on-Linux" target="_blank">Homebrew</a>.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">brew update <span style="color:#666">&amp;&amp;</span> brew install kops</code></pre></div>
+<h3 id="2-5-créer-un-domaine-route53-pour-votre-cluster">(2/5) Créer un domaine route53 pour votre cluster</h3>
+
+<p>kops utilise le DNS pour la découverte, que ce soit à l&rsquo;intérieur du cluster ou pour pouvoir communiquer avec l&rsquo;API de kubernetes à partir des clients.</p>
+
+<p>Pour kops le nom du cluster doit impérativement être un nom de domaine valide.
+De cette façon vous ne confondrez pas vos cluster et vous pourrez les partager avec vos collègues sans ambiguïté. Par ailleurs vous pourrez vous y connecter sans avoir à vous rappeler une adresse IP.</p>
+
+<p>Vous pouvez, et vous devriez certainement, utiliser des sous-domaines afin de séparer vos clusters.
+Dans notre exemple nous utiliserons <code>useast1.dev.example.com</code>. Le point d&rsquo;accès au serveur API sera donc <code>api.useast1.dev.example.com</code>.</p>
+
+<p>Une zone hébergée Route53 peut servir les sous-domaines. Votre zone hébergée pourrait être <code>useast1.dev.example.com</code>,
+mais aussi <code>dev.example.com</code> ou même <code>example.com</code>. kops fonctionne avec n&rsquo;importe lequel d&rsquo;entre eux, le choix dépend de vos contraintes d&rsquo;organisation (ex: Vous êtes autorisés à créer des enregistrements dns dans <code>dev.example.com</code> mais pas dans <code>example.com</code>)</p>
+
+<p>Supposons que vous utilisiez <code>dev.example.com</code> comme zone hébergée. Vous créeriez cette zone hébergée en utilisant la <a href="http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/CreatingNewSubdomain.html" target="_blank">méthode normal</a>, ou avec une ligne de commande telle que <code>aws route53 create-hosted-zone --name dev.example.com --caller-reference 1</code>.</p>
+
+<p>Vous devrez ensuite configurer vos enregistrements NS dans le domaine parent afin que vous puissiez résoudre dans ce domaine.
+Vous créeriez donc des enregistrements NS dans le domaine <code>example.com</code> pour<code>dev</code>.
+S&rsquo;il s&rsquo;agit d&rsquo;un nom de domaine racine, vous devrez configurer les enregistrements NS chez votre hébergeur de nom de domaine (là où vous avez acheté votre nom de domaine <code>example.com</code>).</p>
+
+<p>Cette étape est délicate, soyez vigilants (c’est la première cause de problèmes !). Vous pouvez vérifier que
+votre cluster est configuré correctement avec l&rsquo;outil dig, en exécutant:</p>
+
+<p><code>dig NS dev.example.com</code></p>
+
+<p>Vous devriez voir les 4 enregistrements NS attribués à votre zone hébergée sur Route53.</p>
+
+<h3 id="3-5-créez-un-conteneur-bucket-s3-pour-stocker-l-état-de-vos-clusters">(3/5) Créez un conteneur (bucket) S3 pour stocker l&rsquo;état de vos clusters.</h3>
+
+<p>kops vous permet de gérer vos clusters même lorsque ceux-ci sont déjà installés. Pour ce faire, il est nécessaire de conserver une trace des clusters que vous avez créé, avec leur configuration, les clés qu’ils utilisent, etc. Ces informations sont stockées dans un bucket S3. Les autorisations S3 sont utilisées pour contrôler l&rsquo;accès au bucket.</p>
+
+<p>Plusieurs clusters peuvent utiliser le même bucket S3 et vous pouvez aussi le partager avec vos collègues qui
+administrer les mêmes clusters - c&rsquo;est beaucoup plus facile que de faire circuler des fichiers kubecfg.
+Cependant quiconque ayant accès au bucket S3 aura un accès complet (permissions élevées) à tous vos clusters. Vous souhaiterez donc limiter l&rsquo;accès à l&rsquo;équipe opérationnelle.</p>
+
+<p>Plus généralement, vous auriez un bucket S3 pour chaque équipe ops (et le nom correspondrait souvent
+au nom de la zone hébergée ci-dessus!)</p>
+
+<p>Dans notre exemple, nous avons choisi <code>dev.example.com</code> comme zone hébergée. Nous allons donc choisir <code>clusters.dev.example.com</code> comm le nom du bucket S3.</p>
+
+<ul>
+<li><p>Exportez <code>AWS_PROFILE</code> (si vous devez sélectionner un profil pour que l&rsquo;outil en ligne de commande d&rsquo;AWS fonctionne).</p></li>
+
+<li><p>Créez le compartiment S3 en utilisant <code>aws s3 mb s3://clusters.dev.example.com</code></p></li>
+
+<li><p>Vous pouvez <code>export KOPS_STATE_STORE=s3://clusters.dev.example.com</code> afin que kops utilise cet emplacement par défaut.
+  Nous vous suggérons de le mettre dans votre profil bash ou similaire.</p></li>
+</ul>
+
+<h3 id="4-5-construisez-votre-configuration-de-cluster">(4/5) Construisez votre configuration de cluster</h3>
+
+<p>Exécutez &ldquo;kops create cluster&rdquo; pour créer votre configuration de cluster:</p>
+
+<p><code>kops create cluster --zones=us-east-1c useast1.dev.example.com</code></p>
+
+<p>kops créera la configuration pour votre cluster. Notez que cela génère uniquement la configuration, la création des ressources cloud se fait à l&rsquo;étape suivante avec <code>kops update cluster</code>. Cela vous permettra d&rsquo;analyser la configuration ou de la modifier avant de l&rsquo;appliquer.</p>
+
+<p>Voici quelques commandes qui vous permettent de visualiser ou éditer:</p>
+
+<ul>
+<li>Listez vos clusters avec: <code>kops get cluster</code></li>
+<li>Éditez ce cluster avec: <code>kops edit cluster useast1.dev.example.com</code></li>
+<li>Modifiez votre groupe d&rsquo;instances de nœuds: <code>kops edit ig --name=useast1.dev.example.com nodes</code></li>
+<li>Éditez votre groupe d&rsquo;instances maître (master): <code>kops edit ig --name=useast1.dev.example.com master-us-east-1c</code></li>
+</ul>
+
+<p>Si vous utilisez kops pour la première fois, prenez quelques minutes pour les essayer! Un groupe d&rsquo;instances est un
+ensemble d&rsquo;instances, qui seront enregistrées en tant que noeuds kubernetes. Sur AWS, cela est implémenté via des groupes de mise à l&rsquo;échelle automatique (auto-scaling).
+Vous pouvez avoir plusieurs groupes d&rsquo;instances, par exemple si vous voulez des nœuds combinant des instances ponctuelles (spot instances) et à la demande, ou éventuellement des instances GPU et non-GPU.</p>
+
+<h3 id="5-5-créer-le-cluster-dans-aws">(5/5) Créer le cluster dans AWS</h3>
+
+<p>Exécutez &ldquo;kops update cluster&rdquo; pour créer votre cluster dans AWS :</p>
+
+<p><code>kops update cluster useast1.dev.example.com --yes</code></p>
+
+<p>Cela prend quelques secondes à s&rsquo;exécuter, et ensuite votre cluster prendra probablement quelques minutes pour être réellement opérationnel.
+<code>kops update cluster</code> sera l&rsquo;outil que vous utiliserez à chaque fois que vous modifierez la configuration de votre cluster.
+Il applique les modifications que vous avez apportées à la configuration sur votre cluster (reconfiguration d&rsquo;AWS ou de kubernetes au besoin).</p>
+
+<p>Par exemple, après un <code>kops edit ig nodes</code>, puis un <code>kops update cluster --yes</code> pour appliquer votre configuration, parfois, vous devrez également exécuter un <code>kops rolling-update cluster</code> pour déployer la configuration immédiatement.</p>
+
+<p>Sans l&rsquo;argument <code>--yes</code>,<code>kops update cluster</code> vous montrera un aperçu de ce qu’il va faire. C&rsquo;est pratique
+pour les clusters de production !</p>
+
+<h3 id="explorer-d-autres-composants-additionnels-add-ons">Explorer d&rsquo;autres composants additionnels (add-ons)</h3>
+
+<p>Reportez-vous à la <a href="/docs/concepts/cluster-administration/addons/">liste des add-ons</a> pour explorer d&rsquo;autres add-ons, y compris des outils de journalisation, de surveillance, de stratégie réseau, de visualisation ou de contrôle de votre cluster Kubernetes.</p>
+
+<h2 id="nettoyer">Nettoyer</h2>
+
+<ul>
+<li>Pour supprimer votre cluster: <code>kops delete cluster useast1.dev.example.com --yes</code></li>
+</ul>
+
+<h2 id="retour-d-information">Retour d&rsquo;information</h2>
+
+<ul>
+<li>Channel Slack: <a href="https://kubernetes.slack.com/messages/kops-users/" target="_blank">#kops-users</a></li>
+<li><a href="https://github.com/kubernetes/kops/issues" target="_blank">Problèmes GitHub</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="a-suivre">A suivre</h2>
+<ul>
+<li>En apprendre davantages sur les <a href="/docs/concepts/">concepts</a> Kubernetes et <a href="/docs/user-guide/kubectl-overview/"><code>kubectl</code></a>.</li>
+<li>En savoir plus sur les <a href="https://github.com/kubernetes/kops" target="_blank">utilisations avancées</a> de <code>kops</code>.</li>
+<li>Pour les bonnes pratiques et les options de configuration avancées de <code>kops</code> se référer à la <a href="https://github.com/kubernetes/kops" target="_blank">documentation</a></li>
+</ul>
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Cette page est elle utile ? </p>
+  <button class="button feedback--yes">Oui</button>
+  <button class="button feedback--no">Non</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/custom-cloud/kops.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/fr\/docs\/setup\/custom-cloud\/kops\/",
+    "title" : "Installer Kubernetes sur AWS avec kops",
+    "permalink" : "https:\/\/kubernetes.io\/fr\/docs\/setup\/custom-cloud\/kops\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Ouvrez un ticket</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/fr/docs/setup/custom-cloud/kops.md" class="button issue">Editez cette page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Dernière modification le November 26, 2019 at 12:27 PM PST de
+    <a href="https://github.com/kubernetes/website/commit/a5a39ae8b1c8db6b0b997a90698a55ea11516fcc/">fr-docs: Update kops Installation Steps (#17805)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/custom-cloud/kops.md">Historique</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/fr/docs/home/">Accueil</a>
+            
+            <a href="/fr/blog/">Blog</a>
+            
+            
+            
+            <a href="/fr/partners/">Partenaires</a>
+            
+            <a href="/fr/community/">Communauté</a>
+            
+            <a href="/fr/case-studies/">Études de cas</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendrier</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribuer</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

@@ -1,0 +1,2824 @@
+<!DOCTYPE html>
+<html id="docs" lang="id" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Persistent Volume - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/id/docs/concepts/storage/persistent-volumes/">
+<meta property="og:title" content="Persistent Volume">
+<meta name="twitter:title" content="Persistent Volume">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/id/" class="logo" title="Orkestrasi Kontainer dengan Skala Produksi - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/id/docs/" class="active">Dokumentasi</a></li>
+            
+            
+            
+            
+            
+            
+            
+            <li><a href="/id/community/">Komunitas</a></li>
+            
+            <li><a href="/id/case-studies/">Studi kasus</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    Bahasa Indonesia <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/storage/persistent-volumes/">English</a></li>
+                
+                    <li><a href="/fr/docs/concepts/storage/persistent-volumes/">Français</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/id/docs/concepts/storage/persistent-volumes/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/id/docs/concepts/storage/persistent-volumes/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/id/docs/concepts/storage/persistent-volumes/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/id/docs/concepts/storage/persistent-volumes/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/id/docs/concepts/storage/persistent-volumes/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/id/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Mempelajari Panduan Dasar Kubernetes</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/id/docs/tutorials/hello-minikube/">Mulai</a></h3>
+           <p>Siap untuk mengotori tanganmu? Yuk kita buat klaster Kubernetes sederhana yang menjalankan Node.js aplikasi "Halo Dunia".</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/id/docs/home/">Dokumentasi</a></h3>
+           <p>Mengerti penggunaan Kubernetes dengan belajar konsep, tutorial, dan referensinya. Kamupun bisa <a href="/editdocs/" data-auto-burger-exclude>bantu kami perbaiki dan lengkapi dokumentasinya</a>, yuk kontribusi!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Tertarik untuk ulik kode dari Kubernetes?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>Lihat di GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Jelajahi komunitasnya</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Kalender acara</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>Konsep</h1>
+<h5></h5>
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/id/docs/home/">HOME</a></li>
+		
+		
+		<li><a href="/id/docs/setup/">PERSIAPAN</a></li>
+		
+		
+		<li><a href="/id/docs/concepts/" class="YAH">KONSEP</a></li>
+		
+		
+		<li><a href="/id/docs/tutorials/">TUTORIALS</a></li>
+		
+		
+		<li><a href="/id/docs/contribute/">BERKONTRIBUSI</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Cari" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  dokumentasi sudah tidak dirawat lagi. Versi yang kamu lihat ini hanyalah snapshot statis. Untuk dokumentasi terkini, lihat 
+	 <a href="https://kubernetes.io/docs/home/">versi terkini.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Konsep" href="/id/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Ikhtisar">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Apa itu Kubernetes?" href="/id/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Komponen-Komponen Kubernetes" href="/id/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="API Kubernetes" href="/id/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Menggunakan Objek-Objek Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Memahami Konsep Objek-Objek yang ada pada Kubernetes" href="/id/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pengaturan Objek Kubernetes" href="/id/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Nama" href="/id/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Namespace" href="/id/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Label dan Selektor" href="/id/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Anotasi" href="/id/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Selektor Field" href="/id/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Label yang Disarankan" href="/id/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Pengelolaan Objek dengan kubectl">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Pengelolaan Objek Kubernetes dengan Perintah Imperatif" href="/id/docs/concepts/overview/object-management-kubectl/imperative-command/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Penglolaan Objek Kubernetes Secara Imperatif dengan Menggunakan File Konfigurasi" href="/id/docs/concepts/overview/object-management-kubectl/imperative-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pengelolaan Objek Kubernetes secara Deklaratif dengan Menggunakan File Konfigurasi" href="/id/docs/concepts/overview/object-management-kubectl/declarative-config/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Arsitektur Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Node" href="/id/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Komunikasi Master-Node" href="/id/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Controllers <small>(EN)</small>" href="/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Konsep-konsep di balik Controller Manager" href="/id/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kontainer">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Images <small>(EN)</small>" href="/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Runtime Class" href="/id/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Variabel Environment Kontainer" href="/id/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Lifecyle Hook pada Kontainer" href="/id/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Workloads">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pods">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Pengenalan Pod" href="/id/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod" href="/id/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Siklus Hidup Pod" href="/id/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Init Container" href="/id/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Preset" href="/id/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Topology Spread Constraints <small>(EN)</small>" href="/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Disrupsi" href="/id/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ephemeral Containers <small>(EN)</small>" href="/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Controllers">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/id/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ReplicationController" href="/id/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Deployment" href="/id/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StatefulSet" href="/id/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DaemonSet" href="/id/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Garbage Collection" href="/id/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pengendali TTL untuk Sumber Daya yang Telah Selesai Digunakan" href="/id/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Job - Dijalankan Hingga Selesai" href="/id/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CronJob" href="/id/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Services, Load Balancing, dan Jaringan">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="EndpointSlices <small>(EN)</small>" href="/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service" href="/id/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Topology <small>(EN)</small>" href="/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DNS untuk Service dan Pod" href="/id/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Menghubungkan aplikasi dengan Service" href="/id/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/id/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kontroler Ingress" href="/id/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="NetworkPolicy" href="/id/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Menambahkan Entry pada /etc/hosts Pod dengan HostAliases" href="/id/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="IPv4/IPv6 dual-stack <small>(EN)</small>" href="/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Storage">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Volume" href="/id/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Persistent Volume" href="/id/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="VolumeSnapshot" href="/id/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pengklonaan Volume CSI" href="/id/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StorageClass" href="/id/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="VolumeSnapshotClass" href="/id/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Penyediaan Volume Dinamis" href="/id/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Limit Volume yang Spesifik terhadap Node" href="/id/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Konfigurasi">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Konfigurasi dan Penerapan Konsep" href="/id/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Bin Packing for Extended Resources <small>(EN)</small>" href="/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Mengatur Sumber Daya Komputasi untuk Container" href="/id/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Overhead Pod" href="/id/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Menetapkan Pod ke Node" href="/id/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Taint dan Toleration" href="/id/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Secrets <small>(EN)</small>" href="/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Mengatur Akses Klaster Menggunakan Berkas kubeconfig" href="/id/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Prioritas dan Pemindahan Pod" href="/id/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduling Framework <small>(EN)</small>" href="/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Keamanan">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Ikhtisar Keamanan _Cloud Native_" href="/id/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Policies">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Resource Quota" href="/id/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Security Policy" href="/id/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Scheduling">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes Scheduler <small>(EN)</small>" href="/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduler Performance Tuning <small>(EN)</small>" href="/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Administrasi Klaster">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Ikhtisar Administrasi Klaster" href="/id/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Sertifikat" href="/id/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Penyedia Layanan Cloud" href="/id/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Mengelola Resource" href="/id/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Jaringan Kluster" href="/id/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Arsitektur Logging" href="/id/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Metrics For The Kubernetes Control Plane <small>(EN)</small>" href="/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Konfigurasi Garbage Collection pada kubelet" href="/id/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Federation" href="/id/docs/concepts/cluster-administration/federation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Berbagai Proxy di Kubernetes" href="/id/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Metrik controller manager" href="/id/docs/concepts/cluster-administration/controller-metrics/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Instalasi Add-ons" href="/id/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Memperluas Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Memperluas Klaster Kubernetes Kamu" href="/id/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Memperluas API Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Memperluas Kubernetes API dengan Lapisan Agregasi" href="/id/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Custom Resource" href="/id/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Ekstensi Komputasi, Penyimpanan, dan Jaringan">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Plugin Jaringan" href="/id/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Plugin Perangkat" href="/id/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Operator pattern <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service Catalog" href="/id/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Poseidon-Firmament - Sebuah Penjadwal Alternatif" href="/id/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/id/docs/concepts/storage/persistent-volumes.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Persistent Volume</h1>
+
+
+
+<p>Dokumen ini menjelaskan kondisi terkini dari <code>PersistentVolumes</code> pada Kubernetes. Disarankan telah memiliki familiaritas dengan <a href="/docs/concepts/storage/volumes/">volume</a>.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#pengenalan">Pengenalan</a></li>
+
+
+
+
+<li><a href="#siklus-hidup-dari-sebuah-volume-dan-klaim">Siklus hidup dari sebuah volume dan klaim</a></li>
+
+
+
+
+<li><a href="#tipe-tipe-persistent-volume">Tipe-tipe <em>Persistent Volume</em></a></li>
+
+
+
+
+<li><a href="#persistent-volume"><em>Persistent Volume</em></a></li>
+
+
+
+
+<li><a href="#persistentvolumeclaims">PersistentVolumeClaims</a></li>
+
+
+
+
+<li><a href="#klaim-sebagai-volume">Klaim sebagai Volume</a></li>
+
+
+
+
+<li><a href="#dukungan-volume-raw-block">Dukungan Volume <em>Raw Block</em></a></li>
+
+
+
+
+<li><a href="#volume-snapshot-dan-dukungan-pemulihan-volume-dari-snapshot"><em>Volume Snapshot</em> dan Dukungan Pemulihan Volume dari <em>Snapshot</em></a></li>
+
+
+
+
+<li><a href="#menulis-konfigurasi-portabel">Menulis Konfigurasi Portabel</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<h2 id="pengenalan">Pengenalan</h2>
+
+<p>Mengelola penyimpanan adalah hal yang berbeda dengan mengelola komputasi. Sub-sistem <code>PersistentVolume</code> (PV) menyediakan API untuk para pengguna dan administrator yang mengabstraksi detail-detail tentang bagaimana penyimpanan disediakan dari bagaimana penyimpanan dikonsumsi. Untuk melakukan ini, kami mengenalkan dua sumber daya API baru:  <code>PersistentVolume</code> (PV) dan <code>PersistentVolumeClaim</code> (PVC).</p>
+
+<p>Sebuah <code>PersistentVolume</code> (PV) adalah suatu bagian dari penyimpanan pada klaster yang telah disediakan oleh seorang administrator. PV merupakan sebuah sumber daya pada klaster sama halnya dengan <em>node</em> yang juga merupakan sumber daya klaster. PV adalah <em>volume plugin</em> seperti <em>Volumes</em>, tetapi memiliki siklus hidup yang independen dari <em>pod</em> individual yang menggunakan PV tersebut. Objek API ini menangkap detail-detail implementasi dari penyimpanan, seperti NFS, iSCSI, atau sistem penyimpanan yang spesifik pada penyedia layanan <em>cloud</em>.</p>
+
+<p>Sebuah <code>PersistentVolumeClaim</code> (PVC) merupakan permintaan penyimpanan oleh pengguna. PVC mirip dengan sebuah <em>pod</em>. <em>Pod</em> mengonsumsi sumber daya <em>node</em> dan PVC mengonsumsi sumber daya PV. <em>Pods</em> dapat meminta taraf-taraf spesifik dari sumber daya (CPU dan Memory).  Klaim dapat meminta ukuran dan mode akses yang spesifik (seperti, dapat dipasang sekali sebagai <em>read/write</em> atau lain kali sebagai <em>read-only</em>).</p>
+
+<p>Meskipun <code>PersistentVolumeClaims</code> mengizinkan pengguna untuk mengkonsumsi sumber daya penyimpanan
+abstrak, pada umumnya para pengguna membutuhkan <code>PersistentVolumes</code> dengan properti yang
+bermacam-macam, seperti performa, untuk mengatasi masalah yang berbeda. Para administrator klaster
+harus dapat menawarkan berbagai macam <code>PersistentVolumes</code> yang berbeda tidak hanya pada ukuran dan
+mode akses, tanpa memaparkan detail-detail bagaimana cara volume tersebut diimplementasikan
+kepada para pengguna. Untuk mengatasi hal ini maka dibutuhkan sumber daya
+<code>StorageClass</code>.</p>
+
+<p>Silakan lihat <a href="/docs/tasks/configure-pod-container/configure-persistent-volume-storage/">panduan mendetail dengan contoh-contoh yang sudah berjalan</a>.</p>
+
+<h2 id="siklus-hidup-dari-sebuah-volume-dan-klaim">Siklus hidup dari sebuah volume dan klaim</h2>
+
+<p>PV adalah sumber daya dalam sebuah klaster. PVC adalah permintaan terhadap sumber daya tersebut dan juga berperan sebagai pemeriksaan klaim dari sumber daya yang diminta. Interaksi antara PV dan PVC mengikuti siklus hidup berikut ini:</p>
+
+<h3 id="penyediaan">Penyediaan</h3>
+
+<p>Ada dua cara untuk menyediakan PV: secara statis atau dinamis.</p>
+
+<h4 id="statis">Statis</h4>
+
+<p>Seorang administrator klaster membuat beberapa PV. PV yang telah dibuat membawa detail-detail dari penyimpanan yang sesungguhnya tersedia untuk digunakan oleh pengguna klaster. PV tersebut ada pada Kubernetes API dan siap untuk digunakan.</p>
+
+<h4 id="dinamis">Dinamis</h4>
+
+<p>Ketika tidak ada PV statis yang dibuat oleh administrator yang sesuai dengan <code>PersistentVolumeClaim</code> (PVC) yang dibuat oleh pengguna, klaster akan mencoba untuk menyediakan volume khusus sesuai permintaan PVC.
+Penyediaan dinamis ini berbasis <code>StorageClass</code>: artinya PVC harus meminta sebuah <em>storage class</em> dan <em>storage class</em> tersebut harus sudah dibuat dan dikonfigurasi oleh administrator agar penyediaan dinamis bisa terjadi. Klaim yang meminta PV dengan <em>storage class</em> <code>&quot;&quot;</code> secara efektif telah menonaktifkan penyediaan dinamis.</p>
+
+<p>Untuk mengaktifkan penyediaan <em>storage</em> dinamis berdasarkan <em>storage class</em>, administrator klaster harus mengaktifkan <a href="/docs/reference/access-authn-authz/admission-controllers/#defaultstorageclass"><em>admission controller</em></a>
+<code>DefaultStorageClass</code> pada API <em>server</em>. Hal ini dapat dilakukan, dengan cara memastikan <code>DefaultStorageClass</code> ada di antara urutan daftar <em>value</em> yang dibatasi koma untuk <em>flag</em> <code>--enable-admission-plugins</code> pada komponen API <em>server</em>. Untuk informasi lebih lanjut mengenai <em>flag</em> perintah pada API <em>server</em>, silakan cek dokumentasi,
+<a href="/docs/admin/kube-apiserver/">kube-apiserver</a>.</p>
+
+<h3 id="pengikatan">Pengikatan</h3>
+
+<p>Seorang pengguna membuat, atau telah membuat (dalam kasus penyediaan dinamis), sebuah <code>PersistentVolumeClaim</code> (PVC) dengan jumlah penyimpanan spesifik yang diminta dan dengan mode akses tertentu. Sebuah <em>control loop</em> pada <em>master</em> akan melihat adanya PVC baru, mencari PV yang cocok (jika memungkinkan), dan mengikat PVC dengan PV tersebut. Jika sebuah PV disediakan secara dinamis untuk sebuah PVC baru, <em>loop</em> tersebut akan selalu mengikat PV tersebut pada PVC yang baru dibuat itu. Jika tidak, pengguna akan selalu mendapatkan setidaknya apa yang dimintanya, tetapi volume tersebut mungkin lebih dari apa yang diminta sebelumnya. Setelah terikat, ikatan <code>PersistentVolumeClaim</code> (PVC) bersifat eksklusif, terlepas dari bagaimana caranya mereka bisa terikat. Sebuah ikatan PVC ke PV merupakan pemetaan satu ke satu.</p>
+
+<p>Klaim akan berada dalam kondisi tidak terikat tanpa kepastian jika tidak ada volume yang cocok. Klaim akan terikat dengan volume yang cocok ketika ada volume yang cocok. Sebagai contoh, sebuah klaster yang sudah menyediakan banyak PV berukuran 50Gi tidak akan cocok dengan PVC yang meminta 100Gi. PVC hanya akan terikat ketika ada PV 100Gi yang ditambahkan ke klaster.</p>
+
+<h3 id="penggunaan">Penggunaan</h3>
+
+<p><em>Pod</em> menggunakan klaim sebagai volume. Klaster menginspeksi klaim untuk menemukan volume yang terikat dengan klaim tersebut dan memasangkan volume tersebut ke pada <em>pod</em>. Untuk volume yang mendukung banyak mode akses, pengguna yang menentukan mode yang diinginkan ketika menggunakan klaim sebagai volume dalam sebuah <em>pod</em>.</p>
+
+<p>Ketika pengguna memiliki klaim dan klaim tersebut telah terikat, PV yang terikat menjadi hak penggunanya selama yang dibutuhkan. Pengguna menjadwalkan <em>pod</em> dan mengakses PV yang sudah diklaim dengan menambahkan <code>persistentVolumeClaim</code> pada blok volume pada <em>Pod</em> miliknya. <a href="#claims-as-volumes">Lihat pranala di bawah untuk detail-detail mengenai sintaks</a>.</p>
+
+<h3 id="object-penyimpanan-dalam-perlindungan-penggunaan">Object Penyimpanan dalam Perlindungan Penggunaan</h3>
+
+<p>Tujuan dari Objek Penyimpanan dalam Perlindungan Penggunan adalah untuk memastikan <em>Persistent Volume Claim</em> (PVC) yang sedang aktif digunakan oleh sebuah <em>pod</em> dan <em>Persistent Volume</em> (PV) yang terikat pada PVC tersebut tidak dihapus dari sistem karena hal ini dapat menyebabkan kehilangan data.</p>
+
+<blockquote class="note">
+  <div><strong>Catatan:</strong> PVC dikatakan aktif digunakan oleh sebuah <em>pod</em> ketika sebuah objek <em>pod</em> ada yang menggunakan PVC tersebut.</div>
+</blockquote>
+
+<p>Jika seorang pengguna menghapus PVC yang sedang aktif digunakan oleh sebuah <em>pod</em>, PVC tersebut tidak akan langsung dihapus. Penghapusan PVC akan ditunda sampai PVC tidak lagi aktif digunakan oleh <em>pod</em> manapun, dan juga ketika admin menghapus sebuah PV yang terikat dengan sebuah PVC, PV tersebut tidak akan langsung dihapus. Penghapusan PV akan ditunda sampai PV tidak lagi terikat dengan sebuah PVC.</p>
+
+<p>Kamu dapat melihat PVC yang dilindungi ketika status PVC berisi <code>Terminating</code> dan daftar <code>Finalizers</code> meliputi <code>kubernetes.io/pvc-protection</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe pvc hostpath
+Name:          hostpath
+Namespace:     default
+StorageClass:  example-hostpath
+Status:        Terminating
+Volume:
+Labels:        &lt;none&gt;
+Annotations:   volume.beta.kubernetes.io/storage-class<span style="color:#666">=</span>example-hostpath
+               volume.beta.kubernetes.io/storage-provisioner<span style="color:#666">=</span>example.com/hostpath
+Finalizers:    <span style="color:#666">[</span>kubernetes.io/pvc-protection<span style="color:#666">]</span>
+...</code></pre></div>
+<p>Kamu dapat melihat sebuah PV dilindungi ketika status PV berisi <code>Terminating</code> dan daftar <code>Finalizers</code> juga meliputi <code>kubernetes.io/pv-protection</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe pv task-pv-volume
+Name:            task-pv-volume
+Labels:          <span style="color:#b8860b">type</span><span style="color:#666">=</span><span style="color:#a2f">local</span>
+Annotations:     &lt;none&gt;
+Finalizers:      <span style="color:#666">[</span>kubernetes.io/pv-protection<span style="color:#666">]</span>
+StorageClass:    standard
+Status:          Available
+Claim:
+Reclaim Policy:  Delete
+Access Modes:    RWO
+Capacity:        1Gi
+Message:
+Source:
+    Type:          HostPath <span style="color:#666">(</span>bare host directory volume<span style="color:#666">)</span>
+    Path:          /tmp/data
+    HostPathType:
+Events:            &lt;none&gt;</code></pre></div>
+<h3 id="melakukan-reklaim">Melakukan Reklaim</h3>
+
+<p>Ketika seorang pengguna telah selesai dengan volumenya, ia dapat menghapus objek PVC dari API yang memungkinkan untuk reklamasi dari sumber daya tersebut. Kebijakan reklaim dari sebuah <code>PersistentVolume</code> (PV) menyatakan apa yang dilakukan klaster setelah volume dilepaskan dari klaimnya. Saat ini, volume dapat dipertahankan (<em>Retained</em>), didaur ulang (<em>Recycled</em>), atau dihapus (<em>Deleted</em>).</p>
+
+<h4 id="retain"><em>Retain</em></h4>
+
+<p><code>Retain</code> merupakan kebijakan reklaim yang mengizinkan reklamasi manual dari sebuah sumber daya. Ketika <code>PersistentVolumeClaim</code> (PVC) dihapus, <code>PersistentVolume</code> (PV) masih akan tetap ada dan volume tersebut dianggap &ldquo;terlepas&rdquo; . Tetapi PV tersebut belum tersedia untuk klaim lainnya karena data milik pengklaim sebelumnya masih terdapat pada volume. Seorang administrator dapat mereklaim volume secara manual melalui beberapa langkah.</p>
+
+<ol>
+<li>Menghapus <code>PersistentVolume</code> (PV). Aset <em>storage</em> yang terasosiasi dengan infrastruktur eksternal (seperti AWS EBS, GCE PD, Azure Disk, atau Cinder Volume) akan tetap ada setelah PV dihapus.</li>
+<li>Secara manual membersihkan data pada aset <em>storage</em> terkait.</li>
+<li>Secara manual menghapus aset <em>storage</em>, atau jika kamu ingin menggunakan aset <em>storage</em> yang sama, buatlah sebuah <code>PersistentVolume</code> baru dengan definisi aset <em>storage</em> tersebut.</li>
+</ol>
+
+<h4 id="delete"><em>Delete</em></h4>
+
+<p>Untuk <em>volume plugin</em> yang mendukung kebijakan reklaim <code>Delete</code>, penghapusan akan menghilangkan kedua objek dari Kubernetes, <code>PersistentVolume</code> (PV) dan juga aset <em>storage</em> yang terasosiasi pada infrastruktur eksternal seperti, AWS EBS, GCE PD, Azure Disk, atau Cinder Volume. Volume yang disediakan secara dinamis mewarisi <a href="#reclaim-policy">kebijakan reklaim dari <code>StorageClass</code> miliknya</a>, yang secara bawaan adalah <code>Delete</code>. Administrator harus mengkonfigurasi <code>StorageClass</code> sesuai ekspektasi pengguna, jika tidak maka PV tersebut harus diubah atau ditambal setelah dibuat nanti. Lihat <a href="/docs/tasks/administer-cluster/change-pv-reclaim-policy/">Mengganti Kebijakan Reklaim pada PersistentVolume</a>.</p>
+
+<h4 id="recycle"><em>Recycle</em></h4>
+
+<blockquote class="warning">
+  <div><strong>Peringatan:</strong> Kebijakan reklaim <code>Recycle</code> sudah ditinggalkan. Sebagai gantinya, pendekatan yang direkomendasikan adalah menggunakan penyediaan dinamis.</div>
+</blockquote>
+
+<p>Jika didukung oleh <em>plugin volume</em> yang berada di baliknya, kebijakan reklaim <code>Recycle</code> melakukan penghapusan dasar (<code>rm -rf /thevolume/*</code>) pada volume dan membuatnya kembali tersedia untuk klaim baru.</p>
+
+<p>Namun, seorang administrator dapat mengkonfigurasi templat <em>recycler pod</em> kustom menggunakan argumen baris perintah <em>controller manager</em> Kubernetes sebagaimana dijelaskan <a href="/docs/admin/kube-controller-manager/">di sini</a>. Templat <em>reycler pod</em> kustom harus memiliki spesifikasi <code>volumes</code>, seperti yang ditunjukkan pada contoh di bawah:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>pv-recycler<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restartPolicy:<span style="color:#bbb"> </span>Never<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>vol<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>path:<span style="color:#bbb"> </span>/any/path/it/will/be/replaced<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>pv-recycler<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span><span style="color:#b44">&#34;k8s.gcr.io/busybox&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>command:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;/bin/sh&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;-c&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;test -e /scrub &amp;&amp; rm -rf /scrub/..?* /scrub/.[!.]* /scrub/*  &amp;&amp; test -z \&#34;$(ls -A /scrub)\&#34; || exit 1&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>vol<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/scrub</code></pre></div>
+<p>Namun, alamat yang dispesifikasikan pada templat <em>recycler pod</em> kustom pada bagian <code>volumes</code> diganti dengan alamat pada volume yang akan didaur ulang.</p>
+
+<h3 id="memperluas-persistent-volumes-claim">Memperluas <em>Persistent Volumes Claim</em></h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.11</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+Fitur ini berada dalam tingkatan beta, yang artinya:</p>
+
+<ul>
+<li>Nama dari versi ini mengandung string <code>beta</code> (misalnya <code>v2beta3</code>).</li>
+<li>Kode yang ada sudah melalui mekanisme <em>testing</em> yang cukup baik. Menggunakan fitur ini dianggap cukup aman. Fitur ini diekspos secara <em>default</em>.</li>
+<li>Ketersediaan untuk fitur secara menyeluruh tidak akan dihapus, meskipun begitu detail untuk suatu fitur bisa saja berubah.</li>
+<li>Skema dan/atau semantik dari suatu obyek mungkin saja berubah tanpa memerhatikan kompatibilitas pada rilis <em>beta</em> selanjutnya.
+Jika hal ini terjadi, kami akan menyediakan suatu instruksi untuk melakukan migrasi di versi rilis selanjutnya. Hal ini bisa saja terdiri dari penghapusan, pengubahan, ataupun pembuatan
+obyek API. Proses pengubahan mungkin saja membutuhkan pemikiran yang matang. Dampak proses ini bisa saja menyebabkan <em>downtime</em> aplikasi yang bergantung pada fitur ini.</li>
+<li><strong>Kami mohon untuk mencoba versi <em>beta</em> yang kami sediakan dan berikan masukan terhadap fitur yang kamu pakai! Apabila fitur tersebut sudah tidak lagi berada di dalam tingkatan <em>beta</em> perubahan yang kami buat terhadap fitur tersebut bisa jadi tidak lagi dapat digunakan</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>Dukungan untuk memperluas PersistentVolumeClaim (PVC) sekarang sudah diaktifkan sejak awal. Kamu dapat memperluas
+tipe-tipe volume berikut:</p>
+
+<ul>
+<li>gcePersistentDisk</li>
+<li>awsElasticBlockStore</li>
+<li>Cinder</li>
+<li>glusterfs</li>
+<li>rbd</li>
+<li>Azure File</li>
+<li>Azure Disk</li>
+<li>Portworx</li>
+<li>FlexVolumes</li>
+<li>CSI</li>
+</ul>
+
+<p>Kamu hanya dapat memperluas sebuah PVC jika kolom <code>allowVolumeExpansion</code> dipasang sebagai benar pada <em>storage class</em> miliknya.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>gluster-vol-default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/glusterfs<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resturl:<span style="color:#bbb"> </span><span style="color:#b44">&#34;http://192.168.10.100:8080&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restuser:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>secretNamespace:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>secretName:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>allowVolumeExpansion:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span></code></pre></div>
+<p>Untuk meminta volume yang lebih besar pada sebuah PVC, ubah objek PVC dan spesifikasikan ukuran yang lebih
+besar. Hal ini akan memicu perluasan dari volume yang berada di balik <code>PersistentVolume</code> (PV). Sebuah
+<code>PersistentVolume</code> (PV) baru tidak akan dibuat untuk memenuhi klaim tersebut. Sebaliknya, volume yang sudah ada akan diatur ulang ukurannya.</p>
+
+<h4 id="perluasan-volume-csi">Perluasan Volume CSI</h4>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.14</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>alpha</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="alpha">
+Fitur ini berada di dalam tingkatan <em>Alpha</em>, yang artinya:</p>
+
+<ul>
+<li>Nama dari versi ini mengandung string <code>alpha</code> (misalnya, <code>v1alpha1</code>).</li>
+<li>Bisa jadi terdapat <em>bug</em>. Secara <em>default</em> fitur ini tidak diekspos.</li>
+<li>Ketersediaan untuk fitur yang ada bisa saja dihilangkan pada suatu waktu tanpa pemberitahuan sebelumnya.</li>
+<li>API yang ada mungkin saja berubah tanpa memperhatikan kompatibilitas dengan versi perangkat lunak sebelumnya.</li>
+<li>Hanya direkomendasikan untuk klaster yang digunakan untuk tujuan <em>testing</em>.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>Perluasan volume CSI mengharuskan kamu untuk mengaktifkan gerbang fitur <code>ExpandCSIVolumes</code> dan juga membutuhkan <em>driver</em> CSI yang spesifik untuk mendukung perluasan volume. Silakan merujuk pada dokumentasi <em>driver</em> spesifik CSI untuk informasi lebih lanjut.</p>
+
+<h4 id="mengubah-ukuran-sebuah-volume-yang-memiliki-file-system">Mengubah ukuran sebuah volume yang memiliki <em>file system</em></h4>
+
+<p>Kamu hanya dapat mengubah ukuran volume yang memiliki <em>file system</em> jika <em>file system</em> tersebut adalah XFS, Ext3, atau Ext4.</p>
+
+<p>Ketika sebuah volume memiliki <em>file system</em>, <em>file system</em> tersebut hanya akan diubah ukurannya ketika sebuah <em>pod</em> baru dinyalakan menggunakan
+<code>PersistentVolumeClaim</code> (PVC) dalam mode <em>ReadWrite</em>. Maka dari itu, jika sebuah <em>pod</em> atau <em>deployment</em> menggunakan sebuah volume dan
+kamu ingin memperluasnya, kamu harus menghapus atau membuat ulang <em>pod</em> tersebut setelah volume selesai diperluas oleh penyedia <em>cloud</em> dalam <em>controller-manager</em>. Kamu dapat melihat status dari operasi pengubahan ukuran dengan menjalankan perintah <code>kubectl describe pvc</code>:</p>
+
+<pre><code>kubectl describe pvc &lt;pvc_name&gt;
+</code></pre>
+
+<p>Jika <code>PersistentVolumeClaim</code> (PVC) memiliki status <code>FileSystemResizePending</code>, maka berarti aman untuk membuat ulang <em>pod</em> menggunakan PersistentVolumeClaim (PVC) tersebut.</p>
+
+<p>FlexVolumes mengizinkan pengubahan ukuran jika <em>driver</em> diatur dengan kapabilitas <code>RequiresFSResize</code> menjadi &ldquo;<em>true</em>&rdquo;.
+FlexVolume dapat diubah ukurannya pada saat <em>pod</em> mengalami <em>restart</em>.</p>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.11</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>alpha</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="alpha">
+Fitur ini berada di dalam tingkatan <em>Alpha</em>, yang artinya:</p>
+
+<ul>
+<li>Nama dari versi ini mengandung string <code>alpha</code> (misalnya, <code>v1alpha1</code>).</li>
+<li>Bisa jadi terdapat <em>bug</em>. Secara <em>default</em> fitur ini tidak diekspos.</li>
+<li>Ketersediaan untuk fitur yang ada bisa saja dihilangkan pada suatu waktu tanpa pemberitahuan sebelumnya.</li>
+<li>API yang ada mungkin saja berubah tanpa memperhatikan kompatibilitas dengan versi perangkat lunak sebelumnya.</li>
+<li>Hanya direkomendasikan untuk klaster yang digunakan untuk tujuan <em>testing</em>.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<h4 id="mengubah-ukuran-persistentvolumeclaim-pvc-yang-sedang-digunakan">Mengubah ukuran PersistentVolumeClaim (PVC) yang sedang digunakan</h4>
+
+<p>Memperluas PVC yang sedang digunakan merupakan fitur alfa. Untuk menggunakannya, aktifkan gerbang fitur <code>ExpandInUsePersistentVolumes</code>.
+Pada kasus ini, kamu tidak perlu menghapus dan membuat ulang sebuah <em>Pod</em> atau <em>deployment</em> yang menggunakan PVC yang telah ada.
+PVC manapun yang sedang digunakan secara otomatis menjadi tersedia untuk <em>pod</em> yang menggunakannya segera setelah <em>file system</em> miliknya diperluas.
+Fitur ini tidak memiliki efek pada PVC yang tidak sedang digunakan oleh <em>Pod</em> atau <em>deployment</em>. Kamu harus membuat sebuah <em>Pod</em> yang
+menggunakan PVC sebelum perluasan dapat selesai dilakukan.</p>
+
+<p>Memperluas PVC yang sedang digunakan sudah ditambahkan pada rilis 1.13. Untuk mengaktifkan fitur ini gunakan <code>ExpandInUsePersistentVolumes</code> dan gerbang fitur <code>ExpandPersistentVolumes</code>.  Gerbang fitur <code>ExpandPersistentVolumes</code> sudah diaktifkan sejak awal. Jika <code>ExpandInUsePersistentVolumes</code> sudah terpasang, FlexVolume dapat diubah ukurannya secara langsung tanpa perlu melakukan <em>restart</em> pada <em>pod</em>.</p>
+
+<blockquote class="note">
+  <div><strong>Catatan:</strong> Pengubahan ukuran FlexVolume hanya mungkin dilakukan ketika <em>driver</em> yang menjalankannya mendukung pengubahan ukuran.</div>
+</blockquote>
+
+<blockquote class="note">
+  <div><strong>Catatan:</strong> Memperluas volume EBS merupakan operasi yang memakan waktu. Terlebih lagi, ada kuota per volume untuk satu kali modifikasi setiap 6 jam.</div>
+</blockquote>
+
+<h2 id="tipe-tipe-persistent-volume">Tipe-tipe <em>Persistent Volume</em></h2>
+
+<p>Tipe-tipe <code>PersistentVolume</code> (PV) diimplementasikan sebagai <em>plugin</em>.  Kubernetes saat ini mendukung <em>plugin</em> berikut:</p>
+
+<ul>
+<li>GCEPersistentDisk</li>
+<li>AWSElasticBlockStore</li>
+<li>AzureFile</li>
+<li>AzureDisk</li>
+<li>FC (Fibre Channel)</li>
+<li>FlexVolume</li>
+<li>Flocker</li>
+<li>NFS</li>
+<li>iSCSI</li>
+<li>RBD (Ceph Block Device)</li>
+<li>CephFS</li>
+<li>Cinder (OpenStack block storage)</li>
+<li>Glusterfs</li>
+<li>VsphereVolume</li>
+<li>Quobyte Volumes</li>
+<li>HostPath (Hanya untuk pengujian <em>single node</em> &ndash; penyimpanan lokal tidak didukung dan TIDAK AKAN BEKERJA pada klaster <em>multi-node</em>)</li>
+<li>Portworx Volumes</li>
+<li>ScaleIO Volumes</li>
+<li>StorageOS</li>
+</ul>
+
+<h2 id="persistent-volume"><em>Persistent Volume</em></h2>
+
+<p>Setiap PV memiliki sebuah <em>spec</em> dan status, yang merupakan spesifikasi dan status dari volume tersebut.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolume<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>pv0003<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>capacity:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>storage:<span style="color:#bbb"> </span>5Gi<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumeMode:<span style="color:#bbb"> </span>Filesystem<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>persistentVolumeReclaimPolicy:<span style="color:#bbb"> </span>Recycle<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageClassName:<span style="color:#bbb"> </span>slow<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>mountOptions:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>hard<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>nfsvers=<span style="color:#666">4.1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>nfs:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>path:<span style="color:#bbb"> </span>/tmp<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>server:<span style="color:#bbb"> </span><span style="color:#666">172.17.0.2</span></code></pre></div>
+<h3 id="kapasitas">Kapasitas</h3>
+
+<p>Secara umum, sebuah PV akan memiliki kapasitas <em>storage</em> tertentu.  Hal ini ditentukan menggunakan atribut <code>capacity</code> pada PV.  Lihat <a href="https://git.k8s.io/community/contributors/design-proposals/scheduling/resources.md" target="_blank">Model Sumber Daya</a> Kubernetes untuk memahami satuan yang diharapkan pada atribut <code>capacity</code>.</p>
+
+<p>Saat ini, ukuran <em>storage</em> merupakan satu-satunya sumber daya yang dapat ditentukan atau diminta. Atribut-atribut lainnya di masa depan dapat mencakup IOPS, <em>throughput</em>, dsb.</p>
+
+<h3 id="mode-volume">Mode Volume</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+Fitur ini berada dalam tingkatan beta, yang artinya:</p>
+
+<ul>
+<li>Nama dari versi ini mengandung string <code>beta</code> (misalnya <code>v2beta3</code>).</li>
+<li>Kode yang ada sudah melalui mekanisme <em>testing</em> yang cukup baik. Menggunakan fitur ini dianggap cukup aman. Fitur ini diekspos secara <em>default</em>.</li>
+<li>Ketersediaan untuk fitur secara menyeluruh tidak akan dihapus, meskipun begitu detail untuk suatu fitur bisa saja berubah.</li>
+<li>Skema dan/atau semantik dari suatu obyek mungkin saja berubah tanpa memerhatikan kompatibilitas pada rilis <em>beta</em> selanjutnya.
+Jika hal ini terjadi, kami akan menyediakan suatu instruksi untuk melakukan migrasi di versi rilis selanjutnya. Hal ini bisa saja terdiri dari penghapusan, pengubahan, ataupun pembuatan
+obyek API. Proses pengubahan mungkin saja membutuhkan pemikiran yang matang. Dampak proses ini bisa saja menyebabkan <em>downtime</em> aplikasi yang bergantung pada fitur ini.</li>
+<li><strong>Kami mohon untuk mencoba versi <em>beta</em> yang kami sediakan dan berikan masukan terhadap fitur yang kamu pakai! Apabila fitur tersebut sudah tidak lagi berada di dalam tingkatan <em>beta</em> perubahan yang kami buat terhadap fitur tersebut bisa jadi tidak lagi dapat digunakan</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>Sebelum Kubernetes 1.9, semua <em>volume plugin</em> akan membuat sebuah <em>filesystem</em> pada PersistentVolume (PV).
+Sekarang, kamu dapat menentukan nilai dari <code>volumeMode</code> menjadi <code>block</code> untuk menggunakan perangkat <em>raw block</em>, atau <code>filesystem</code>
+untuk menggunakan sebuah <em>filesystem</em>. <code>filesystem</code> menjadi standar yang digunakan jika nilainya dihilangkan. Hal ini merupakan parameter API
+opsional.</p>
+
+<h3 id="mode-akses">Mode Akses</h3>
+
+<p>Sebuah <code>PersistentVolume</code> (PV) dapat dipasangkan pada sebuah <em>host</em> dengan cara apapun yang didukung oleh penyedia sumber daya.  Seperti ditunjukkan pada tabel di bawah, para penyedia akan memiliki kapabilitas yang berbeda-beda dan setiap mode akses PV akan ditentukan menjadi mode-mode spesifik yang didukung oleh tiap volume tersebut. Sebagai contoh, NFS dapat mendukung banyak klien <em>read/write</em>, tetapi sebuah NFS PV tertentu mungkin diekspor pada server sebagai <em>read-only</em>. Setiap PV memilik seperangkat mode aksesnya sendiri yang menjelaskan kapabilitas dari PV tersebut.</p>
+
+<p>Beberapa mode akses tersebut antara lain:</p>
+
+<ul>
+<li>ReadWriteOnce &ndash; volume dapat dipasang sebagai <em>read-write</em> oleh satu <em>node</em></li>
+<li>ReadOnlyMany &ndash; volume dapat dipasang sebagai <em>read-only</em> oleh banyak <em>node</em></li>
+<li>ReadWriteMany &ndash; volume dapat dipasang sebagai <em>read-write</em> oleh banyak <em>node</em></li>
+</ul>
+
+<p>Pada CLI, mode-mode akses tersebut disingkat menjadi:</p>
+
+<ul>
+<li>RWO - ReadWriteOnce</li>
+<li>ROX - ReadOnlyMany</li>
+<li>RWX - ReadWriteMany</li>
+</ul>
+
+<blockquote>
+<p><strong>Penting!</strong> Sebuah volume hanya dapat dipasang menggunakan satu mode akses dalam satu waktu, meskipun volume tersebut mendukung banyak mode.  Sebagai contoh, sebuah GCEPersistentDisk dapat dipasangkan sebagai ReadWriteOnce oleh satu <em>node</em> atau ReadOnlyMany oleh banyak node, tetapi tidak dalam waktu yang bersamaan.</p>
+</blockquote>
+
+<table>
+<thead>
+<tr>
+<th align="left">Volume Plugin</th>
+<th align="center">ReadWriteOnce</th>
+<th align="center">ReadOnlyMany</th>
+<th align="center">ReadWriteMany</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="left">AWSElasticBlockStore</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">AzureFile</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+</tr>
+
+<tr>
+<td align="left">AzureDisk</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">CephFS</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+</tr>
+
+<tr>
+<td align="left">Cinder</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">FC</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">FlexVolume</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+<td align="center">depends on the driver</td>
+</tr>
+
+<tr>
+<td align="left">Flocker</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">GCEPersistentDisk</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">Glusterfs</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+</tr>
+
+<tr>
+<td align="left">HostPath</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">iSCSI</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">Quobyte</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+</tr>
+
+<tr>
+<td align="left">NFS</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+</tr>
+
+<tr>
+<td align="left">RBD</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">VsphereVolume</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+<td align="center">- (works when pods are collocated)</td>
+</tr>
+
+<tr>
+<td align="left">PortworxVolume</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+<td align="center">&#x2713;</td>
+</tr>
+
+<tr>
+<td align="left">ScaleIO</td>
+<td align="center">&#x2713;</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">StorageOS</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="kelas">Kelas</h3>
+
+<p>Sebuah PV bisa memiliki sebuah kelas, yang dispesifikasi dalam pengaturan atribut
+<code>storageClassName</code> menjadi nama
+<a href="/docs/concepts/storage/storage-classes/">StorageClass</a>.
+Sebuah PV dari kelas tertentu hanya dapat terikat dengan PVC yang meminta
+kelas tersebut. Sebuah PV tanpa <code>storageClassName</code> tidak memiliki kelas dan hanya dapat terikat
+dengan PVC yang tidak meminta kelas tertentu.</p>
+
+<p>Dahulu, anotasi <code>volume.beta.kubernetes.io/storage-class</code> digunakan sebagai ganti
+atribut <code>storageClassName</code>. Anotasi ini masih dapat bekerja, namun
+akan dihilangkan sepenuhnya pada rilis Kubernetes mendatang.</p>
+
+<h3 id="kebijakan-reklaim">Kebijakan Reklaim</h3>
+
+<p>Kebijakan-kebijakan reklaim saat ini antara lain:</p>
+
+<ul>
+<li>Retain &ndash; reklamasi manual</li>
+<li>Recycle &ndash; penghapusan dasar (<code>rm -rf /thevolume/*</code>)</li>
+<li>Delete &ndash; aset <em>storage</em> terasosiasi seperti AWS EBS, GCE PD, Azure Disk, atau OpenStack Cinder volume akan dihapus</li>
+</ul>
+
+<p>Saat ini, hanya NFS dan HostPath yang mendukung daur ulang. AWS EBS, GCE PD, Azure Disk, dan Cinder Volume mendukung penghapusan.</p>
+
+<h3 id="opsi-pemasangan">Opsi Pemasangan</h3>
+
+<p>Seorang administrator Kubernetes dapat menspesifikasi opsi pemasangan tambahan untuk ketika sebuah <em>Persistent Volume</em> dipasangkan pada sebuah <em>node</em>.</p>
+
+<blockquote class="note">
+  <div><strong>Catatan:</strong> Tidak semua tipe <em>Persistent Volume</em> mendukung opsi pemasanagan.</div>
+</blockquote>
+
+<p>Tipe-tipe volume yang mendukung opsi pemasangan antara lain:</p>
+
+<ul>
+<li>AWSElasticBlockStore</li>
+<li>AzureDisk</li>
+<li>AzureFile</li>
+<li>CephFS</li>
+<li>Cinder (OpenStack block storage)</li>
+<li>GCEPersistentDisk</li>
+<li>Glusterfs</li>
+<li>NFS</li>
+<li>Quobyte Volumes</li>
+<li>RBD (Ceph Block Device)</li>
+<li>StorageOS</li>
+<li>VsphereVolume</li>
+<li>iSCSI</li>
+</ul>
+
+<p>Opsi pemasangan tidak divalidasi, sehingga pemasangan akan gagal jika salah satunya tidak valid.</p>
+
+<p>Dahulu, anotasi <code>volume.beta.kubernetes.io/mount-options</code> digunakan sebagai ganti
+atribut <code>mountOptions</code>. Anotasi ini masih dapat bekerja, namun
+akan dihilangkan sepenuhnya pada rilis Kubernetes mendatang.</p>
+
+<h3 id="afinitas-node">Afinitas Node</h3>
+
+<blockquote class="note">
+  <div><strong>Catatan:</strong> Untuk kebanyakan tipe volume, kamu tidak perlu memasang kolom ini. Kolom ini secara otomatis terisi untuk tipe blok volume <a href="/docs/concepts/storage/volumes/#awselasticblockstore">AWS EBS</a>, <a href="/docs/concepts/storage/volumes/#gcepersistentdisk">GCE PD</a> dan <a href="/docs/concepts/storage/volumes/#azuredisk">Azure Disk</a>. Kamu harus mengaturnya secara eksplisit untuk volume <a href="/docs/concepts/storage/volumes/#local">lokal</a>.</div>
+</blockquote>
+
+<p>Sebuah PV dapat menspesifikasi <a href="/docs/reference/generated/kubernetes-api/v1.17/#volumenodeaffinity-v1-core">afinitas node</a> untuk mendefinisikan batasan yang membatasi <em>node</em> mana saja yang dapat mengakses volume tersebut. <em>Pod</em> yang menggunakan sebuah PV hanya akan bisa dijadwalkan ke <em>node</em> yang dipilih oleh afinitas <em>node</em>.</p>
+
+<h3 id="fase">Fase</h3>
+
+<p>Sebuah volume akan berada dalam salah satu fase di bawah ini:</p>
+
+<ul>
+<li>Available &ndash; sumber daya bebas yang belum terikat dengan sebuah klaim</li>
+<li>Bound &ndash; volume sudah terikat dengan sebuah klaim</li>
+<li>Released &ndash; klaim sudah dihapus, tetapi sumber daya masih belum direklaim oleh klaster</li>
+<li>Failed &ndash; volume gagal menjalankan reklamasi otomatis</li>
+</ul>
+
+<p>CLI akan menunjukkan nama dari PVC yang terikat pada PV.</p>
+
+<h2 id="persistentvolumeclaims">PersistentVolumeClaims</h2>
+
+<p>Setiap PVC memiliki <em>spec</em> dan status, yang merupakan spesifikasi dan status dari klaim.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolumeClaim<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>myclaim<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumeMode:<span style="color:#bbb"> </span>Filesystem<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>requests:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>storage:<span style="color:#bbb"> </span>8Gi<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageClassName:<span style="color:#bbb"> </span>slow<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>release:<span style="color:#bbb"> </span><span style="color:#b44">&#34;stable&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>{key:<span style="color:#bbb"> </span>environment,<span style="color:#bbb"> </span>operator:<span style="color:#bbb"> </span>In,<span style="color:#bbb"> </span>values:<span style="color:#bbb"> </span>[dev]}</code></pre></div>
+<h3 id="mode-akses-1">Mode Akses</h3>
+
+<p>Klaim menggunakan penulisan yang sama dengan volume ketika meminta <em>storage</em> dengan mode akses tertentu.</p>
+
+<h3 id="mode-volume-1">Mode Volume</h3>
+
+<p>Klaim menggunakan penulisan yang sama dengan volume untuk mengindikasikan konsumsi dari volume sebagai <em>filesystem</em> ataupun perangkat <em>block</em>.</p>
+
+<h3 id="sumber-daya">Sumber daya</h3>
+
+<p>Klaim, seperti <em>pod</em>, bisa meminta sumber daya dengan jumlah tertentu.  Pada kasus ini, permintaan untuk <em>storage</em>.  <a href="https://git.k8s.io/community/contributors/design-proposals/scheduling/resources.md" target="_blank">Model sumber daya</a> yang sama berlaku untuk baik volume maupun klaim.</p>
+
+<h3 id="selector"><em>Selector</em></h3>
+
+<p>Klaim dapat menspesifikasi <a href="/docs/concepts/overview/working-with-objects/labels/#label-selectors"><em>label selector</em></a> untuk memilih serangkaian volume lebih jauh. Hanya volume yang cocok labelnya dengan <em>selector</em> yang dapat terikat dengan klaim. <em>Selector</em> dapat terdiri dari dua kolom:</p>
+
+<ul>
+<li><code>matchLabels</code> - volume harus memiliki label dengan nilai ini</li>
+<li><code>matchExpressions</code> - daftar dari persyaratan yang dibuat dengan menentukan kunci, daftar nilai, dan operator yang menghubungkan kunci dengan nilai. Operator yang valid meliputi In, NotIn, Exists, dan DoesNotExist.</li>
+</ul>
+
+<p>Semua persyaratan tersebut, dari <code>matchLabels</code> dan <code>matchExpressions</code> akan dilakukan operasi AND bersama – semuanya harus dipenuhi untuk mendapatkan kecocokan.</p>
+
+<h3 id="kelas-1">Kelas</h3>
+
+<p>Sebuah klaim dapat meminta kelas tertentu dengan menspesifikasi nama dari
+<a href="/docs/concepts/storage/storage-classes/">StorageClass</a>
+menggunakan atribut <code>storageClassName</code>.
+Hanya PV dari kelas yang diminta, yang memiliki <code>storageClassName</code> yang sama dengan PVC, yang dapat
+terikat dengan PVC.</p>
+
+<p>PVC tidak harus meminta sebuah kelas. Sebuah PVC dengan <code>storageClassName</code> miliknya bernilai
+<code>&quot;&quot;</code> akan selalu diinterpretasikan sebagai meminta PV tanpa kelas, jadi PVC
+hanya bisa terikat ke PV tanpa kelas (tanpa anotasi atau bernilai
+<code>&quot;&quot;</code>). Sebuah PVC tanpa <code>storageClassName</code> tidaklah sama dan diperlakukan berbeda
+oleh klaster tergantung apakah
+<a href="/docs/reference/access-authn-authz/admission-controllers/#defaultstorageclass"><em>admission plugin</em> <code>DefaultStorageClass</code></a>
+dinyalakan.</p>
+
+<ul>
+<li>Jika <em>admission plugin</em> dinyalakan, administrator bisa menspesifikasi
+<code>StorageClass</code> standar. Seluruh PVC yang tidak memiliki <code>storageClassName</code> dapat terikat hanya ke
+PVs standar. Menspesifikasikan <code>StorageClass</code> standar dapat dilakukan dengan mengatur
+anotasi <code>storageclass.kubernetes.io/is-default-class</code> menjadi &ldquo;<em>true</em>&rdquo; pada
+sebuah objek <code>StorageClass</code>. Jika administrator tidak menspesifikasikan standar apapun,
+klaster menanggapi pembuatan PVC sekan-akan <em>admission plugin</em> dimatikan. Jika
+ada lebih dari satu setelan standar dispesifikasikan, <em>admission plugin</em> melarang pembuatan seluruh
+PVC.</li>
+<li>Jika <em>admission plugin</em> dimatikan, tidak ada pilihan menggunakan
+<code>StorageClass</code> standar. Semua PVC yang tidak memiliki <code>storageClassName</code> hanya dapat diikat ke PV yang
+tidak memiliki kelas. Pada kasus ini, PVC yang tidak memiliki <code>storageClassName</code> diperlakukan
+sama seperti PVC yang memiliki <code>storageClassName</code> bernilai <code>&quot;&quot;</code>.</li>
+</ul>
+
+<p>Tergantung metode instalasi, sebuah StorageClass dari setelan standar dapat dibuat
+ke klaster Kubernetes oleh <em>addon manager</em> pada saat instalasi.</p>
+
+<p>Ketika sebuah PVC menspesifikasi sebuah <code>selector</code> selain meminta <code>StorageClass</code>,
+kebutuhan tersebut akan digabungkan dengan operasi AND bersama: hanya PV dari kelas yang diminta dan dengan
+label yang diminta yang dapat terikat ke PVC.</p>
+
+<blockquote class="note">
+  <div><strong>Catatan:</strong> Saat ini, sebuah PVC dengan <code>selector</code> yang tak kosong tidak dapat memiliki PV yang disediakan secara dinamis untuknya.</div>
+</blockquote>
+
+<p>Dahulu, anotasi <code>volume.beta.kubernetes.io/storage-class</code> digunakan sebagai ganti
+atribut <code>storageClassName</code>. Anotasi ini masih dapat bekerja, namun
+akan dihilangkan sepenuhnya pada rilis Kubernetes mendatang.</p>
+
+<h2 id="klaim-sebagai-volume">Klaim sebagai Volume</h2>
+
+<p><em>Pod</em> mengakses <em>storage</em> dengan menggunakan klaim sebagai volume.  Klaim harus berada pada <em>namespace</em> yang sama dengan <em>pod</em> yang menggunakan klaim tersebut.  Klaster menemukan klaim pada <em>namespace</em> yang sama dengan <em>pod</em> dan menggunakannya untuk mendapatkan <code>PersistentVolume</code> (PV) yang ada di baliknya.  Volume tersebut kemudian dipasangkan ke <em>host</em> dan lalu ke <em>pod</em>.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>mypod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>myfrontend<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span><span style="color:#b44">&#34;/var/www/html&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>mypd<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>mypd<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>persistentVolumeClaim:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>claimName:<span style="color:#bbb"> </span>myclaim</code></pre></div>
+<h3 id="catatan-mengenai-namespace">Catatan Mengenai <em>Namespace</em></h3>
+
+<p>Ikatan <code>PersistentVolumes</code> bersifat eksklusif, dan karena <code>PersistentVolumeClaims</code> merupakan objek yang berada pada <em>namespace</em>, pemasangan klaim dengan &ldquo;banyak&rdquo; mode (<code>ROX</code>, <code>RWX</code>) hanya dimungkinkan jika berada dalam satu <em>namespace</em> yang sama.</p>
+
+<h2 id="dukungan-volume-raw-block">Dukungan Volume <em>Raw Block</em></h2>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+Fitur ini berada dalam tingkatan beta, yang artinya:</p>
+
+<ul>
+<li>Nama dari versi ini mengandung string <code>beta</code> (misalnya <code>v2beta3</code>).</li>
+<li>Kode yang ada sudah melalui mekanisme <em>testing</em> yang cukup baik. Menggunakan fitur ini dianggap cukup aman. Fitur ini diekspos secara <em>default</em>.</li>
+<li>Ketersediaan untuk fitur secara menyeluruh tidak akan dihapus, meskipun begitu detail untuk suatu fitur bisa saja berubah.</li>
+<li>Skema dan/atau semantik dari suatu obyek mungkin saja berubah tanpa memerhatikan kompatibilitas pada rilis <em>beta</em> selanjutnya.
+Jika hal ini terjadi, kami akan menyediakan suatu instruksi untuk melakukan migrasi di versi rilis selanjutnya. Hal ini bisa saja terdiri dari penghapusan, pengubahan, ataupun pembuatan
+obyek API. Proses pengubahan mungkin saja membutuhkan pemikiran yang matang. Dampak proses ini bisa saja menyebabkan <em>downtime</em> aplikasi yang bergantung pada fitur ini.</li>
+<li><strong>Kami mohon untuk mencoba versi <em>beta</em> yang kami sediakan dan berikan masukan terhadap fitur yang kamu pakai! Apabila fitur tersebut sudah tidak lagi berada di dalam tingkatan <em>beta</em> perubahan yang kami buat terhadap fitur tersebut bisa jadi tidak lagi dapat digunakan</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p><em>Volume plugins</em> berikut mendukung volume <em>raw block</em>, termasuk penyediaan dinamis jika
+mungkin diterapkan.</p>
+
+<ul>
+<li>AWSElasticBlockStore</li>
+<li>AzureDisk</li>
+<li>FC (Fibre Channel)</li>
+<li>GCEPersistentDisk</li>
+<li>iSCSI</li>
+<li>Local volume</li>
+<li>RBD (Ceph Block Device)</li>
+<li>VsphereVolume (alpha)</li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>Catatan:</strong> Hanya FC dan volume iSCSI yang mendukung volume <em>raw block</em> pada Kubernetes 1.9.
+Dukungan untuk <em>plugin</em> lainnya ditambahkan pada 1.10.</div>
+</blockquote>
+
+<h3 id="persistent-volume-menggunakan-volume-raw-block"><em>Persistent Volume</em> menggunakan Volume <em>Raw Block</em></h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolume<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>block-pv<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>capacity:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>storage:<span style="color:#bbb"> </span>10Gi<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumeMode:<span style="color:#bbb"> </span>Block<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>persistentVolumeReclaimPolicy:<span style="color:#bbb"> </span>Retain<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>fc:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>targetWWNs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;50060e801049cfd1&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>lun:<span style="color:#bbb"> </span><span style="color:#666">0</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">false</span></code></pre></div>
+<h3 id="persistent-volume-claim-meminta-volume-raw-block"><em>Persistent Volume Claim</em> meminta Volume <em>Raw Block</em></h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolumeClaim<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>block-pvc<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumeMode:<span style="color:#bbb"> </span>Block<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>requests:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>storage:<span style="color:#bbb"> </span>10Gi</code></pre></div>
+<h3 id="spesifikasi-pod-yang-menambahkan-alamat-perangkat-raw-block-pada-kontainer">Spesifikasi <em>Pod</em> yang menambahkan alamat Perangkat <em>Raw Block</em> pada kontainer</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>pod-with-block-volume<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>fc-container<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>fedora:<span style="color:#666">26</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>command:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;/bin/sh&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;-c&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>args:<span style="color:#bbb"> </span>[<span style="color:#bbb"> </span><span style="color:#b44">&#34;tail -f /dev/null&#34;</span><span style="color:#bbb"> </span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>volumeDevices:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>data<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>devicePath:<span style="color:#bbb"> </span>/dev/xvda<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>data<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>persistentVolumeClaim:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>claimName:<span style="color:#bbb"> </span>block-pvc</code></pre></div>
+<blockquote class="note">
+  <div><strong>Catatan:</strong> Ketika menambahkan sebuah perangkat <em>raw block</em> untuk sebuah <em>Pod</em>, kita menspesifikasi alamat perangkat dalam kontainer alih-alih alamat pemasangan.</div>
+</blockquote>
+
+<h3 id="mengikat-block-volume">Mengikat <em>Block Volume</em></h3>
+
+<p>Jika seorang pengguna meminta sebuah volume <em>raw block</em> dengan mengindikasikannya menggunakan kolom <code>volumeMode</code> pada <em>spec</em> <code>PersistentVolumeClaim</code> (PVC), aturan pengikatannya sedikit berbeda dibanding rilis-rilis sebelumnya yang tidak memerhatikan mode ini sebagai bagian dari <em>spec</em>.
+Di bawah merupakan tabel dari kemungkinan kombinasi yang pengguna dan admin dapat spesifikasikan untuk meminta sebuah perangkat <em>raw block</em>. Tabel tersebut mengindikasikan apakah volume akan terikat atau tidak jika dikombinasikan dengan cara tertentu:
+Matriks pengikatan volume untuk volume yang disediakan secara statis:</p>
+
+<table>
+<thead>
+<tr>
+<th>PV volumeMode</th>
+<th align="center">PVC volumeMode</th>
+<th align="right">Hasil</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>unspecified</td>
+<td align="center">unspecified</td>
+<td align="right">TERIKAT</td>
+</tr>
+
+<tr>
+<td>unspecified</td>
+<td align="center">Block</td>
+<td align="right">TIDAK TERIKAT</td>
+</tr>
+
+<tr>
+<td>unspecified</td>
+<td align="center">Filesystem</td>
+<td align="right">TERIKAT</td>
+</tr>
+
+<tr>
+<td>Block</td>
+<td align="center">unspecified</td>
+<td align="right">TIDAK TERIKAT</td>
+</tr>
+
+<tr>
+<td>Block</td>
+<td align="center">Block</td>
+<td align="right">TERIKAT</td>
+</tr>
+
+<tr>
+<td>Block</td>
+<td align="center">Filesystem</td>
+<td align="right">TIDAK TERIKAT</td>
+</tr>
+
+<tr>
+<td>Filesystem</td>
+<td align="center">Filesystem</td>
+<td align="right">TERIKAT</td>
+</tr>
+
+<tr>
+<td>Filesystem</td>
+<td align="center">Block</td>
+<td align="right">TIDAK TERIKAT</td>
+</tr>
+
+<tr>
+<td>Filesystem</td>
+<td align="center">unspecified</td>
+<td align="right">TERIKAT</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="note">
+  <div><strong>Catatan:</strong> Hanya volume yang disediakan secara statis yang didukung untuk rilis alfa. Administrator harus memperhatikan nilai-nilai tersebut ketika mengerjakan perangkat-perangkat <em>raw block</em>.</div>
+</blockquote>
+
+<h2 id="volume-snapshot-dan-dukungan-pemulihan-volume-dari-snapshot"><em>Volume Snapshot</em> dan Dukungan Pemulihan Volume dari <em>Snapshot</em></h2>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.12</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>alpha</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="alpha">
+Fitur ini berada di dalam tingkatan <em>Alpha</em>, yang artinya:</p>
+
+<ul>
+<li>Nama dari versi ini mengandung string <code>alpha</code> (misalnya, <code>v1alpha1</code>).</li>
+<li>Bisa jadi terdapat <em>bug</em>. Secara <em>default</em> fitur ini tidak diekspos.</li>
+<li>Ketersediaan untuk fitur yang ada bisa saja dihilangkan pada suatu waktu tanpa pemberitahuan sebelumnya.</li>
+<li>API yang ada mungkin saja berubah tanpa memperhatikan kompatibilitas dengan versi perangkat lunak sebelumnya.</li>
+<li>Hanya direkomendasikan untuk klaster yang digunakan untuk tujuan <em>testing</em>.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>Fitur <em>volume snapshot</em> ditambahkan hanya untuk mendukung <em>CSI Volume Plugins</em>. Untuk lebih detail, lihat <a href="/docs/concepts/storage/volume-snapshots/"><em>volume snapshots</em></a>.</p>
+
+<p>Untuk mengaktifkan dukungan pemulihan sebuah volume dari sebuah sumber data <em>volume snapshot</em>, aktifkan
+gerbang fitur <code>VolumeSnapshotDataSource</code> pada apiserver dan <em>controller-manager</em>.</p>
+
+<h3 id="membuat-persistent-volume-claim-dari-volume-snapshot">Membuat <em>Persistent Volume Claim</em> dari <em>Volume Snapshot</em></h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolumeClaim<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>restore-pvc<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageClassName:<span style="color:#bbb"> </span>csi-hostpath-sc<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>dataSource:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>new-snapshot-test<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kind:<span style="color:#bbb"> </span>VolumeSnapshot<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>apiGroup:<span style="color:#bbb"> </span>snapshot.storage.k8s.io<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>requests:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>storage:<span style="color:#bbb"> </span>10Gi</code></pre></div>
+<h2 id="menulis-konfigurasi-portabel">Menulis Konfigurasi Portabel</h2>
+
+<p>Jika kamu menulis templat konfigurasi atau contoh yang dapat berjalan pada berbagai macam klaster
+dan membutuhkan <em>persistent storage</em>, kami merekomendasikan agar kamu menggunakan pola berikut:</p>
+
+<ul>
+<li>Masukkan objek PersistentVolumeClaim (PVC) pada kumpulan <em>config</em> (bersamaan dengan
+Deployments, ConfigMaps, dsb).</li>
+<li>Jangan memasukkan objek PersistentVolume (PV) pada <em>config</em>, karena pengguna yang menginstantiasi
+<em>config</em> tersebut kemungkinan tidak memiliki izin untuk membuat PersistentVolume (PV).</li>
+<li>Berikan pengguna opsi untuk menyediakan nama <em>storage class</em> ketika menginstantiasi
+templat.
+
+<ul>
+<li>Jika pengguna menyediakan nama <em>storage class</em>, taruh nilai tersebut pada
+kolom <code>persistentVolumeClaim.storageClassName</code>.
+Hal ini akan membuat PVC agar sesuai dengan <em>storage class</em>
+yang tepat jika klaster memiliki banyak StorageClass yang diaktifkan oleh admin.</li>
+<li>Jika pengguna tidak menyediakan nama <em>storage class</em>, biarkan
+kolom <code>persistentVolumeClaim.storageClassName</code> kosong.</li>
+<li>Hal ini kakan membuat sebuah PV disediakan secara otomatis untuk pengguna dengan
+StorageClass standar pada klaster.  Banyak lingkungan klaster memiliki
+StorageClass standar yang sudah terpasang, atau administrator dapat membuat
+StorageClass standar sendiri.</li>
+</ul></li>
+<li>Dalam pembuatan, perhatikan PVC yang tidak kunjung terikat setelah beberapa lama
+dan beritahukan hal ini pada pengguna, karena hal ini dapat mengindikasikan klaster tidak
+memiliki dukungan penyimpanan dinamis (di mana pengguna harus membuat PV yang sesuai)
+atau klaster tidak memiliki sistem penyimpanan (di mana penggun tidak dapat membuat
+PVC yang membutuhkan <em>config</em>).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Masukan</h2>
+  <p class="feedback--prompt">Apakah halaman ini berguna? </p>
+  <button class="button feedback--yes">Ya</button>
+  <button class="button feedback--no">Tidak</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/storage/persistent-volumes.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/id\/docs\/concepts\/storage\/persistent-volumes\/",
+    "title" : "Persistent Volume",
+    "permalink" : "https:\/\/kubernetes.io\/id\/docs\/concepts\/storage\/persistent-volumes\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Buat isu</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/id/docs/concepts/storage/persistent-volumes.md" class="button issue">Ubah halaman ini</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Halaman diubah terakhir kali pada December 16, 2019 at 8:11 PM PST oleh
+    <a href="https://github.com/kubernetes/website/commit/39fe327423f908eeecceafe410dfb1b62dd0d906/">Change kluster to klaster mentioned in https://github.com/jk8s/sig-docs-id/issues/20 (#18130)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/storage/persistent-volumes.md">Riwayat halaman</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/id/docs/home/">Home</a>
+            
+            
+            
+            
+            
+            
+            
+            <a href="/id/community/">Komunitas</a>
+            
+            <a href="/id/case-studies/">Studi kasus</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Kalender acara</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Kontribusi</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 Para Pencipta Kubernetes | Dokumentasi didistribusikan melalui <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux Foundation &reg;. Hak cipta dilindungi. Linux Foundation telah mendaftarkan merek dagang dan pengunaannya. Perinciannya bisa dilihat pada <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">halaman penggunaan merek dagang</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

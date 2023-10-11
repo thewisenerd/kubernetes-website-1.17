@@ -1,0 +1,2918 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Horizontal Pod Autoscaler演练 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/">
+<meta property="og:title" content="Horizontal Pod Autoscaler演练">
+<meta name="twitter:title" content="Horizontal Pod Autoscaler演练">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/">English</a></li>
+                
+                    <li><a href="/ko/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/">한국어 Korean</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+<h1>任务</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/" class="YAH">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="任务" href="/zh/docs/tasks/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="安装工具">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装工具" href="/zh/docs/tasks/tools/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="安装并设置 kubectl" href="/zh/docs/tasks/tools/install-kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装 Minikube" href="/zh/docs/tasks/tools/install-minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群" href="/zh/docs/tasks/administer-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="用 kubeadm 进行管理">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="用 kubeadm 进行管理" href="/zh/docs/tasks/administer-cluster/kubeadm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 进行证书管理" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="升级 kubeadm 集群" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理内存，CPU 和 API 资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理内存，CPU 和 API 资源" href="/zh/docs/tasks/administer-cluster/manage-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的内存请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的CPU请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间的最小和最大内存约束" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置CPU最小和最大限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置内存和 CPU 配额" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间下pod总数" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-pod-namespace/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Install a Network Policy Provider">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Install a Network Policy Provider" href="/zh/docs/tasks/administer-cluster/network-policy-provider/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Calico 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/calico-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Cilium 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/cilium-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kube-router 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/kube-router-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Romana 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/romana-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Weave Net 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/weave-network-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debug DNS 方案" href="/zh/docs/tasks/administer-cluster/dns-debugging-resolution/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Enabling Service Topology <small>(EN)</small>" href="/docs/tasks/administer-cluster/enabling-service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IP Masquerade Agent 用户指南" href="/zh/docs/tasks/administer-cluster/ip-masq-agent/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 云管理控制器" href="/zh/docs/tasks/administer-cluster/running-cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Safely Drain a Node while Respecting the PodDisruptionBudget <small>(EN)</small>" href="/docs/tasks/administer-cluster/safely-drain-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Kubernetes 运行 etcd 集群" href="/zh/docs/tasks/administer-cluster/configure-upgrade-etcd/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为系统守护进程预留计算资源" href="/zh/docs/tasks/administer-cluster/reserve-compute-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为节点发布扩展资源" href="/zh/docs/tasks/administer-cluster/extended-resource-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 CoreDNS 进行服务发现" href="/zh/docs/tasks/administer-cluster/coredns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 KMS 提供商进行数据加密" href="/zh/docs/tasks/administer-cluster/kms-provider/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kubernetes API 访问集群" href="/zh/docs/tasks/administer-cluster/access-cluster-api/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="关键插件 Pod 的调度保证" href="/zh/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="启用端点切片" href="/zh/docs/tasks/administer-cluster/enabling-endpointslices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间演练" href="/zh/docs/tasks/administer-cluster/namespaces-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 NodeLocal DNSCache" href="/zh/docs/tasks/administer-cluster/nodelocaldns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 sysctl" href="/zh/docs/tasks/administer-cluster/sysctl-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在实时集群上重新配置节点的 Kubelet" href="/zh/docs/tasks/administer-cluster/reconfigure-kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="声明网络策略" href="/zh/docs/tasks/administer-cluster/declare-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="开发云控制器管理器" href="/zh/docs/tasks/administer-cluster/developing-cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的 CPU 管理策略" href="/zh/docs/tasks/administer-cluster/cpu-management-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的拓扑管理策略" href="/zh/docs/tasks/administer-cluster/topology-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="搭建高可用的 Kubernetes Masters" href="/zh/docs/tasks/administer-cluster/highly-available-master/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="改变默认 StorageClass" href="/zh/docs/tasks/administer-cluster/change-default-storage-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="更改 PersistentVolume 的回收策略" href="/zh/docs/tasks/administer-cluster/change-pv-reclaim-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="自定义 DNS 服务" href="/zh/docs/tasks/administer-cluster/dns-custom-nameservers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群上运行的服务" href="/zh/docs/tasks/administer-cluster/access-cluster-services/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过命名空间共享集群" href="/zh/docs/tasks/administer-cluster/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过配置文件设置 Kubelet 参数" href="/zh/docs/tasks/administer-cluster/kubelet-config-file/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 API 对象配额" href="/zh/docs/tasks/administer-cluster/quota-api-object/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置多个调度器" href="/zh/docs/tasks/administer-cluster/configure-multiple-schedulers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置资源不足时的处理方式" href="/zh/docs/tasks/administer-cluster/out-of-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="限制存储消耗" href="/zh/docs/tasks/administer-cluster/limit-storage-consumption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群 DNS 服务自动伸缩" href="/zh/docs/tasks/administer-cluster/dns-horizontal-autoscaling/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群安全" href="/zh/docs/tasks/administer-cluster/securing-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群管理" href="/zh/docs/tasks/administer-cluster/cluster-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="静态加密 Secret 数据" href="/zh/docs/tasks/administer-cluster/encrypt-data/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置 Pods 和容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置 Pods 和容器" href="/zh/docs/tasks/configure-pod-container/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器和 Pod 分配内存资源" href="/zh/docs/tasks/configure-pod-container/assign-memory-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Assign CPU Resources to Containers and Pods" href="/zh/docs/tasks/configure-pod-container/assign-cpu-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure GMSA for Windows Pods and containers <small>(EN)</small>" href="/docs/tasks/configure-pod-container/configure-gmsa/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Windows 的 pod 和容器配置 RunAsUserName" href="/zh/docs/tasks/configure-pod-container/configure-runasusername/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 的服务质量" href="/zh/docs/tasks/configure-pod-container/quality-service-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器分派扩展资源" href="/zh/docs/tasks/configure-pod-container/extended-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用卷进行存储" href="/zh/docs/tasks/configure-pod-container/configure-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用 PersistentVolume 作为存储" href="/zh/docs/tasks/configure-pod-container/configure-persistent-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 使用投射卷作存储" href="/zh/docs/tasks/configure-pod-container/configure-projected-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure a Security Context for a Pod or Container <small>(EN)</small>" href="/docs/tasks/configure-pod-container/security-context/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Pod 配置服务账户" href="/zh/docs/tasks/configure-pod-container/configure-service-account/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="从私有仓库拉取镜像" href="/zh/docs/tasks/configure-pod-container/pull-image-private-registry/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置存活、就绪和启动探测器" href="/zh/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/tasks/configure-pod-container/assign-pods-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 初始化" href="/zh/docs/tasks/configure-pod-container/configure-pod-initialization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器的生命周期事件设置处理函数" href="/zh/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ConfigMap 配置 Pod" href="/zh/docs/tasks/configure-pod-container/configure-pod-configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Pod 中的容器之间共享进程命名空间" href="/zh/docs/tasks/configure-pod-container/share-process-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建静态 Pod" href="/zh/docs/tasks/configure-pod-container/static-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Docker Compose 文件转换为 Kubernetes 资源" href="/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理 Kubernetes 对象" href="/zh/docs/tasks/manage-kubernetes-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Configuration Files <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/declarative-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Kustomize <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/kustomization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Kubernetes Objects Using Imperative Commands <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/imperative-command/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用配置文件对 Kubernetes 对象进行命令式管理" href="/zh/docs/tasks/manage-kubernetes-objects/imperative-config/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="给应用注入数据">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="给应用注入数据" href="/zh/docs/tasks/inject-data-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器设置启动时要执行的命令及其入参" href="/zh/docs/tasks/inject-data-application/define-command-argument-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器设置环境变量" href="/zh/docs/tasks/inject-data-application/define-environment-variable-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 PodPreset 将信息注入 Pods" href="/zh/docs/tasks/inject-data-application/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Secret 安全地分发凭证" href="/zh/docs/tasks/inject-data-application/distribute-credentials-secure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过文件将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过环境变量将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/environment-variable-expose-pod-information/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行应用" href="/zh/docs/tasks/run-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="运行一个有状态的应用程序" href="/zh/docs/tasks/run-application/run-replicated-stateful-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubectl patch 更新 API 对象" href="/zh/docs/tasks/run-application/update-api-object-kubectl-patch/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="删除 StatefulSet" href="/zh/docs/tasks/run-application/delete-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="强制删除 StatefulSet 类型的 Pods" href="/zh/docs/tasks/run-application/force-delete-stateful-set-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="基于Replication Controller执行滚动升级" href="/zh/docs/tasks/run-application/rolling-update-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 水平自动伸缩" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Horizontal Pod Autoscaler演练" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="指定应用程序的中断预算（Disruption Budget）" href="/zh/docs/tasks/run-application/configure-pdb/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用Deployment运行一个无状态应用" href="/zh/docs/tasks/run-application/run-stateless-application-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="弹缩StatefulSet" href="/zh/docs/tasks/run-application/scale-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="运行一个单实例有状态应用" href="/zh/docs/tasks/run-application/run-single-instance-stateful-application/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行 Jobs">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行 Jobs" href="/zh/docs/tasks/job/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 CronJob 运行自动化任务" href="/zh/docs/tasks/job/automated-tasks-with-cron-jobs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用扩展进行并行处理" href="/zh/docs/tasks/job/parallel-processing-expansion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行粗粒度并行处理" href="/zh/docs/tasks/job/coarse-parallel-processing-work-queue/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行精细的并行处理" href="/zh/docs/tasks/job/fine-parallel-processing-work-queue/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="访问集群中的应用程序">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="访问集群中的应用程序" href="/zh/docs/tasks/access-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网页界面 (Dashboard)" href="/zh/docs/tasks/access-application-cluster/web-ui-dashboard/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群" href="/zh/docs/tasks/access-application-cluster/access-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用端口转发来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/port-forward-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用服务来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/service-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建一个外部负载均衡器" href="/zh/docs/tasks/access-application-cluster/create-external-load-balancer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置你的云平台防火墙" href="/zh/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up Ingress on Minikube with the NGINX Ingress Controller <small>(EN)</small>" href="/docs/tasks/access-application-cluster/ingress-minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="列出集群中所有运行容器的镜像" href="/zh/docs/tasks/access-application-cluster/list-all-running-container-images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为集群配置 DNS" href="/zh/docs/tasks/access-application-cluster/configure-dns-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Service 把前端连接到后端" href="/zh/docs/tasks/access-application-cluster/connecting-frontend-backend/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="同 Pod 内的容器使用共享卷通信" href="/zh/docs/tasks/access-application-cluster/communicate-containers-same-pod-shared-volume/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置对多集群的访问" href="/zh/docs/tasks/access-application-cluster/configure-access-multiple-clusters/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="监控、日志和排错">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="监控、日志和排错" href="/zh/docs/tasks/debug-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Auditing" href="/zh/docs/tasks/debug-application-cluster/audit/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Auditing with Falco <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/falco/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Logging Using Stackdriver <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/logging-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StackDriver 中的事件" href="/zh/docs/tasks/debug-application-cluster/events-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 crictl 对 Kubernetes 节点进行调试" href="/zh/docs/tasks/debug-application-cluster/crictl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ElasticSearch 和 Kibana 进行日志管理" href="/zh/docs/tasks/debug-application-cluster/logging-elasticsearch-kibana/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在本地开发和调试服务" href="/zh/docs/tasks/debug-application-cluster/local-debugging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用自测与调试" href="/zh/docs/tasks/debug-application-cluster/debug-application-introspection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="排错" href="/zh/docs/tasks/debug-application-cluster/troubleshooting/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="确定 Pod 失败的原因" href="/zh/docs/tasks/debug-application-cluster/determine-reason-pod-failure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="节点健康监测" href="/zh/docs/tasks/debug-application-cluster/monitor-node-health/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="获取正在运行容器的 Shell" href="/zh/docs/tasks/debug-application-cluster/get-shell-running-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Init 容器" href="/zh/docs/tasks/debug-application-cluster/debug-init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Pods 和 Replication Controllers" href="/zh/docs/tasks/debug-application-cluster/debug-pod-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Service" href="/zh/docs/tasks/debug-application-cluster/debug-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试StatefulSet" href="/zh/docs/tasks/debug-application-cluster/debug-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源指标管道" href="/zh/docs/tasks/debug-application-cluster/resource-metrics-pipeline/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源监控工具" href="/zh/docs/tasks/debug-application-cluster/resource-usage-monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-cluster/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/tasks/access-kubernetes-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="使用自定义资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用自定义资源" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Extend the Kubernetes API with CustomResourceDefinitions <small>(EN)</small>" href="/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用户自定义资源版本" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definition-versioning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置聚合层" href="/zh/docs/tasks/access-kubernetes-api/configure-aggregation-layer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="设置一个扩展的 API server" href="/zh/docs/tasks/access-kubernetes-api/setup-extension-api-server/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HTTP 代理访问 Kubernetes API" href="/zh/docs/tasks/access-kubernetes-api/http-proxy-access-api/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="TLS">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="管理集群中的 TLS 认证" href="/zh/docs/tasks/tls/managing-tls-in-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书轮换" href="/zh/docs/tasks/tls/certificate-rotation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="联邦 - 在多个集群上运行一个应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="联邦 - 在多个集群上运行一个应用" href="/zh/docs/tasks/federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="将 CoreDNS 设置为联邦集群的 DNS 提供者" href="/zh/docs/tasks/federation/set-up-coredns-provider-federation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用联合服务来实现跨集群的服务发现" href="/zh/docs/tasks/federation/federation-service-discovery/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="管理联邦控制平面">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理联邦控制平面" href="/zh/docs/tasks/federation/administer-federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="联邦 ConfigMap" href="/zh/docs/tasks/federation/administer-federation/configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 DaemonSet" href="/zh/docs/tasks/federation/administer-federation/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Deployment" href="/zh/docs/tasks/federation/administer-federation/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Job" href="/zh/docs/tasks/federation/administer-federation/job/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 ReplicaSet" href="/zh/docs/tasks/federation/administer-federation/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Secret" href="/zh/docs/tasks/federation/administer-federation/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦事件" href="/zh/docs/tasks/federation/administer-federation/events/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦命名空间" href="/zh/docs/tasks/federation/administer-federation/namespaces/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在联邦中设置放置策略" href="/zh/docs/tasks/federation/set-up-placement-policies-federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群守护进程">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群守护进程" href="/zh/docs/tasks/manage-daemon/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行回滚" href="/zh/docs/tasks/manage-daemon/rollback-daemon-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行滚动更新" href="/zh/docs/tasks/manage-daemon/update-daemon-set/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安装服务目录">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装服务目录" href="/zh/docs/tasks/service-catalog/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Helm 安装 Service Catalog" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-helm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 SC 安装服务目录" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-sc/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="网络">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="网络" href="/zh/docs/tasks/network/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="验证 IPv4/IPv6 双协议栈" href="/zh/docs/tasks/network/validate-dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用插件扩展 kubectl" href="/zh/docs/tasks/extend-kubectl/kubectl-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理巨页（HugePages）" href="/zh/docs/tasks/manage-hugepages/scheduling-hugepages/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度 GPUs" href="/zh/docs/tasks/manage-gpus/scheduling-gpus/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Horizontal Pod Autoscaler演练</h1>
+
+
+
+
+<!--
+Horizontal Pod Autoscaler automatically scales the number of pods
+in a replication controller, deployment or replica set based on observed CPU utilization
+(or, with beta support, on some other, application-provided metrics).
+-->
+
+<p>Horizontal Pod Autoscaler 可以根据CPU利用率自动伸缩 replication controller、deployment 或者 replica set 中的Pod数量
+（也可以基于其他应用程序提供的度量指标，目前这一功能处于 beta 版本）。</p>
+
+<!--
+This document walks you through an example of enabling Horizontal Pod Autoscaler for the php-apache server.  For more information on how Horizontal Pod Autoscaler behaves, see the [Horizontal Pod Autoscaler user guide](/docs/tasks/run-application/horizontal-pod-autoscale/).
+-->
+
+<p>本文将引导您了解如何为 php-apache 服务器配置和使用 Horizontal Pod Autoscaler。
+更多 Horizontal Pod Autoscaler 的信息请参阅 <a href="/docs/tasks/run-application/horizontal-pod-autoscale/">Horizontal Pod Autoscaler user guide</a>。</p>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%87%86%e5%a4%87%e5%bc%80%e5%a7%8b">准备开始</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e7%ac%ac%e4%b8%80%e6%ad%a5-%e8%bf%90%e8%a1%8c-php-apache-%e6%9c%8d%e5%8a%a1%e5%99%a8%e5%b9%b6%e6%9a%b4%e9%9c%b2%e6%9c%8d%e5%8a%a1">第一步：运行 php-apache 服务器并暴露服务</a></li>
+
+
+
+
+<li><a href="#%e5%88%9b%e5%bb%ba-horizontal-pod-autoscaler">创建 Horizontal Pod Autoscaler</a></li>
+
+
+
+
+<li><a href="#%e5%a2%9e%e5%8a%a0%e8%b4%9f%e8%bd%bd">增加负载</a></li>
+
+
+
+
+<li><a href="#%e5%81%9c%e6%ad%a2%e8%b4%9f%e8%bd%bd">停止负载</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%9f%ba%e4%ba%8e%e5%a4%9a%e9%a1%b9%e5%ba%a6%e9%87%8f%e6%8c%87%e6%a0%87%e5%92%8c%e8%87%aa%e5%ae%9a%e4%b9%89%e5%ba%a6%e9%87%8f%e6%8c%87%e6%a0%87%e8%87%aa%e5%8a%a8%e4%bc%b8%e7%bc%a9">基于多项度量指标和自定义度量指标自动伸缩</a></li>
+
+
+
+
+<li><a href="#%e9%99%84%e5%bd%95-horizontal-pod-autoscaler%e7%8a%b6%e6%80%81%e6%9d%a1%e4%bb%b6">附录：Horizontal Pod Autoscaler状态条件</a></li>
+
+
+
+
+<li><a href="#%e9%99%84%e5%bd%95-quantities">附录：Quantities</a></li>
+
+
+
+
+<li><a href="#%e9%99%84%e5%bd%95-%e5%85%b6%e4%bb%96%e5%8f%af%e8%83%bd%e7%9a%84%e6%83%85%e5%86%b5">附录：其他可能的情况</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+
+<h2 id="准备开始">准备开始</h2>
+<!--
+This example requires a running Kubernetes cluster and kubectl, version 1.2 or later.
+[metrics-server](https://github.com/kubernetes-incubator/metrics-server/) monitoring needs to be deployed in the cluster
+to provide metrics via the resource metrics API, as Horizontal Pod Autoscaler uses this API to collect metrics. The instructions for deploying this are on the GitHub repository of [metrics-server](https://github.com/kubernetes-incubator/metrics-server/), if you followed [getting started on GCE guide](/docs/setup/production-environment/turnkey/gce/),
+metrics-server monitoring will be turned-on by default.
+-->
+
+<p>本文示例需要一个1.2或者更高版本的可运行的 Kubernetes 集群以及 kubectl。
+<a href="https://github.com/kubernetes-incubator/metrics-server/" target="_blank">metrics-server</a> 也需要部署到集群中，
+它可以通过 resource metrics API 对外提供度量数据，Horizontal Pod Autoscaler 正是根据此 API 来获取度量数据，部署方法请参考 <a href="https://github.com/kubernetes-incubator/metrics-server/" target="_blank">metrics-server</a> 。
+如果你正在使用GCE，按照 <a href="/docs/setup/production-environment/turnkey/gce/">getting started on GCE guide</a> 操作，metrics-server 会默认启动。</p>
+
+<!--
+To specify multiple resource metrics for a Horizontal Pod Autoscaler, you must have a Kubernetes cluster
+and kubectl at version 1.6 or later.  Furthermore, in order to make use of custom metrics, your cluster
+must be able to communicate with the API server providing the custom metrics API. Finally, to use metrics
+not related to any Kubernetes object you must have a Kubernetes cluster at version 1.10 or later, and
+you must be able to communicate with the API server that provides the external metrics API.
+See the [Horizontal Pod Autoscaler user guide](/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics) for more details.
+-->
+
+<p>如果需要为 Horizontal Pod Autoscaler 指定多种资源度量指标，您的 Kubernetes 集群以及 kubectl 至少需要达到1.6版本。
+此外，如果要使用自定义度量指标，您的Kubernetes 集群还必须能够与提供这些自定义指标的API服务器通信。
+最后，如果要使用与 Kubernetes 对象无关的度量指标，则 Kubernetes 集群版本至少需要达到1.10版本，同样，需要保证集群能够与提供这些外部指标的API服务器通信。
+更多详细信息，请参阅<a href="/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics">Horizontal Pod Autoscaler user guide</a>。</p>
+
+
+
+
+<!--
+## Run & expose php-apache server
+-->
+
+<h2 id="第一步-运行-php-apache-服务器并暴露服务">第一步：运行 php-apache 服务器并暴露服务</h2>
+
+<!--
+To demonstrate Horizontal Pod Autoscaler we will use a custom docker image based on the php-apache image.
+The Dockerfile has the following content:
+-->
+
+<p>为了演示 Horizontal Pod Autoscaler，我们将使用一个基于 php-apache 镜像的定制 Docker 镜像。
+Dockerfile 内容如下：</p>
+
+<pre><code>FROM php:5-apache
+ADD index.php /var/www/html/index.php
+RUN chmod a+rx index.php
+</code></pre>
+
+<!--
+It defines an index.php page which performs some CPU intensive computations:
+-->
+
+<p>它定义一个 index.php 页面来执行一些 CPU 密集型计算：</p>
+
+<pre><code>&lt;?php
+  $x = 0.0001;
+  for ($i = 0; $i &lt;= 1000000; $i++) {
+    $x += sqrt($x);
+  }
+  echo &quot;OK!&quot;;
+?&gt;
+</code></pre>
+
+<!--
+First, we will start a deployment running the image and expose it as a service:
+-->
+
+<p>首先，我们先启动一个 deployment 来运行这个镜像并暴露一个服务:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl run php-apache --image<span style="color:#666">=</span>k8s.gcr.io/hpa-example --requests<span style="color:#666">=</span><span style="color:#b8860b">cpu</span><span style="color:#666">=</span>200m --expose --port<span style="color:#666">=</span><span style="color:#666">80</span></code></pre></div>
+<pre><code>service/php-apache created
+deployment.apps/php-apache created
+</code></pre>
+
+<!--
+## Create Horizontal Pod Autoscaler
+-->
+
+<h2 id="创建-horizontal-pod-autoscaler">创建 Horizontal Pod Autoscaler</h2>
+
+<!--
+Now that the server is running, we will create the autoscaler using
+[kubectl autoscale](/docs/reference/generated/kubectl/kubectl-commands#autoscale).
+The following command will create a Horizontal Pod Autoscaler that maintains between 1 and 10 replicas of the Pods
+controlled by the php-apache deployment we created in the first step of these instructions.
+Roughly speaking, HPA will increase and decrease the number of replicas
+(via the deployment) to maintain an average CPU utilization across all Pods of 50%
+(since each pod requests 200 milli-cores by [kubectl run](https://github.com/kubernetes/kubernetes/blob/v1.17.17/docs/user-guide/kubectl/kubectl_run.md), this means average CPU usage of 100 milli-cores).
+See [here](https://git.k8s.io/community/contributors/design-proposals/autoscaling/horizontal-pod-autoscaler.md#autoscaling-algorithm) for more details on the algorithm.
+-->
+
+<p>现在，php-apache服务器已经运行，我们将通过 <a href="/docs/reference/generated/kubectl/kubectl-commands#autoscale">kubectl autoscale</a> 命令创建 Horizontal Pod Autoscaler。
+以下命令将创建一个 Horizontal Pod Autoscaler 用于控制我们上一步骤中创建的 deployment，使 Pod 的副本数量在维持在1到10之间。
+大致来说，HPA 将通过增加或者减少 Pod 副本的数量（通过 Deployment ）以保持所有 Pod 的平均CPU利用率在50%以内
+（由于每个 Pod 通过 <a href="https://github.com/kubernetes/kubernetes/blob/v1.17.17/docs/user-guide/kubectl/kubectl_run.md" target="_blank">kubectl run</a>
+申请了200 milli-cores CPU，所以50%的 CPU 利用率意味着平均 CPU 利用率为100 milli-cores）。
+相关算法的详情请参阅<a href="https://git.k8s.io/community/contributors/design-proposals/autoscaling/horizontal-pod-autoscaler.md#autoscaling-algorithm" target="_blank">here</a>。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl autoscale deployment php-apache --cpu-percent<span style="color:#666">=</span><span style="color:#666">50</span> --min<span style="color:#666">=</span><span style="color:#666">1</span> --max<span style="color:#666">=</span><span style="color:#666">10</span></code></pre></div>
+<pre><code>horizontalpodautoscaler.autoscaling/php-apache autoscaled
+</code></pre>
+
+<!--
+We may check the current status of autoscaler by running:
+-->
+
+<p>我们可以通过以下命令查看 autoscaler 的状态：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get hpa</code></pre></div>
+<pre><code>NAME         REFERENCE                     TARGET    MINPODS   MAXPODS   REPLICAS   AGE
+php-apache   Deployment/php-apache/scale   0% / 50%  1         10        1          18s
+
+</code></pre>
+
+<!--
+Please note that the current CPU consumption is 0% as we are not sending any requests to the server
+(the ``CURRENT`` column shows the average across all the pods controlled by the corresponding deployment).
+-->
+
+<p>请注意在上面的命令输出中，当前的CPU利用率是0%，这是由于我们尚未发送任何请求到服务器
+（<code>CURRENT</code> 列显示了相应 deployment 所控制的所有 Pod 的平均 CPU 利用率）。</p>
+
+<!--
+## Increase load
+-->
+
+<h2 id="增加负载">增加负载</h2>
+
+<!--
+Now, we will see how the autoscaler reacts to increased load.
+We will start a container, and send an infinite loop of queries to the php-apache service (please run it in a different terminal):
+-->
+
+<p>现在，我们将看到 autoscaler 如何对增加负载作出反应。
+我们将启动一个容器，并通过一个循环向 php-apache 服务器发送无限的查询请求（请在另一个终端中运行以下命令）：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl run -i --tty load-generator --image<span style="color:#666">=</span>busybox /bin/sh
+
+Hit enter <span style="color:#a2f;font-weight:bold">for</span> <span style="color:#a2f">command</span> prompt
+
+<span style="color:#a2f;font-weight:bold">while</span> true; <span style="color:#a2f;font-weight:bold">do</span> wget -q -O- http://php-apache.default.svc.cluster.local; <span style="color:#a2f;font-weight:bold">done</span></code></pre></div>
+<!--
+Within a minute or so, we should see the higher CPU load by executing:
+-->
+
+<p>在几分钟时间内，通过以下命令，我们可以看到CPU负载升高了：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get hpa</code></pre></div>
+<pre><code>NAME         REFERENCE                     TARGET      CURRENT   MINPODS   MAXPODS   REPLICAS   AGE
+php-apache   Deployment/php-apache/scale   305% / 50%  305%      1         10        1          3m
+
+</code></pre>
+
+<!--
+Here, CPU consumption has increased to 305% of the request.
+As a result, the deployment was resized to 7 replicas:
+-->
+
+<p>这时，由于请求增多，CPU利用率已经升至305%。 可以看到，deployment 的副本数量已经增长到了7：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get deployment php-apache</code></pre></div>
+<pre><code>NAME         DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+php-apache   7         7         7            7           19m
+</code></pre>
+
+<!--
+<blockquote class="note">
+  <div><strong>注意：</strong> It may take a few minutes to stabilize the number of replicas. Since the amount
+of load is not controlled in any way it may happen that the final number of replicas
+will differ from this example.</div>
+</blockquote>
+-->
+
+<blockquote class="note">
+  <div><strong>注意：</strong> 有时最终副本的数量可能需要几分钟才能稳定下来。 由于环境的差异，不同环境中最终的副本数量可能与本示例中的数量不同。</div>
+</blockquote>
+
+<!--
+## Stop load
+-->
+
+<h2 id="停止负载">停止负载</h2>
+
+<!--
+We will finish our example by stopping the user load.
+
+In the terminal where we created the container with `busybox` image, terminate
+the load generation by typing `<Ctrl> + C`.
+
+Then we will verify the result state (after a minute or so):
+-->
+
+<p>我们将通过停止负载来结束我们的示例。</p>
+
+<p>在我们创建 busybox 容器的终端中，输入<code>&lt;Ctrl&gt; + C</code>来终止负载的产生。</p>
+
+<p>然后我们可以再次查看负载状态（等待几分钟时间）：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get hpa</code></pre></div>
+<pre><code>NAME         REFERENCE                     TARGET       MINPODS   MAXPODS   REPLICAS   AGE
+php-apache   Deployment/php-apache/scale   0% / 50%     1         10        1          11m
+</code></pre>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get deployment php-apache</code></pre></div>
+<pre><code>NAME         DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+php-apache   1         1         1            1           27m
+</code></pre>
+
+<!--
+Here CPU utilization dropped to 0, and so HPA autoscaled the number of replicas back down to 1.
+-->
+
+<p>这时，CPU利用率已经降到0，所以 HPA 将自动缩减副本数量至1。</p>
+
+<!--
+<blockquote class="note">
+  <div><strong>注意：</strong> Autoscaling the replicas may take a few minutes.</div>
+</blockquote>
+-->
+
+<blockquote class="note">
+  <div><strong>注意：</strong> 自动伸缩完成副本数量的改变可能需要几分钟的时间。</div>
+</blockquote>
+
+
+
+
+<!--
+## Autoscaling on multiple metrics and custom metrics
+-->
+
+<h2 id="基于多项度量指标和自定义度量指标自动伸缩">基于多项度量指标和自定义度量指标自动伸缩</h2>
+
+<!--
+You can introduce additional metrics to use when autoscaling the `php-apache` Deployment
+by making use of the `autoscaling/v2beta2` API version.
+-->
+
+<p>利用<code>autoscaling/v2beta2</code>API版本，您可以在自动伸缩 php-apache 这个 Deployment 时引入其他度量指标。</p>
+
+<!--
+First, get the YAML of your HorizontalPodAutoscaler in the `autoscaling/v2beta2` form:
+-->
+
+<p>首先，获取<code>autoscaling/v2beta2</code>格式的 HorizontalPodAutoscaler 的YAML文件：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get hpa.v2beta2.autoscaling -o yaml &gt; /tmp/hpa-v2.yaml</code></pre></div>
+<!--
+Open the `/tmp/hpa-v2.yaml` file in an editor, and you should see YAML which looks like this:
+-->
+
+<p>在编辑器中打开<code>/tmp/hpa-v2.yaml</code>：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>autoscaling/v2beta2<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>HorizontalPodAutoscaler<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>php-apache<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>scaleTargetRef:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>php-apache<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>minReplicas:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>maxReplicas:<span style="color:#bbb"> </span><span style="color:#666">10</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>metrics:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>Resource<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resource:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>cpu<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>target:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>type:<span style="color:#bbb"> </span>Utilization<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>averageUtilization:<span style="color:#bbb"> </span><span style="color:#666">50</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>status:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>observedGeneration:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>lastScaleTime:<span style="color:#bbb"> </span>&lt;some-time<span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">  currentReplicas: 1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>desiredReplicas:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>currentMetrics:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>Resource<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resource:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>cpu<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>current:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>averageUtilization:<span style="color:#bbb"> </span><span style="color:#666">0</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>averageValue:<span style="color:#bbb"> </span><span style="color:#666">0</span></code></pre></div>
+<!--
+Notice that the `targetCPUUtilizationPercentage` field has been replaced with an array called `metrics`.
+The CPU utilization metric is a *resource metric*, since it is represented as a percentage of a resource
+specified on pod containers.  Notice that you can specify other resource metrics besides CPU.  By default,
+the only other supported resource metric is memory.  These resources do not change names from cluster
+to cluster, and should always be available, as long as the `metrics.k8s.io` API is available.
+-->
+
+<p>需要注意的是，<code>targetCPUUtilizationPercentage</code> 字段已经被名为 <code>metrics</code> 的数组所取代。
+CPU利用率这个度量指标是一个<em>resource metric</em>(资源度量指标)，因为它表示容器上指定资源的百分比。
+除CPU外，您还可以指定其他资源度量指标。默认情况下，目前唯一支持的其他资源度量指标为内存。
+只要<code>metrics.k8s.io</code> API存在，这些资源度量指标就是可用的，并且他们不会在不同的Kubernetes集群中改变名称。</p>
+
+<!--
+You can also specify resource metrics in terms of direct values, instead of as percentages of the
+requested value, by using a `target` type of `AverageValue` instead of `AverageUtilization`, and
+setting the corresponding `target.averageValue` field instead of the `target.averageUtilization`.
+-->
+
+<p>您还可以指定资源度量指标使用绝对数值，而不是百分比，你需要将<code>target</code>类型<code>AverageUtilization</code>替换成<code>AverageValue</code>，同时
+将<code>target.averageUtilization</code>替换成<code>target.averageValue</code>并设定相应的值。</p>
+
+<!--
+There are two other types of metrics, both of which are considered *custom metrics*: pod metrics and
+object metrics.  These metrics may have names which are cluster specific, and require a more
+advanced cluster monitoring setup.
+-->
+
+<p>还有两种其他类型的度量指标，他们被认为是*custom metrics*（自定义度量指标）：
+即 Pod 度量指标和对象度量指标（pod metrics and object metrics）。
+这些度量指标可能具有特定于集群的名称，并且需要更高级的集群监控设置。</p>
+
+<!--
+The first of these alternative metric types is *pod metrics*.  These metrics describe pods, and
+are averaged together across pods and compared with a target value to determine the replica count.
+They work much like resource metrics, except that they *only* support a `target` type of `AverageValue`.
+-->
+
+<p>第一种可选的度量指标类型是 Pod 度量指标。这些指标从某一方面描述了Pod，在不同Pod之间进行平均，并通过与一个目标值比对来确定副本的数量。
+它们的工作方式与资源度量指标非常相像，差别是它们仅支持<code>target</code> 类型为<code>AverageValue</code>。</p>
+
+<!--
+Pod metrics are specified using a metric block like this:
+-->
+
+<p>Pod 度量指标通过如下代码块定义：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">type:<span style="color:#bbb"> </span>Pods<span style="color:#bbb">
+</span><span style="color:#bbb"></span>pods:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>metric:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>packets-per-second<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>target:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>type:<span style="color:#bbb"> </span>AverageValue<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>averageValue:<span style="color:#bbb"> </span>1k</code></pre></div>
+<!--
+The second alternative metric type is *object metrics*. These metrics describe a different
+object in the same namespace, instead of describing pods. The metrics are not necessarily
+fetched from the object; they only describe it. Object metrics support `target` types of
+both `Value` and `AverageValue`.  With `Value`, the target is compared directly to the returned
+metric from the API. With `AverageValue`, the value returned from the custom metrics API is divided
+by the number of pods before being compared to the target. The following example is the YAML
+representation of the `requests-per-second` metric.
+-->
+
+<p>第二种可选的度量指标类型是对象度量指标。相对于描述 Pod，这些度量指标用于描述一个在相同名字空间(namespace)中的其他对象。
+请注意这些度量指标用于描述这些对象，并非从对象中获取。
+对象度量指标支持的<code>target</code>类型包括<code>Value</code>和<code>AverageValue</code>。如果是<code>Value</code>类型，target值将直接与API返回的度量指标比较，
+而<code>AverageValue</code>类型，API返回的度量指标将按照 Pod 数量拆分，然后再与target值比较。
+下面的 YAML 文件展示了一个表示<code>requests-per-second</code>的度量指标。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">type:<span style="color:#bbb"> </span>Object<span style="color:#bbb">
+</span><span style="color:#bbb"></span>object:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>metric:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>requests-per-second<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>describedObject:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>apiVersion:<span style="color:#bbb"> </span>networking.k8s.io/v1beta1<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kind:<span style="color:#bbb"> </span>Ingress<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>main-route<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>target:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>type:<span style="color:#bbb"> </span>Value<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>value:<span style="color:#bbb"> </span>2k</code></pre></div>
+<!--
+If you provide multiple such metric blocks, the HorizontalPodAutoscaler will consider each metric in turn.
+The HorizontalPodAutoscaler will calculate proposed replica counts for each metric, and then choose the
+one with the highest replica count.
+-->
+
+<p>如果您指定了多个上述类型的度量指标，HorizontalPodAutoscaler 将会依次考量各个指标。
+HorizontalPodAutoscaler 将会计算每一个指标所提议的副本数量，然后最终选择一个最高值。</p>
+
+<!--
+For example, if you had your monitoring system collecting metrics about network traffic,
+you could update the definition above using `kubectl edit` to look like this:
+-->
+
+<p>比如，如果您的监控系统能够提供网络流量数据，您可以通过<code>kubectl edit</code>命令将上述 Horizontal Pod Autoscaler 的定义更改为：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>autoscaling/v2beta1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>HorizontalPodAutoscaler<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>php-apache<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>scaleTargetRef:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>php-apache<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>minReplicas:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>maxReplicas:<span style="color:#bbb"> </span><span style="color:#666">10</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>metrics:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>Resource<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resource:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>cpu<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>target:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>type:<span style="color:#bbb"> </span>AverageUtilization<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>averageUtilization:<span style="color:#bbb"> </span><span style="color:#666">50</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>Pods<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>pods:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>metric:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>packets-per-second<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>targetAverageValue:<span style="color:#bbb"> </span>1k<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>Object<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>object:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>metric:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>requests-per-second<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>describedObject:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>apiVersion:<span style="color:#bbb"> </span>networking.k8s.io/v1beta1<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>kind:<span style="color:#bbb"> </span>Ingress<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>main-route<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>target:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>kind:<span style="color:#bbb"> </span>Value<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>value:<span style="color:#bbb"> </span>10k<span style="color:#bbb">
+</span><span style="color:#bbb"></span>status:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>observedGeneration:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>lastScaleTime:<span style="color:#bbb"> </span>&lt;some-time<span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">  currentReplicas: 1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>desiredReplicas:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>currentMetrics:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>Resource<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resource:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>cpu<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>current:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>averageUtilization:<span style="color:#bbb"> </span><span style="color:#666">0</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>averageValue:<span style="color:#bbb"> </span><span style="color:#666">0</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>Object<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>object:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>metric:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>requests-per-second<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>describedObject:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>apiVersion:<span style="color:#bbb"> </span>networking.k8s.io/v1beta1<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>kind:<span style="color:#bbb"> </span>Ingress<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>main-route<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>current:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>value:<span style="color:#bbb"> </span>10k</code></pre></div>
+<!--
+Then, your HorizontalPodAutoscaler would attempt to ensure that each pod was consuming roughly
+50% of its requested CPU, serving 1000 packets per second, and that all pods behind the main-route
+Ingress were serving a total of 10000 requests per second.
+-->
+
+<p>然后，您的 HorizontalPodAutoscaler 将会尝试确保每个Pod的CPU利用率在50%以内，每秒能够服务1000个数据包请求，
+并确保所有在Ingress后的Pod每秒能够服务的请求总数达到10000个。</p>
+
+<!--
+### Autoscaling on more specific metrics
+-->
+
+<h3 id="多个度量指标下伸缩">多个度量指标下伸缩</h3>
+
+<!--
+Many metrics pipelines allow you to describe metrics either by name or by a set of additional
+descriptors called _labels_. For all non-resource metric types (pod, object, and external,
+described below), you can specify an additional label selector which is passed to your metric
+pipeline. For instance, if you collect a metric `http_requests` with the `verb`
+label, you can specify the following metric block to scale only on GET requests:
+-->
+
+<p>许多度量管道允许您通过名称或附加的_labels_来描述度量指标。对于所有非资源类型度量指标(pod、object和后面将介绍的external)，
+，可以额外指定一个标签选择器。例如，如果你希望收集包含<code>verb</code>标签的<code>http_requests</code>度量指标，
+你可以在 GET 请求中指定需要的度量指标，如下所示：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">type:<span style="color:#bbb"> </span>Object<span style="color:#bbb">
+</span><span style="color:#bbb"></span>object:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>metric:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>`http_requests`<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>selector:<span style="color:#bbb"> </span>`verb=GET`</code></pre></div>
+<!--
+This selector uses the same syntax as the full Kubernetes label selectors. The monitoring pipeline
+determines how to collapse multiple series into a single value, if the name and selector
+match multiple series. The selector is additive, and cannot select metrics
+that describe objects that are **not** the target object (the target pods in the case of the `Pods`
+type, and the described object in the case of the `Object` type).
+-->
+
+<p>这个选择器使用与 Kubernetes 标签选择器相同的语法。
+如果名称和标签选择器匹配到多个系列，监测管道会决定如何将多个系列合并成单个值。
+选择器是附加的，它不会选择目标以外的对象（类型为<code>Pods</code>的目标和类型为<code>Object</code>的目标）。</p>
+
+<!--
+### Autoscaling on metrics not related to Kubernetes objects
+-->
+
+<h3 id="基于kubernetes以外的度量指标伸缩">基于Kubernetes以外的度量指标伸缩</h3>
+
+<!--
+Applications running on Kubernetes may need to autoscale based on metrics that don't have an obvious
+relationship to any object in the Kubernetes cluster, such as metrics describing a hosted service with
+no direct correlation to Kubernetes namespaces. In Kubernetes 1.10 and later, you can address this use case
+with *external metrics*.
+-->
+
+<p>运行在 Kubernetes 上的应用程序可能需要基于与 Kubernetes 集群中的任何对象没有明显关系的度量指标进行自动伸缩，
+例如那些描述不在 Kubernetes 任何 namespaces 服务的度量指标。</p>
+
+<!--
+Using external metrics requires knowledge of your monitoring system; the setup is
+similar to that required when using custom metrics. External metrics allow you to autoscale your cluster
+based on any metric available in your monitoring system. Just provide a `metric` block with a
+`name` and `selector`, as above, and use the `External` metric type instead of `Object`.
+If multiple time series are matched by the `metricSelector`,
+the sum of their values is used by the HorizontalPodAutoscaler.
+External metrics support both the `Value` and `AverageValue` target types, which function exactly the same
+as when you use the `Object` type.
+-->
+
+<p>使用外部的度量指标，需要了解你使用的监控系统，相关的设置与使用自定义试题指标类似。
+External metrics 可以使用你的监控系统的任何指标来自动伸缩你的集群。你只需要在<code>metric</code>块中提供<code>name</code> 和 <code>selector</code>，同时将类型由<code>Object</code>改为<code>External</code>。
+如果<code>metricSelector</code>匹配到多个度量指标，HorizontalPodAutoscaler 将会把它们加和。
+External metrics 同时支持<code>Value</code>和<code>AverageValue</code>类型，这与<code>Object</code>类型的度量指标相同。</p>
+
+<!--
+For example if your application processes tasks from a hosted queue service, you could add the following
+section to your HorizontalPodAutoscaler manifest to specify that you need one worker per 30 outstanding tasks.
+-->
+
+<p>例如，如果你的应用程序处理主机上的消息队列，
+为了让每30个任务有1个worker，你可以将下面的内容添加到 HorizontalPodAutoscaler 的配置中。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>External<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>external:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metric:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>queue_messages_ready<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>selector:<span style="color:#bbb"> </span><span style="color:#b44">&#34;queue=worker_tasks&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>target:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>type:<span style="color:#bbb"> </span>AverageValue<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>averageValue:<span style="color:#bbb"> </span><span style="color:#666">30</span></code></pre></div>
+<!--
+When possible, it's preferable to use the custom metric target types instead of external metrics, since it's
+easier for cluster administrators to secure the custom metrics API.  The external metrics API potentially allows
+access to any metric, so cluster administrators should take care when exposing it.
+-->
+
+<p>如果可能，还是推荐 custom metric 而不是 external metrics，因为这便于让系统管理员加固 custom metrics API。
+而 external metrics API 可以允许访问所有的度量指标，当暴露这些服务时，系统管理员需要仔细考虑这个问题。</p>
+
+<!--
+## Appendix: Horizontal Pod Autoscaler Status Conditions
+-->
+
+<h2 id="附录-horizontal-pod-autoscaler状态条件">附录：Horizontal Pod Autoscaler状态条件</h2>
+
+<!--
+When using the `autoscaling/v2beta2` form of the HorizontalPodAutoscaler, you will be able to see
+*status conditions* set by Kubernetes on the HorizontalPodAutoscaler.  These status conditions indicate
+whether or not the HorizontalPodAutoscaler is able to scale, and whether or not it is currently restricted
+in any way.
+-->
+
+<p>当使用<code>autoscaling/v2beta2</code>格式的 HorizontalPodAutoscaler 时，您将可以看到 Kubernetes 为 HorizongtalPodAutoscaler 设置的状态条件（status conditions）。
+这些状态条件可以显示当前 HorizontalPodAutoscaler 是否能够执行伸缩以及是否受到一定的限制。</p>
+
+<!--
+The conditions appear in the `status.conditions` field.  To see the conditions affecting a HorizontalPodAutoscaler,
+we can use `kubectl describe hpa`:
+-->
+
+<p><code>status.conditions</code>字段展示了这些状态条件。
+可以通过<code>kubectl describe hpa</code>命令查看当前影响 HorizontalPodAutoscaler 的各种状态条件信息：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe hpa cm-test</code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">Name:                           cm-test
+Namespace:                      prom
+Labels:                         &lt;none&gt;
+Annotations:                    &lt;none&gt;
+CreationTimestamp:              Fri, <span style="color:#666">16</span> Jun <span style="color:#666">2017</span> <span style="color:#666">18</span>:09:22 +0000
+Reference:                      ReplicationController/cm-test
+Metrics:                        <span style="color:#666">(</span> current / target <span style="color:#666">)</span>
+  <span style="color:#b44">&#34;http_requests&#34;</span> on pods:      66m / 500m
+Min replicas:                   <span style="color:#666">1</span>
+Max replicas:                   <span style="color:#666">4</span>
+ReplicationController pods:     <span style="color:#666">1</span> current / <span style="color:#666">1</span> desired
+Conditions:
+  Type                  Status  Reason                  Message
+  ----                  ------  ------                  -------
+  AbleToScale           True    ReadyForNewScale        the last scale <span style="color:#a2f">time</span> was sufficiently old as to warrant a new scale
+  ScalingActive         True    ValidMetricFound        the HPA was able to successfully calculate a replica count from pods metric http_requests
+  ScalingLimited        False   DesiredWithinRange      the desired replica count is within the acceptable range
+Events:</code></pre></div>
+<!--
+For this HorizontalPodAutoscaler, we can see several conditions in a healthy state.  The first,
+`AbleToScale`, indicates whether or not the HPA is able to fetch and update scales, as well as
+whether or not any backoff-related conditions would prevent scaling.  The second, `ScalingActive`,
+indicates whether or not the HPA is enabled (i.e. the replica count of the target is not zero) and
+is able to calculate desired scales. When it is `False`, it generally indicates problems with
+fetching metrics.  Finally, the last condition, `ScalingLimited`, indicates that the desired scale
+was capped by the maximum or minimum of the HorizontalPodAutoscaler.  This is an indication that
+you may wish to raise or lower the minimum or maximum replica count constraints on your
+HorizontalPodAutoscaler.
+-->
+
+<p>对于上面展示的这个 HorizontalPodAutoscaler，我们可以看出有若干状态条件处于健康状态。
+首先，<code>AbleToScale</code> 表明 HPA 是否可以获取和更新伸缩信息，以及是否存在阻止伸缩的各种回退条件。
+其次，<code>ScalingActive</code> 表明HPA是否被启用（即目标的副本数量不为零） 以及是否能够完成伸缩计算。
+当这一状态为 <code>False</code> 时，通常表明获取度量指标存在问题。
+最后一个条件 <code>ScalingLimitted</code> 表明所需伸缩的值被 HorizontalPodAutoscaler 所定义的最大或者最小值所限制（即已经达到最大或者最小伸缩值）。
+这通常表明您可能需要调整 HorizontalPodAutoscaler 所定义的最大或者最小副本数量的限制了。</p>
+
+<!--
+## Appendix: Quantities
+-->
+
+<h2 id="附录-quantities">附录：Quantities</h2>
+
+<!--
+All metrics in the HorizontalPodAutoscaler and metrics APIs are specified using
+a special whole-number notation known in Kubernetes as a *quantity*.  For example,
+the quantity `10500m` would be written as `10.5` in decimal notation.  The metrics APIs
+will return whole numbers without a suffix when possible, and will generally return
+quantities in milli-units otherwise.  This means you might see your metric value fluctuate
+between `1` and `1500m`, or `1` and `1.5` when written in decimal notation.  See the
+[glossary entry on quantities](/docs/reference/glossary?core-object=true#term-quantity) for more information.
+-->
+
+<p>HorizontalPodAutoscaler 和 metrics api 中的所有的度量指标使用 Kubernetes 中称为 <em>quantity</em> （）殊整数表示。
+例如，数量<code>10500m</code>用十进制表示为<code>10.5</code>。
+如果可能的话，metrics api 将返回没有后缀的整数，否则返回以千分单位的数量。
+这意味着您可能会看到您的度量指标在<code>1</code>和<code>1500m</code>之间波动，或者在十进制记数法中的<code>1</code>和<code>1.5</code>。
+更多信息，请参阅<a href="/docs/reference/glossary?core-object=true#term-quantity">度量术语</a></p>
+
+<!--
+## Appendix: Other possible scenarios
+-->
+
+<h2 id="附录-其他可能的情况">附录：其他可能的情况</h2>
+
+<!--
+### Creating the autoscaler declaratively
+-->
+
+<h3 id="使用yaml文件创建-autoscaler">使用YAML文件创建 autoscaler</h3>
+
+<!--
+Instead of using `kubectl autoscale` command to create a HorizontalPodAutoscaler imperatively we
+can use the following file to create it declaratively:
+-->
+
+<p>除了使用 <code>kubectl autoscale</code> 命令，也可以文件创建 HorizontalPodAutoscaler ：</p>
+
+<table class="includecode" id="application-hpa-php-apache-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/application/hpa/php-apache.yaml" download="application/hpa/php-apache.yaml">
+                    <code>application/hpa/php-apache.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('application-hpa-php-apache-yaml')" title="Copy application/hpa/php-apache.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>autoscaling/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>HorizontalPodAutoscaler<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>php-apache<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>scaleTargetRef:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>php-apache<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>minReplicas:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>maxReplicas:<span style="color:#bbb"> </span><span style="color:#666">10</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>targetCPUUtilizationPercentage:<span style="color:#bbb"> </span><span style="color:#666">50</span><span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!--
+We will create the autoscaler by executing the following command:
+-->
+
+<p>使用如下命令创建 autoscaler：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f https://k8s.io/examples/application/hpa/php-apache.yaml</code></pre></div>
+<pre><code>horizontalpodautoscaler.autoscaling/php-apache created
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/tasks\/run-application\/horizontal-pod-autoscale-walkthrough\/",
+    "title" : "Horizontal Pod Autoscaler演练",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/tasks\/run-application\/horizontal-pod-autoscale-walkthrough\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 December 25, 2019 at 8:51 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/b8b2cc7c7443e32de70834a2b3d2186cae6eea5a/">ZH-trans: merge release1.16-temporary to master (#18217)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

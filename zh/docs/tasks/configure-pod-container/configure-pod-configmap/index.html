@@ -1,0 +1,3315 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>使用 ConfigMap 配置 Pod - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/tasks/configure-pod-container/configure-pod-configmap/">
+<meta property="og:title" content="使用 ConfigMap 配置 Pod">
+<meta name="twitter:title" content="使用 ConfigMap 配置 Pod">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/tasks/configure-pod-container/configure-pod-configmap/">English</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/tasks/configure-pod-container/configure-pod-configmap/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/tasks/configure-pod-container/configure-pod-configmap/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/tasks/configure-pod-container/configure-pod-configmap/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/tasks/configure-pod-container/configure-pod-configmap/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/tasks/configure-pod-container/configure-pod-configmap/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+<h1>任务</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/" class="YAH">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="任务" href="/zh/docs/tasks/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="安装工具">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装工具" href="/zh/docs/tasks/tools/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="安装并设置 kubectl" href="/zh/docs/tasks/tools/install-kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装 Minikube" href="/zh/docs/tasks/tools/install-minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群" href="/zh/docs/tasks/administer-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="用 kubeadm 进行管理">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="用 kubeadm 进行管理" href="/zh/docs/tasks/administer-cluster/kubeadm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 进行证书管理" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="升级 kubeadm 集群" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理内存，CPU 和 API 资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理内存，CPU 和 API 资源" href="/zh/docs/tasks/administer-cluster/manage-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的内存请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的CPU请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间的最小和最大内存约束" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置CPU最小和最大限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置内存和 CPU 配额" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间下pod总数" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-pod-namespace/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Install a Network Policy Provider">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Install a Network Policy Provider" href="/zh/docs/tasks/administer-cluster/network-policy-provider/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Calico 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/calico-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Cilium 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/cilium-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kube-router 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/kube-router-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Romana 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/romana-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Weave Net 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/weave-network-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debug DNS 方案" href="/zh/docs/tasks/administer-cluster/dns-debugging-resolution/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Enabling Service Topology <small>(EN)</small>" href="/docs/tasks/administer-cluster/enabling-service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IP Masquerade Agent 用户指南" href="/zh/docs/tasks/administer-cluster/ip-masq-agent/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 云管理控制器" href="/zh/docs/tasks/administer-cluster/running-cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Safely Drain a Node while Respecting the PodDisruptionBudget <small>(EN)</small>" href="/docs/tasks/administer-cluster/safely-drain-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Kubernetes 运行 etcd 集群" href="/zh/docs/tasks/administer-cluster/configure-upgrade-etcd/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为系统守护进程预留计算资源" href="/zh/docs/tasks/administer-cluster/reserve-compute-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为节点发布扩展资源" href="/zh/docs/tasks/administer-cluster/extended-resource-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 CoreDNS 进行服务发现" href="/zh/docs/tasks/administer-cluster/coredns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 KMS 提供商进行数据加密" href="/zh/docs/tasks/administer-cluster/kms-provider/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kubernetes API 访问集群" href="/zh/docs/tasks/administer-cluster/access-cluster-api/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="关键插件 Pod 的调度保证" href="/zh/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="启用端点切片" href="/zh/docs/tasks/administer-cluster/enabling-endpointslices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间演练" href="/zh/docs/tasks/administer-cluster/namespaces-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 NodeLocal DNSCache" href="/zh/docs/tasks/administer-cluster/nodelocaldns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 sysctl" href="/zh/docs/tasks/administer-cluster/sysctl-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在实时集群上重新配置节点的 Kubelet" href="/zh/docs/tasks/administer-cluster/reconfigure-kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="声明网络策略" href="/zh/docs/tasks/administer-cluster/declare-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="开发云控制器管理器" href="/zh/docs/tasks/administer-cluster/developing-cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的 CPU 管理策略" href="/zh/docs/tasks/administer-cluster/cpu-management-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的拓扑管理策略" href="/zh/docs/tasks/administer-cluster/topology-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="搭建高可用的 Kubernetes Masters" href="/zh/docs/tasks/administer-cluster/highly-available-master/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="改变默认 StorageClass" href="/zh/docs/tasks/administer-cluster/change-default-storage-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="更改 PersistentVolume 的回收策略" href="/zh/docs/tasks/administer-cluster/change-pv-reclaim-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="自定义 DNS 服务" href="/zh/docs/tasks/administer-cluster/dns-custom-nameservers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群上运行的服务" href="/zh/docs/tasks/administer-cluster/access-cluster-services/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过命名空间共享集群" href="/zh/docs/tasks/administer-cluster/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过配置文件设置 Kubelet 参数" href="/zh/docs/tasks/administer-cluster/kubelet-config-file/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 API 对象配额" href="/zh/docs/tasks/administer-cluster/quota-api-object/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置多个调度器" href="/zh/docs/tasks/administer-cluster/configure-multiple-schedulers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置资源不足时的处理方式" href="/zh/docs/tasks/administer-cluster/out-of-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="限制存储消耗" href="/zh/docs/tasks/administer-cluster/limit-storage-consumption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群 DNS 服务自动伸缩" href="/zh/docs/tasks/administer-cluster/dns-horizontal-autoscaling/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群安全" href="/zh/docs/tasks/administer-cluster/securing-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群管理" href="/zh/docs/tasks/administer-cluster/cluster-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="静态加密 Secret 数据" href="/zh/docs/tasks/administer-cluster/encrypt-data/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置 Pods 和容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置 Pods 和容器" href="/zh/docs/tasks/configure-pod-container/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器和 Pod 分配内存资源" href="/zh/docs/tasks/configure-pod-container/assign-memory-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Assign CPU Resources to Containers and Pods" href="/zh/docs/tasks/configure-pod-container/assign-cpu-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure GMSA for Windows Pods and containers <small>(EN)</small>" href="/docs/tasks/configure-pod-container/configure-gmsa/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Windows 的 pod 和容器配置 RunAsUserName" href="/zh/docs/tasks/configure-pod-container/configure-runasusername/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 的服务质量" href="/zh/docs/tasks/configure-pod-container/quality-service-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器分派扩展资源" href="/zh/docs/tasks/configure-pod-container/extended-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用卷进行存储" href="/zh/docs/tasks/configure-pod-container/configure-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用 PersistentVolume 作为存储" href="/zh/docs/tasks/configure-pod-container/configure-persistent-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 使用投射卷作存储" href="/zh/docs/tasks/configure-pod-container/configure-projected-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure a Security Context for a Pod or Container <small>(EN)</small>" href="/docs/tasks/configure-pod-container/security-context/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Pod 配置服务账户" href="/zh/docs/tasks/configure-pod-container/configure-service-account/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="从私有仓库拉取镜像" href="/zh/docs/tasks/configure-pod-container/pull-image-private-registry/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置存活、就绪和启动探测器" href="/zh/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/tasks/configure-pod-container/assign-pods-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 初始化" href="/zh/docs/tasks/configure-pod-container/configure-pod-initialization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器的生命周期事件设置处理函数" href="/zh/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ConfigMap 配置 Pod" href="/zh/docs/tasks/configure-pod-container/configure-pod-configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Pod 中的容器之间共享进程命名空间" href="/zh/docs/tasks/configure-pod-container/share-process-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建静态 Pod" href="/zh/docs/tasks/configure-pod-container/static-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Docker Compose 文件转换为 Kubernetes 资源" href="/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理 Kubernetes 对象" href="/zh/docs/tasks/manage-kubernetes-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Configuration Files <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/declarative-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Kustomize <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/kustomization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Kubernetes Objects Using Imperative Commands <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/imperative-command/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用配置文件对 Kubernetes 对象进行命令式管理" href="/zh/docs/tasks/manage-kubernetes-objects/imperative-config/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="给应用注入数据">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="给应用注入数据" href="/zh/docs/tasks/inject-data-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器设置启动时要执行的命令及其入参" href="/zh/docs/tasks/inject-data-application/define-command-argument-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器设置环境变量" href="/zh/docs/tasks/inject-data-application/define-environment-variable-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 PodPreset 将信息注入 Pods" href="/zh/docs/tasks/inject-data-application/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Secret 安全地分发凭证" href="/zh/docs/tasks/inject-data-application/distribute-credentials-secure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过文件将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过环境变量将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/environment-variable-expose-pod-information/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行应用" href="/zh/docs/tasks/run-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="运行一个有状态的应用程序" href="/zh/docs/tasks/run-application/run-replicated-stateful-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubectl patch 更新 API 对象" href="/zh/docs/tasks/run-application/update-api-object-kubectl-patch/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="删除 StatefulSet" href="/zh/docs/tasks/run-application/delete-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="强制删除 StatefulSet 类型的 Pods" href="/zh/docs/tasks/run-application/force-delete-stateful-set-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="基于Replication Controller执行滚动升级" href="/zh/docs/tasks/run-application/rolling-update-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 水平自动伸缩" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Horizontal Pod Autoscaler演练" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="指定应用程序的中断预算（Disruption Budget）" href="/zh/docs/tasks/run-application/configure-pdb/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用Deployment运行一个无状态应用" href="/zh/docs/tasks/run-application/run-stateless-application-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="弹缩StatefulSet" href="/zh/docs/tasks/run-application/scale-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="运行一个单实例有状态应用" href="/zh/docs/tasks/run-application/run-single-instance-stateful-application/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行 Jobs">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行 Jobs" href="/zh/docs/tasks/job/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 CronJob 运行自动化任务" href="/zh/docs/tasks/job/automated-tasks-with-cron-jobs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用扩展进行并行处理" href="/zh/docs/tasks/job/parallel-processing-expansion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行粗粒度并行处理" href="/zh/docs/tasks/job/coarse-parallel-processing-work-queue/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行精细的并行处理" href="/zh/docs/tasks/job/fine-parallel-processing-work-queue/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="访问集群中的应用程序">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="访问集群中的应用程序" href="/zh/docs/tasks/access-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网页界面 (Dashboard)" href="/zh/docs/tasks/access-application-cluster/web-ui-dashboard/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群" href="/zh/docs/tasks/access-application-cluster/access-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用端口转发来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/port-forward-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用服务来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/service-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建一个外部负载均衡器" href="/zh/docs/tasks/access-application-cluster/create-external-load-balancer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置你的云平台防火墙" href="/zh/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up Ingress on Minikube with the NGINX Ingress Controller <small>(EN)</small>" href="/docs/tasks/access-application-cluster/ingress-minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="列出集群中所有运行容器的镜像" href="/zh/docs/tasks/access-application-cluster/list-all-running-container-images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为集群配置 DNS" href="/zh/docs/tasks/access-application-cluster/configure-dns-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Service 把前端连接到后端" href="/zh/docs/tasks/access-application-cluster/connecting-frontend-backend/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="同 Pod 内的容器使用共享卷通信" href="/zh/docs/tasks/access-application-cluster/communicate-containers-same-pod-shared-volume/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置对多集群的访问" href="/zh/docs/tasks/access-application-cluster/configure-access-multiple-clusters/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="监控、日志和排错">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="监控、日志和排错" href="/zh/docs/tasks/debug-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Auditing" href="/zh/docs/tasks/debug-application-cluster/audit/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Auditing with Falco <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/falco/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Logging Using Stackdriver <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/logging-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StackDriver 中的事件" href="/zh/docs/tasks/debug-application-cluster/events-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 crictl 对 Kubernetes 节点进行调试" href="/zh/docs/tasks/debug-application-cluster/crictl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ElasticSearch 和 Kibana 进行日志管理" href="/zh/docs/tasks/debug-application-cluster/logging-elasticsearch-kibana/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在本地开发和调试服务" href="/zh/docs/tasks/debug-application-cluster/local-debugging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用自测与调试" href="/zh/docs/tasks/debug-application-cluster/debug-application-introspection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="排错" href="/zh/docs/tasks/debug-application-cluster/troubleshooting/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="确定 Pod 失败的原因" href="/zh/docs/tasks/debug-application-cluster/determine-reason-pod-failure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="节点健康监测" href="/zh/docs/tasks/debug-application-cluster/monitor-node-health/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="获取正在运行容器的 Shell" href="/zh/docs/tasks/debug-application-cluster/get-shell-running-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Init 容器" href="/zh/docs/tasks/debug-application-cluster/debug-init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Pods 和 Replication Controllers" href="/zh/docs/tasks/debug-application-cluster/debug-pod-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Service" href="/zh/docs/tasks/debug-application-cluster/debug-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试StatefulSet" href="/zh/docs/tasks/debug-application-cluster/debug-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源指标管道" href="/zh/docs/tasks/debug-application-cluster/resource-metrics-pipeline/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源监控工具" href="/zh/docs/tasks/debug-application-cluster/resource-usage-monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-cluster/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/tasks/access-kubernetes-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="使用自定义资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用自定义资源" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Extend the Kubernetes API with CustomResourceDefinitions <small>(EN)</small>" href="/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用户自定义资源版本" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definition-versioning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置聚合层" href="/zh/docs/tasks/access-kubernetes-api/configure-aggregation-layer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="设置一个扩展的 API server" href="/zh/docs/tasks/access-kubernetes-api/setup-extension-api-server/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HTTP 代理访问 Kubernetes API" href="/zh/docs/tasks/access-kubernetes-api/http-proxy-access-api/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="TLS">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="管理集群中的 TLS 认证" href="/zh/docs/tasks/tls/managing-tls-in-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书轮换" href="/zh/docs/tasks/tls/certificate-rotation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="联邦 - 在多个集群上运行一个应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="联邦 - 在多个集群上运行一个应用" href="/zh/docs/tasks/federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="将 CoreDNS 设置为联邦集群的 DNS 提供者" href="/zh/docs/tasks/federation/set-up-coredns-provider-federation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用联合服务来实现跨集群的服务发现" href="/zh/docs/tasks/federation/federation-service-discovery/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="管理联邦控制平面">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理联邦控制平面" href="/zh/docs/tasks/federation/administer-federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="联邦 ConfigMap" href="/zh/docs/tasks/federation/administer-federation/configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 DaemonSet" href="/zh/docs/tasks/federation/administer-federation/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Deployment" href="/zh/docs/tasks/federation/administer-federation/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Job" href="/zh/docs/tasks/federation/administer-federation/job/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 ReplicaSet" href="/zh/docs/tasks/federation/administer-federation/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Secret" href="/zh/docs/tasks/federation/administer-federation/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦事件" href="/zh/docs/tasks/federation/administer-federation/events/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦命名空间" href="/zh/docs/tasks/federation/administer-federation/namespaces/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在联邦中设置放置策略" href="/zh/docs/tasks/federation/set-up-placement-policies-federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群守护进程">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群守护进程" href="/zh/docs/tasks/manage-daemon/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行回滚" href="/zh/docs/tasks/manage-daemon/rollback-daemon-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行滚动更新" href="/zh/docs/tasks/manage-daemon/update-daemon-set/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安装服务目录">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装服务目录" href="/zh/docs/tasks/service-catalog/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Helm 安装 Service Catalog" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-helm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 SC 安装服务目录" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-sc/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="网络">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="网络" href="/zh/docs/tasks/network/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="验证 IPv4/IPv6 双协议栈" href="/zh/docs/tasks/network/validate-dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用插件扩展 kubectl" href="/zh/docs/tasks/extend-kubectl/kubectl-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理巨页（HugePages）" href="/zh/docs/tasks/manage-hugepages/scheduling-hugepages/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度 GPUs" href="/zh/docs/tasks/manage-gpus/scheduling-gpus/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/configure-pod-container/configure-pod-configmap.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>使用 ConfigMap 配置 Pod</h1>
+
+
+
+
+<!-- ConfigMaps allow you to decouple configuration artifacts from image content to keep containerized applications portable. This page provides a series of usage examples demonstrating how to create ConfigMaps and configure Pods using data stored in ConfigMaps. -->
+
+<p>ConfigMap 允许您将配置文件与镜像文件分离，以使容器化的应用程序具有可移植性。该页面提供了一系列使用示例，这些示例演示了如何使用存储在 ConfigMap 中的数据创建 ConfigMap 和配置 Pod。</p>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%87%86%e5%a4%87%e5%bc%80%e5%a7%8b">准备开始</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%88%9b%e5%bb%ba-configmap">创建 ConfigMap</a></li>
+
+
+
+
+<li><a href="#%e4%bd%bf%e7%94%a8-configmap-%e6%95%b0%e6%8d%ae%e5%ae%9a%e4%b9%89%e5%ae%b9%e5%99%a8%e7%8e%af%e5%a2%83%e5%8f%98%e9%87%8f">使用 ConfigMap 数据定义容器环境变量</a></li>
+
+
+
+
+<li><a href="#%e5%b0%86-configmap-%e4%b8%ad%e7%9a%84%e6%89%80%e6%9c%89%e9%94%ae%e5%80%bc%e5%af%b9%e9%85%8d%e7%bd%ae%e4%b8%ba%e5%ae%b9%e5%99%a8%e7%8e%af%e5%a2%83%e5%8f%98%e9%87%8f">将 ConfigMap 中的所有键值对配置为容器环境变量</a></li>
+
+
+
+
+<li><a href="#%e5%9c%a8-pod-%e5%91%bd%e4%bb%a4%e4%b8%ad%e4%bd%bf%e7%94%a8-configmap-%e5%ae%9a%e4%b9%89%e7%9a%84%e7%8e%af%e5%a2%83%e5%8f%98%e9%87%8f">在 Pod 命令中使用 ConfigMap 定义的环境变量</a></li>
+
+
+
+
+<li><a href="#%e5%b0%86-configmap-%e6%95%b0%e6%8d%ae%e6%b7%bb%e5%8a%a0%e5%88%b0%e4%b8%80%e4%b8%aa%e5%ae%b9%e5%99%a8%e4%b8%ad">将 ConfigMap 数据添加到一个容器中</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e4%ba%86%e8%a7%a3-configmap-%e5%92%8c-pod">了解 ConfigMap 和 Pod</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e6%8e%a5%e4%b8%8b%e6%9d%a5">接下来</a></li>
+
+
+
+</ul>
+
+
+
+<h2 id="准备开始">准备开始</h2>
+<p>你必须拥有一个 Kubernetes 的集群，同时你的 Kubernetes 集群必须带有 kubectl 命令行工具。
+如果你还没有集群，你可以通过 <a href="/docs/getting-started-guides/minikube">Minikube</a> 构建一
+个你自己的集群，或者你可以使用下面任意一个 Kubernetes 工具构建：
+<!--
+You need to have a Kubernetes cluster, and the kubectl command-line tool must
+be configured to communicate with your cluster. If you do not already have a
+cluster, you can create one by using
+[Minikube](/docs/getting-started-guides/minikube),
+or you can use one of these Kubernetes playgrounds:
+--></p>
+
+<ul>
+<li><a href="https://www.katacoda.com/courses/kubernetes/playground" target="_blank">Katacoda</a></li>
+<li><a href="http://labs.play-with-k8s.com/" target="_blank">Play with Kubernetes</a></li>
+</ul>
+ 
+
+<p>要获知版本信息，请输入 <code>kubectl version</code>.</p>
+
+
+
+
+<!-- ## Create a ConfigMap
+You can use either `kubectl create configmap` or a ConfigMap generator in `kustomization.yaml` to create a ConfigMap. Note that `kubectl` starts to support `kustomization.yaml` since 1.14. -->
+
+<h2 id="创建-configmap">创建 ConfigMap</h2>
+
+<p>您可以在 <code>kustomization.yaml</code> 中使用 <code>kubectl create configmap</code> 或 ConfigMap 生成器来创建ConfigMap。注意，从 1.14 版本开始， <code>kubectl</code> 开始支持 <code>kustomization.yaml</code>。</p>
+
+<!-- ### Create a ConfigMap Using kubectl create configmap -->
+
+<h3 id="使用-kubectl-创建-configmap">使用 kubectl 创建 ConfigMap</h3>
+
+<!-- Use the `kubectl create configmap` command to create configmaps from [directories](#create-configmaps-from-directories), [files](#create-configmaps-from-files), or [literal values](#create-configmaps-from-literal-values): -->
+
+<p>在<a href="#create-configmaps-from-directories">目录</a>, <a href="#create-configmaps-from-files">文件</a>, 或者<a href="#create-configmaps-from-literal-values">文字值</a>中使用 <code>kubectl create configmap</code> 命令创建configmap：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create configmap &lt;map-name&gt; &lt;data-source&gt;</code></pre></div>
+<!-- where \<map-name> is the name you want to assign to the ConfigMap and \<data-source> is the directory, file, or literal value to draw the data from. -->
+
+<p>其中， &lt;map-name&gt; 是要分配给 ConfigMap 的名称，&lt;data-source&gt; 是要从中提取数据的目录，文件或者文字值。</p>
+
+<!-- The data source corresponds to a key-value pair in the ConfigMap, where -->
+
+<p>数据源对应于 ConfigMap 中的 key-value (键值对)</p>
+
+<!-- * key = the file name or the key you provided on the command line, and
+* value = the file contents or the literal value you provided on the command line. -->
+
+<ul>
+<li>key = 您在命令行上提供的文件名或者密钥</li>
+<li>value = 您在命令行上提供的文件内容或者文字值</li>
+</ul>
+
+<!-- You can use [`kubectl describe`](/docs/reference/generated/kubectl/kubectl-commands/#describe) or
+[`kubectl get`](/docs/reference/generated/kubectl/kubectl-commands/#get) to retrieve information
+about a ConfigMap. -->
+
+<p>您可以使用<a href="/docs/reference/generated/kubectl/kubectl-commands/#describe"><code>kubectl describe</code></a>或者
+<a href="/docs/reference/generated/kubectl/kubectl-commands/#get"><code>kubectl get</code></a>检索有关 ConfigMap 的信息。</p>
+
+<!-- #### Create ConfigMaps from directories
+
+You can use `kubectl create configmap` to create a ConfigMap from multiple files in the same directory. -->
+
+<h4 id="根据目录创建-configmap">根据目录创建 ConfigMap</h4>
+
+<!-- You can use `kubectl create configmap` to create a ConfigMap from multiple files in the same directory.
+
+For example: -->
+
+<p>你可以使用 <code>kubectl create configmap</code> 从同一目录中的多个文件创建 ConfigMap。</p>
+
+<p>例如：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#080;font-style:italic"># 创建本地目录</span>
+mkdir -p configure-pod-container/configmap/
+
+<span style="color:#080;font-style:italic"># 将样本文件下载到 `configure-pod-container/configmap/` 目录</span>
+wget https://kubernetes.io/examples/configmap/game.properties -O configure-pod-container/configmap/game.properties
+wget https://kubernetes.io/examples/configmap/ui.properties -O configure-pod-container/configmap/ui.properties
+
+<span style="color:#080;font-style:italic"># 创建 configmap</span>
+kubectl create c game-config --from-file<span style="color:#666">=</span>configure-pod-container/configmap/</code></pre></div>
+<!-- combines the contents of the `configure-pod-container/configmap/` directory -->
+
+<p>合并 <code>configure-pod-container/configmap/</code> 目录的内容</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">game.properties
+ui.properties</code></pre></div>
+<!-- into the following ConfigMap: -->
+
+<p>进入以下 ConfigMap 中：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe configmaps game-config</code></pre></div>
+<!-- where the output is similar to this: -->
+
+<p>输出类似以下内容：</p>
+
+<pre><code>Name:           game-config
+Namespace:      default
+Labels:         &lt;none&gt;
+Annotations:    &lt;none&gt;
+
+Data
+====
+game.properties:        158 bytes
+ui.properties:          83 bytes
+</code></pre>
+
+<!-- The `game.properties` and `ui.properties` files in the `configure-pod-container/configmap/` directory are represented in the `data` section of the ConfigMap. -->
+
+<p><code>configure-pod-container/configmap/</code> 目录中的 <code>game.properties</code> 和 <code>ui.properties</code> 文件在 ConfigMap 的 <code>data</code> 部分中表示。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get configmaps game-config -o yaml</code></pre></div>
+<!-- The output is similar to this: -->
+
+<p>输出类似以下内容:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>creationTimestamp:<span style="color:#bbb"> </span>2016-02-18T18:52:05Z<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>game-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resourceVersion:<span style="color:#bbb"> </span><span style="color:#b44">&#34;516&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selfLink:<span style="color:#bbb"> </span>/api/v1/namespaces/default/configmaps/game-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>uid:<span style="color:#bbb"> </span>b4952dc3-d670<span style="color:#666">-11e5</span>-8cd0-68f728db1985<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>game.properties:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    enemies=aliens</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>lives=<span style="color:#666">3</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>enemies.cheat=<span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>enemies.cheat.level=noGoodRotten<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>secret.code.passphrase=UUDDLRLRBABAS<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>secret.code.allowed=<span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>secret.code.lives=<span style="color:#666">30</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ui.properties:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    color.good=purple</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>color.bad=yellow<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>allow.textmode=<span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>how.nice.to.look=fairlyNice</code></pre></div>
+<!-- #### Create ConfigMaps from files -->
+
+<h4 id="根据文件创建-configmap">根据文件创建 ConfigMap</h4>
+
+<!-- You can use `kubectl create configmap` to create a ConfigMap from an individual file, or from multiple files.
+
+For example, -->
+
+<p>您可以使用 <code>kubectl create configmap</code> 从单个文件或多个文件创建 ConfigMap。</p>
+
+<p>例如</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create configmap game-config-2 --from-file<span style="color:#666">=</span>configure-pod-container/configmap/game.properties</code></pre></div>
+<!-- would produce the following ConfigMap: -->
+
+<p>将产生以下 ConfigMap:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe configmaps game-config-2</code></pre></div>
+<!-- where the output is similar to this: -->
+
+<p>输出类似以下内容:</p>
+
+<pre><code>Name:           game-config-2
+Namespace:      default
+Labels:         &lt;none&gt;
+Annotations:    &lt;none&gt;
+
+Data
+====
+game.properties:        158 bytes
+</code></pre>
+
+<!-- You can pass in the `--from-file` argument multiple times to create a ConfigMap from multiple data sources. -->
+
+<p>您可以传入多个 <code>--from-file</code> 参数，从多个数据源创建 ConfigMap。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create configmap game-config-2 --from-file<span style="color:#666">=</span>configure-pod-container/configmap/game.properties --from-file<span style="color:#666">=</span>configure-pod-container/configmap/ui.properties</code></pre></div>
+<!-- Describe the above `game-config-2` configmap created -->
+
+<p>描述上面创建的 <code>game-config-2</code> configmap</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe configmaps game-config-2</code></pre></div>
+<!-- The output is similar to this: -->
+
+<p>输出类似以下内容:</p>
+
+<pre><code>Name:           game-config-2
+Namespace:      default
+Labels:         &lt;none&gt;
+Annotations:    &lt;none&gt;
+
+Data
+====
+game.properties:        158 bytes
+ui.properties:          83 bytes
+</code></pre>
+
+<!-- Use the option `--from-env-file` to create a ConfigMap from an env-file, for example: -->
+
+<p>使用 <code>--from-env-file</code> 选项从环境文件创建 ConfigMap，例如：</p>
+
+<!-- ```shell
+# Env-files contain a list of environment variables.
+# These syntax rules apply:
+#   Each line in an env file has to be in VAR=VAL format.
+#   Lines beginning with # (i.e. comments) are ignored.
+#   Blank lines are ignored.
+#   There is no special handling of quotation marks (i.e. they will be part of the ConfigMap value)).
+
+# Download the sample files into `configure-pod-container/configmap/` directory
+wget https://kubernetes.io/examples/configmap/game-env-file.properties -O configure-pod-container/configmap/game-env-file.properties
+
+# The env-file `game-env-file.properties` looks like below
+cat configure-pod-container/configmap/game-env-file.properties
+enemies=aliens
+lives=3
+allowed="true" -->
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#080;font-style:italic"># 环境文件包含环境变量列表。</span>
+<span style="color:#080;font-style:italic"># 语法规则:</span>
+<span style="color:#080;font-style:italic">#   env 文件中的每一行必须为 VAR = VAL 格式。</span>
+<span style="color:#080;font-style:italic">#   以＃开头的行(即注释)将被忽略。</span>
+<span style="color:#080;font-style:italic">#   空行将被忽略。</span>
+<span style="color:#080;font-style:italic">#   引号没有特殊处理(即它们将成为 ConfigMap 值的一部分)。</span>
+
+<span style="color:#080;font-style:italic"># 将样本文件下载到 `configure-pod-container/configmap/` 目录</span>
+wget https://kubernetes.io/examples/configmap/game-env-file.properties -O configure-pod-container/configmap/game-env-file.properties
+
+<span style="color:#080;font-style:italic"># env文件 `game-env-file.properties` 如下所示</span>
+cat configure-pod-container/configmap/game-env-file.properties
+<span style="color:#b8860b">enemies</span><span style="color:#666">=</span>aliens
+<span style="color:#b8860b">lives</span><span style="color:#666">=</span><span style="color:#666">3</span>
+<span style="color:#b8860b">allowed</span><span style="color:#666">=</span><span style="color:#b44">&#34;true&#34;</span>
+
+<span style="color:#080;font-style:italic"># 注释及其上方的空行将被忽略</span></code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create configmap game-config-env-file <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>       --from-env-file<span style="color:#666">=</span>configure-pod-container/configmap/game-env-file.properties</code></pre></div>
+<!-- would produce the following ConfigMap: -->
+
+<p>将产生以下 ConfigMap:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get configmap game-config-env-file -o yaml</code></pre></div>
+<!-- where the output is similar to this: -->
+
+<p>输出类似以下内容:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>creationTimestamp:<span style="color:#bbb"> </span>2017-12-27T18:36:28Z<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>game-config-env-file<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resourceVersion:<span style="color:#bbb"> </span><span style="color:#b44">&#34;809965&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selfLink:<span style="color:#bbb"> </span>/api/v1/namespaces/default/configmaps/game-config-env-file<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>uid:<span style="color:#bbb"> </span>d9d1ca5b-eb34<span style="color:#666">-11e7</span>-887b-42010a8002b8<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>allowed:<span style="color:#bbb"> </span><span style="color:#b44">&#39;&#34;true&#34;&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>enemies:<span style="color:#bbb"> </span>aliens<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>lives:<span style="color:#bbb"> </span><span style="color:#b44">&#34;3&#34;</span></code></pre></div>
+<!-- When passing `--from-env-file` multiple times to create a ConfigMap from multiple data sources, only the last env-file is used: -->
+
+<p>当使用多个 <code>--from-env-file</code> 来从多个数据源创建 ConfigMap 时，仅仅最后一个 env 文件有效:</p>
+
+<!-- ```shell
+# Download the sample files into `configure-pod-container/configmap/` directory
+wget https://k8s.io/examples/configmap/ui-env-file.properties -O configure-pod-container/configmap/ui-env-file.properties
+
+# Create the configmap
+kubectl create configmap config-multi-env-files \
+        --from-env-file=configure-pod-container/configmap/game-env-file.properties \
+        --from-env-file=configure-pod-container/configmap/ui-env-file.properties
+``` -->
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#080;font-style:italic"># 将样本文件下载到 `configure-pod-container/configmap/` 目录</span>
+wget https://k8s.io/examples/configmap/ui-env-file.properties -O configure-pod-container/configmap/ui-env-file.properties
+
+<span style="color:#080;font-style:italic"># 创建 configmap</span>
+kubectl create configmap config-multi-env-files <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>        --from-env-file<span style="color:#666">=</span>configure-pod-container/configmap/game-env-file.properties <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>        --from-env-file<span style="color:#666">=</span>configure-pod-container/configmap/ui-env-file.properties</code></pre></div>
+<!-- would produce the following ConfigMap: -->
+
+<p>将产生以下 ConfigMap:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get configmap config-multi-env-files -o yaml</code></pre></div>
+<!-- where the output is similar to this: -->
+
+<p>输出类似以下内容:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>creationTimestamp:<span style="color:#bbb"> </span>2017-12-27T18:38:34Z<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>config-multi-env-files<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resourceVersion:<span style="color:#bbb"> </span><span style="color:#b44">&#34;810136&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selfLink:<span style="color:#bbb"> </span>/api/v1/namespaces/default/configmaps/config-multi-env-files<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>uid:<span style="color:#bbb"> </span>252c4572-eb35<span style="color:#666">-11e7</span>-887b-42010a8002b8<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>color:<span style="color:#bbb"> </span>purple<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>how:<span style="color:#bbb"> </span>fairlyNice<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>textmode:<span style="color:#bbb"> </span><span style="color:#b44">&#34;true&#34;</span></code></pre></div>
+<!-- #### Define the key to use when creating a ConfigMap from a file -->
+
+<h4 id="定义从文件创建-configma-p时要使用的密钥">定义从文件创建 ConfigMa p时要使用的密钥</h4>
+
+<!-- You can define a key other than the file name to use in the `data` section of your ConfigMap when using the `--from-file` argument: -->
+
+<p>您可以在使用 <code>--from-file</code> 参数时,在 ConfigMap 的 <code>data</code> 部分中定义除文件名以外的其他键:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create configmap game-config-3 --from-file<span style="color:#666">=</span>&lt;my-key-name&gt;<span style="color:#666">=</span>&lt;path-to-file&gt;</code></pre></div>
+<!-- where `<my-key-name>` is the key you want to use in the ConfigMap and `<path-to-file>` is the location of the data source file you want the key to represent. -->
+
+<p><code>&lt;my-key-name&gt;</code> 是您要在 ConfigMap 中使用的密钥， <code>&lt;path-to-file&gt;</code> 是您想要键表示数据源文件的位置。</p>
+
+<!-- For example: -->
+
+<p>例如:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create configmap game-config-3 --from-file<span style="color:#666">=</span>game-special-key<span style="color:#666">=</span>configure-pod-container/configmap/game.properties</code></pre></div>
+<!-- would produce the following ConfigMap: -->
+
+<p>将产生以下 ConfigMap:</p>
+
+<pre><code>kubectl get configmaps game-config-3 -o yaml
+</code></pre>
+
+<!-- where the output is similar to this: -->
+
+<p>输出类似以下内容:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>creationTimestamp:<span style="color:#bbb"> </span>2016-02-18T18:54:22Z<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>game-config<span style="color:#666">-3</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resourceVersion:<span style="color:#bbb"> </span><span style="color:#b44">&#34;530&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selfLink:<span style="color:#bbb"> </span>/api/v1/namespaces/default/configmaps/game-config<span style="color:#666">-3</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>uid:<span style="color:#bbb"> </span>05f8da22-d671<span style="color:#666">-11e5</span>-8cd0-68f728db1985<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>game-special-key:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    enemies=aliens</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>lives=<span style="color:#666">3</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>enemies.cheat=<span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>enemies.cheat.level=noGoodRotten<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>secret.code.passphrase=UUDDLRLRBABAS<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>secret.code.allowed=<span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>secret.code.lives=<span style="color:#666">30</span></code></pre></div>
+<!-- #### Create ConfigMaps from literal values -->
+
+<h4 id="根据文字值创建-configmap">根据文字值创建 ConfigMap</h4>
+
+<!-- You can use `kubectl create configmap` with the `--from-literal` argument to define a literal value from the command line: -->
+
+<p>您可以将 <code>kubectl create configmap</code> 与 <code>--from-literal</code> 参数一起使用，从命令行定义文字值:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create configmap special-config --from-literal<span style="color:#666">=</span>special.how<span style="color:#666">=</span>very --from-literal<span style="color:#666">=</span>special.type<span style="color:#666">=</span>charm</code></pre></div>
+<!-- You can pass in multiple key-value pairs. Each pair provided on the command line is represented as a separate entry in the `data` section of the ConfigMap. -->
+
+<p>您可以传入多个键值对。命令行中提供的每对在 ConfigMap 的 <code>data</code> 部分中均表示为单独的条目。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get configmaps special-config -o yaml</code></pre></div>
+<!-- The output is similar to this: -->
+
+<p>输出类似以下内容:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>creationTimestamp:<span style="color:#bbb"> </span>2016-02-18T19:14:38Z<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>special-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resourceVersion:<span style="color:#bbb"> </span><span style="color:#b44">&#34;651&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selfLink:<span style="color:#bbb"> </span>/api/v1/namespaces/default/configmaps/special-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>uid:<span style="color:#bbb"> </span>dadce046-d673<span style="color:#666">-11e5</span>-8cd0-68f728db1985<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>special.how:<span style="color:#bbb"> </span>very<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>special.type:<span style="color:#bbb"> </span>charm</code></pre></div>
+<!-- ### Create a ConfigMap from generator -->
+
+<h4 id="根据生成器创建-configmap">根据生成器创建 ConfigMap</h4>
+
+<!-- `kubectl` supports `kustomization.yaml` since 1.14.
+You can also create a ConfigMap from generators and then apply it to create the object on
+the Apiserver. The generators
+should be specified in a `kustomization.yaml` inside a directory. -->
+
+<p>自 1.14 开始， <code>kubectl</code> 开始支持 <code>kustomization.yaml</code>。
+您还可以从生成器创建 ConfigMap，然后将其应用于 Apiserver 创建对象。生成器应在目录内的 <code>kustomization.yaml</code> 中指定。</p>
+
+<!-- #### Generate ConfigMaps from files -->
+
+<h4 id="根据文件生成-configmap">根据文件生成 ConfigMap</h4>
+
+<!-- For example, to generate a ConfigMap from files `configure-pod-container/configmap/kubectl/game.properties`
+```shell
+# Create a kustomization.yaml file with ConfigMapGenerator
+cat <<EOF >./kustomization.yaml
+configMapGenerator:
+- name: game-config-4
+  files:
+  - configure-pod-container/configmap/kubectl/game.properties
+EOF
+``` -->
+
+<p>例如，要从 <code>configure-pod-container/configmap/kubectl/game.properties</code> 文件生成一个 ConfigMap</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#080;font-style:italic"># 使用 ConfigMapGenerator 创建 kustomization.yaml 文件</span>
+cat <span style="color:#b44">&lt;&lt;EOF &gt;./kustomization.yaml
+</span><span style="color:#b44">configMapGenerator:
+</span><span style="color:#b44">- name: game-config-4
+</span><span style="color:#b44">  files:
+</span><span style="color:#b44">  - configure-pod-container/configmap/kubectl/game.properties
+</span><span style="color:#b44">EOF</span></code></pre></div>
+<!-- Apply the kustomization directory to create the ConfigMap object. -->
+
+<p>使用 kustomization 目录创建 ConfigMap 对象</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -k .
+configmap/game-config-4-m9dm2f92bt created</code></pre></div>
+<!-- You can check that the ConfigMap was created like this: -->
+
+<p>您可以检查 ConfigMap 是这样创建的:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get configmap
+NAME                       DATA   AGE
+game-config-4-m9dm2f92bt   <span style="color:#666">1</span>      37s
+
+
+kubectl describe configmaps/game-config-4-m9dm2f92bt
+Name:         game-config-4-m9dm2f92bt
+Namespace:    default
+Labels:       &lt;none&gt;
+Annotations:  kubectl.kubernetes.io/last-applied-configuration:
+                <span style="color:#666">{</span><span style="color:#b44">&#34;apiVersion&#34;</span>:<span style="color:#b44">&#34;v1&#34;</span>,<span style="color:#b44">&#34;data&#34;</span>:<span style="color:#666">{</span><span style="color:#b44">&#34;game.properties&#34;</span>:<span style="color:#b44">&#34;enemies=aliens\nlives=3\nenemies.cheat=true\nenemies.cheat.level=noGoodRotten\nsecret.code.p...
+</span><span style="color:#b44">
+</span><span style="color:#b44">Data
+</span><span style="color:#b44">====
+</span><span style="color:#b44">game.properties:
+</span><span style="color:#b44">----
+</span><span style="color:#b44">enemies=aliens
+</span><span style="color:#b44">lives=3
+</span><span style="color:#b44">enemies.cheat=true
+</span><span style="color:#b44">enemies.cheat.level=noGoodRotten
+</span><span style="color:#b44">secret.code.passphrase=UUDDLRLRBABAS
+</span><span style="color:#b44">secret.code.allowed=true
+</span><span style="color:#b44">secret.code.lives=30
+</span><span style="color:#b44">Events:  &lt;none&gt;</span></code></pre></div>
+<!-- Note that the generated ConfigMap name has a suffix appended by hashing the contents. This ensures that a
+new ConfigMap is generated each time the content is modified. -->
+
+<p>请注意，生成的 ConfigMap 名称具有通过对内容进行散列而附加的后缀，这样可以确保每次修改内容时都会生成新的 ConfigMap。</p>
+
+<!-- #### Define the key to use when generating a ConfigMap from a file -->
+
+<h4 id="定义从文件生成-configmap-时要使用的密钥">定义从文件生成 ConfigMap 时要使用的密钥</h4>
+
+<!-- You can define a key other than the file name to use in the ConfigMap generator.
+For example, to generate a ConfigMap from files `configure-pod-container/configmap/kubectl/game.properties`
+with the key `game-special-key` -->
+
+<p>您可以定义一个非文件名的键，在 ConfigMap 生成器中使用。例如，使用 <code>game-special-key</code> 从 <code>configure-pod-container / configmap / kubectl / game.properties</code> 文件生成 ConfigMap。</p>
+
+<!-- ```shell
+# Create a kustomization.yaml file with ConfigMapGenerator
+cat <<EOF >./kustomization.yaml
+configMapGenerator:
+- name: game-config-5
+  files:
+  - game-special-key=configure-pod-container/configmap/kubectl/game.properties
+EOF
+``` -->
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#080;font-style:italic"># 使用 ConfigMapGenerator 创建 kustomization.yaml 文件</span>
+cat <span style="color:#b44">&lt;&lt;EOF &gt;./kustomization.yaml
+</span><span style="color:#b44">configMapGenerator:
+</span><span style="color:#b44">- name: game-config-5
+</span><span style="color:#b44">  files:
+</span><span style="color:#b44">  - game-special-key=configure-pod-container/configmap/kubectl/game.properties
+</span><span style="color:#b44">EOF</span></code></pre></div>
+<!-- Apply the kustomization directory to create the ConfigMap object. -->
+
+<p>使用 Kustomization 目录创建 ConfigMap 对象。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -k .
+configmap/game-config-5-m67dt67794 created</code></pre></div>
+<!-- #### Generate ConfigMaps from Literals -->
+
+<h4 id="从文字值生成-configmap">从文字值生成 ConfigMap</h4>
+
+<!-- To generate a ConfigMap from literals `special.type=charm` and `special.how=very`,
+you can specify the ConfigMap generator in `kusotmization.yaml` as -->
+
+<p>要从文字 <code>special.type=charm</code> 和 <code>special.how=very</code> 生成 ConfigMap，可以在 <code>kusotmization.yaml</code> 中将 ConfigMap 生成器指定。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#080;font-style:italic"># 使用 ConfigMapGenerator 创建 kustomization.yaml 文件</span>
+cat <span style="color:#b44">&lt;&lt;EOF &gt;./kustomization.yaml
+</span><span style="color:#b44">configMapGenerator:
+</span><span style="color:#b44">- name: special-config-2
+</span><span style="color:#b44">  literals:
+</span><span style="color:#b44">  - special.how=very
+</span><span style="color:#b44">  - special.type=charm
+</span><span style="color:#b44">EOF</span></code></pre></div>
+<!-- Apply the kustomization directory to create the ConfigMap object. -->
+
+<p>使用 Kustomization 目录创建 ConfigMap 对象。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -k .
+configmap/special-config-2-c92b5mmcf2 created</code></pre></div>
+<!-- ## Define container environment variables using ConfigMap data -->
+
+<h2 id="使用-configmap-数据定义容器环境变量">使用 ConfigMap 数据定义容器环境变量</h2>
+
+<!-- ### Define a container environment variable with data from a single ConfigMap -->
+
+<h3 id="使用单个-configmap-中的数据定义容器环境变量">使用单个 ConfigMap 中的数据定义容器环境变量</h3>
+
+<!-- 1.  Define an environment variable as a key-value pair in a ConfigMap: -->
+
+<ol>
+<li><p>在 ConfigMap 中将环境变量定义为键值对:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create configmap special-config --from-literal<span style="color:#666">=</span>special.how<span style="color:#666">=</span>very</code></pre></div></li>
+</ol>
+
+<!-- 2.  Assign the `special.how` value defined in the ConfigMap to the `SPECIAL_LEVEL_KEY` environment variable in the Pod specification. -->
+
+<ol>
+<li>将 ConfigMap 中定义的 <code>special.how</code> 值分配给 Pod 规范中的 <code>SPECIAL_LEVEL_KEY</code> 环境变量。
+
+<br /></li>
+</ol>
+
+<table class="includecode" id="pods-pod-single-configmap-env-variable-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/pods/pod-single-configmap-env-variable.yaml" download="pods/pod-single-configmap-env-variable.yaml">
+                    <code>pods/pod-single-configmap-env-variable.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-single-configmap-env-variable-yaml')" title="Copy pods/pod-single-configmap-env-variable.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>dapi-test-pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>test-container<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/busybox<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>command:<span style="color:#bbb"> </span>[<span style="color:#bbb"> </span><span style="color:#b44">&#34;/bin/sh&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;-c&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;env&#34;</span><span style="color:#bbb"> </span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#080;font-style:italic"># Define the environment variable</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>SPECIAL_LEVEL_KEY<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>valueFrom:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>configMapKeyRef:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span><span style="color:#080;font-style:italic"># The ConfigMap containing the value you want to assign to SPECIAL_LEVEL_KEY</span><span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>special-config<span style="color:#bbb">
+</span><span style="color:#bbb">              </span><span style="color:#080;font-style:italic"># Specify the key associated with the value</span><span style="color:#bbb">
+</span><span style="color:#bbb">              </span>key:<span style="color:#bbb"> </span>special.how<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restartPolicy:<span style="color:#bbb"> </span>Never<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p><!-- Create the Pod: -->
+   创建 Pod:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"> kubectl create -f https://kubernetes.io/examples/pods/pod-single-configmap-env-variable.yaml</code></pre></div>
+<p><!-- Now, the Pod's output includes environment variable `SPECIAL_LEVEL_KEY=very`. -->
+   现在，Pod 的输出包含环境变量 <code>SPECIAL_LEVEL_KEY=very</code>。</p>
+
+<!-- ### Define container environment variables with data from multiple ConfigMaps -->
+
+<h3 id="使用来自多个-configmap-的数据定义容器环境变量">使用来自多个 ConfigMap 的数据定义容器环境变量</h3>
+
+<p><!-- * As with the previous example, create the ConfigMaps first. -->
+ * 与前面的示例一样，首先创建 ConfigMap。</p>
+
+<table class="includecode" id="configmap-configmaps-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/configmap/configmaps.yaml" download="configmap/configmaps.yaml">
+                    <code>configmap/configmaps.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('configmap-configmaps-yaml')" title="Copy configmap/configmaps.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>special-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>special.how:<span style="color:#bbb"> </span>very<span style="color:#bbb">
+</span><span style="color:#bbb"></span>---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>env-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>log_level:<span style="color:#bbb"> </span>INFO<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p><!-- Create the ConfigMap: -->
+   创建 ConfigMap:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"> kubectl create -f https://kubernetes.io/examples/configmap/configmaps.yaml</code></pre></div>
+<!-- * Define the environment variables in the Pod specification. -->
+
+<ul>
+<li>在 Pod 规范中定义环境变量。
+
+<br /></li>
+</ul>
+
+<table class="includecode" id="pods-pod-multiple-configmap-env-variable-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/pods/pod-multiple-configmap-env-variable.yaml" download="pods/pod-multiple-configmap-env-variable.yaml">
+                    <code>pods/pod-multiple-configmap-env-variable.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-multiple-configmap-env-variable-yaml')" title="Copy pods/pod-multiple-configmap-env-variable.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>dapi-test-pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>test-container<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/busybox<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>command:<span style="color:#bbb"> </span>[<span style="color:#bbb"> </span><span style="color:#b44">&#34;/bin/sh&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;-c&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;env&#34;</span><span style="color:#bbb"> </span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>SPECIAL_LEVEL_KEY<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>valueFrom:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>configMapKeyRef:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>special-config<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>key:<span style="color:#bbb"> </span>special.how<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>LOG_LEVEL<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>valueFrom:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>configMapKeyRef:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>env-config<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>key:<span style="color:#bbb"> </span>log_level<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restartPolicy:<span style="color:#bbb"> </span>Never<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p><!-- Create the Pod: -->
+  创建 Pod:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"> kubectl create -f https://kubernetes.io/examples/pods/pod-multiple-configmap-env-variable.yaml</code></pre></div>
+<p><!-- Now, the Pod's output includes environment variables `SPECIAL_LEVEL_KEY=very` and `LOG_LEVEL=INFO`. -->
+  现在，Pod 的输出包含环境变量 <code>SPECIAL_LEVEL_KEY=very</code> 和 <code>LOG_LEVEL=INFO</code>。</p>
+
+<!-- ## Configure all key-value pairs in a ConfigMap as container environment variables -->
+
+<h2 id="将-configmap-中的所有键值对配置为容器环境变量">将 ConfigMap 中的所有键值对配置为容器环境变量</h2>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!-- This functionality is available in Kubernetes v1.6 and later. -->
+
+<p>Kubernetes v1.6 和更高版本提供了此功能。</div>
+</blockquote>
+
+<!-- * Create a ConfigMap containing multiple key-value pairs. -->
+
+<ul>
+<li>创建一个包含多个键值对的 ConfigMap。
+
+<br /></li>
+</ul>
+
+<table class="includecode" id="configmap-configmap-multikeys-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/configmap/configmap-multikeys.yaml" download="configmap/configmap-multikeys.yaml">
+                    <code>configmap/configmap-multikeys.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('configmap-configmap-multikeys-yaml')" title="Copy configmap/configmap-multikeys.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>special-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>SPECIAL_LEVEL:<span style="color:#bbb"> </span>very<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>SPECIAL_TYPE:<span style="color:#bbb"> </span>charm<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p><!-- Create the ConfigMap: -->
+  创建 ConfigMap:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"> kubectl create -f https://kubernetes.io/examples/configmap/configmap-multikeys.yaml</code></pre></div>
+<!-- * Use `envFrom` to define all of the ConfigMap's data as container environment variables. The key from the ConfigMap becomes the environment variable name in the Pod. -->
+
+<ul>
+<li>使用 <code>envFrom</code> 将所有 ConfigMap 的数据定义为容器环境变量，ConfigMap 中的键成为 Pod 中的环境变量名称。</li>
+</ul>
+
+<table class="includecode" id="pods-pod-configmap-envfrom-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/pods/pod-configmap-envFrom.yaml" download="pods/pod-configmap-envFrom.yaml">
+                    <code>pods/pod-configmap-envFrom.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-configmap-envfrom-yaml')" title="Copy pods/pod-configmap-envFrom.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>dapi-test-pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>test-container<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/busybox<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>command:<span style="color:#bbb"> </span>[<span style="color:#bbb"> </span><span style="color:#b44">&#34;/bin/sh&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;-c&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;env&#34;</span><span style="color:#bbb"> </span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>envFrom:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>configMapRef:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>name:<span style="color:#bbb"> </span>special-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restartPolicy:<span style="color:#bbb"> </span>Never<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p><!-- Create the Pod: -->
+创建 Pod:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"> kubectl create -f https://kubernetes.io/examples/pods/pod-configmap-envFrom.yaml</code></pre></div>
+<p><!-- Now, the Pod's output includes environment variables `SPECIAL_LEVEL=very` and `SPECIAL_TYPE=charm`. -->
+现在，Pod 的输出包含环境变量 <code>SPECIAL_LEVEL=very</code> 和 <code>SPECIAL_TYPE=charm</code>。</p>
+
+<!-- ## Use ConfigMap-defined environment variables in Pod commands -->
+
+<h2 id="在-pod-命令中使用-configmap-定义的环境变量">在 Pod 命令中使用 ConfigMap 定义的环境变量</h2>
+
+<!-- You can use ConfigMap-defined environment variables in the `command` section of the Pod specification using the `$(VAR_NAME)` Kubernetes substitution syntax. -->
+
+<p>您可以使用 <code>$(VAR_NAME)</code> Kubernetes 替换语法在 Pod 规范的 <code>command</code> 部分中使用 ConfigMap 定义的环境变量。</p>
+
+<!-- For example, the following Pod specification -->
+
+<p>例如，以下 Pod 规范</p>
+
+<table class="includecode" id="pods-pod-configmap-env-var-valuefrom-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/pods/pod-configmap-env-var-valueFrom.yaml" download="pods/pod-configmap-env-var-valueFrom.yaml">
+                    <code>pods/pod-configmap-env-var-valueFrom.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-configmap-env-var-valuefrom-yaml')" title="Copy pods/pod-configmap-env-var-valueFrom.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>dapi-test-pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>test-container<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/busybox<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>command:<span style="color:#bbb"> </span>[<span style="color:#bbb"> </span><span style="color:#b44">&#34;/bin/sh&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;-c&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;echo $(SPECIAL_LEVEL_KEY) $(SPECIAL_TYPE_KEY)&#34;</span><span style="color:#bbb"> </span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>SPECIAL_LEVEL_KEY<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>valueFrom:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>configMapKeyRef:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>special-config<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>key:<span style="color:#bbb"> </span>SPECIAL_LEVEL<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>SPECIAL_TYPE_KEY<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>valueFrom:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>configMapKeyRef:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>special-config<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>key:<span style="color:#bbb"> </span>SPECIAL_TYPE<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restartPolicy:<span style="color:#bbb"> </span>Never<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- created by running -->
+
+<p>通过运行创建</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f https://kubernetes.io/examples/pods/pod-configmap-env-var-valueFrom.yaml</code></pre></div>
+<!-- produces the following output in the `test-container` container: -->
+
+<p>在 <code>test-container</code> 容器中产生以下输出:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">very charm</code></pre></div>
+<!-- ## Add ConfigMap data to a Volume -->
+
+<h2 id="将-configmap-数据添加到一个容器中">将 ConfigMap 数据添加到一个容器中</h2>
+
+<!-- As explained in [Create ConfigMaps from files](#create-configmaps-from-files), when you create a ConfigMap using ``--from-file``, the filename becomes a key stored in the `data` section of the ConfigMap. The file contents become the key's value. -->
+
+<p>如<a href="＃create-configmaps-from-files" target="_blank">根据文件创建ConfigMap</a>中所述，当您使用 <code>--from-file</code> 创建 ConfigMap 时，文件名成为存储在 ConfigMap 的 <code>data</code> 部分中的密钥，文件内容成为密钥的值。</p>
+
+<!-- The examples in this section refer to a ConfigMap named special-config, shown below. -->
+
+<p>本节中的示例引用了一个名为 special-config 的 ConfigMap，如下所示：</p>
+
+<table class="includecode" id="configmap-configmap-multikeys-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/configmap/configmap-multikeys.yaml" download="configmap/configmap-multikeys.yaml">
+                    <code>configmap/configmap-multikeys.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('configmap-configmap-multikeys-yaml')" title="Copy configmap/configmap-multikeys.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>special-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>SPECIAL_LEVEL:<span style="color:#bbb"> </span>very<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>SPECIAL_TYPE:<span style="color:#bbb"> </span>charm<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Create the ConfigMap: -->
+
+<p>创建 ConfigMap:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f https://kubernetes.io/examples/configmap/configmap-multikeys.yaml</code></pre></div>
+<!-- ### Populate a Volume with data stored in a ConfigMap -->
+
+<h3 id="使用存储在-configmap-中的数据填充容器">使用存储在 ConfigMap 中的数据填充容器</h3>
+
+<!-- Add the ConfigMap name under the `volumes` section of the Pod specification.
+This adds the ConfigMap data to the directory specified as `volumeMounts.mountPath` (in this case, `/etc/config`).
+The `command` section references the `special.level` item stored in the ConfigMap. -->
+
+<p>在 Pod 规范的 <code>volumes</code> 部分下添加 ConfigMap 名称。
+这会将 ConfigMap 数据添加到指定为 <code>volumeMounts.mountPath</code> 的目录(在本例中为<code>/etc/config</code>)。
+<code>command</code> 引用存储在 ConfigMap 中的 <code>special.level</code>。</p>
+
+<table class="includecode" id="pods-pod-configmap-volume-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/pods/pod-configmap-volume.yaml" download="pods/pod-configmap-volume.yaml">
+                    <code>pods/pod-configmap-volume.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-configmap-volume-yaml')" title="Copy pods/pod-configmap-volume.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>dapi-test-pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>test-container<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/busybox<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>command:<span style="color:#bbb"> </span>[<span style="color:#bbb"> </span><span style="color:#b44">&#34;/bin/sh&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;-c&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;ls /etc/config/&#34;</span><span style="color:#bbb"> </span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>config-volume<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>mountPath:<span style="color:#bbb"> </span>/etc/config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>config-volume<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>configMap:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#080;font-style:italic"># Provide the name of the ConfigMap containing the files you want</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#080;font-style:italic"># to add to the container</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>special-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restartPolicy:<span style="color:#bbb"> </span>Never<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Create the Pod: -->
+
+<p>创建Pod:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f https://kubernetes.io/examples/pods/pod-configmap-volume.yaml</code></pre></div>
+<!-- When the pod runs, the command `ls /etc/config/` produces the output below: -->
+
+<p>运行命令 <code>ls /etc/config/</code> 产生下面的输出:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">SPECIAL_LEVEL
+SPECIAL_TYPE</code></pre></div>
+<blockquote class="caution">
+  <div><strong>警告:</strong> <!-- If there are some files in the `/etc/config/` directory, they will be deleted. -->
+
+<p>如果在 <code>/etc/config/</code> 目录中有一些文件，它们将被删除。</div>
+</blockquote>
+
+<!-- ### Add ConfigMap data to a specific path in the Volume -->
+
+<h3 id="将-configmap-数据添加到容器中的特定路径">将 ConfigMap 数据添加到容器中的特定路径</h3>
+
+<!-- Use the `path` field to specify the desired file path for specific ConfigMap items.
+In this case, the `SPECIAL_LEVEL` item will be mounted in the `config-volume` volume at `/etc/config/keys`. -->
+
+<p>使用 <code>path</code> 字段为特定的 ConfigMap 项目指定所需的文件路径。
+在这种情况下, <code>SPECIAL_LEVEL</code> 将安装在 <code>/etc/config/keys</code> 目录下的 <code>config-volume</code> 容器中。</p>
+
+<table class="includecode" id="pods-pod-configmap-volume-specific-key-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/pods/pod-configmap-volume-specific-key.yaml" download="pods/pod-configmap-volume-specific-key.yaml">
+                    <code>pods/pod-configmap-volume-specific-key.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-configmap-volume-specific-key-yaml')" title="Copy pods/pod-configmap-volume-specific-key.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>dapi-test-pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>test-container<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/busybox<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>command:<span style="color:#bbb"> </span>[<span style="color:#bbb"> </span><span style="color:#b44">&#34;/bin/sh&#34;</span>,<span style="color:#b44">&#34;-c&#34;</span>,<span style="color:#b44">&#34;cat /etc/config/keys&#34;</span><span style="color:#bbb"> </span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>config-volume<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>mountPath:<span style="color:#bbb"> </span>/etc/config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>config-volume<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>configMap:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>special-config<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>items:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>SPECIAL_LEVEL<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>path:<span style="color:#bbb"> </span>keys<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restartPolicy:<span style="color:#bbb"> </span>Never<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Create the Pod: -->
+
+<p>创建Pod:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f https://kubernetes.io/examples/pods/pod-configmap-volume-specific-key.yaml</code></pre></div>
+<!-- When the pod runs, the command `cat /etc/config/keys` produces the output below: -->
+
+<p>当 pod 运行时，命令 <code>cat /etc/config/keys</code> 产生以下输出:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">very</code></pre></div>
+<blockquote class="caution">
+  <div><strong>警告:</strong> <!-- Like before, all previous files in the `/etc/config/` directory will be deleted. -->
+
+<p>和以前一样，<code>/etc/config/</code> 目录中的所有先前文件都将被删除。</div>
+</blockquote>
+
+<!-- ### Project keys to specific paths and file permissions -->
+
+<h3 id="项目密钥以指定路径和文件权限">项目密钥以指定路径和文件权限</h3>
+
+<!-- You can project keys to specific paths and specific permissions on a per-file
+basis. The [Secrets](/docs/concepts/configuration/secret/#using-secrets-as-files-from-a-pod) user guide explains the syntax. -->
+
+<p>您可以将密钥映射到每个文件的特定路径和特定权限。<a href="/docs/concepts/configuration/secret/#using-secrets-as-files-from-a-pod">Secrets</a> 用户指南说明了语法。</p>
+
+<!-- ### Mounted ConfigMaps are updated automatically -->
+
+<h3 id="挂载的-configmap-将自动更新">挂载的 ConfigMap 将自动更新</h3>
+
+<!-- When a ConfigMap already being consumed in a volume is updated, projected keys are eventually updated as well. Kubelet is checking whether the mounted ConfigMap is fresh on every periodic sync. However, it is using its local ttl-based cache for getting the current value of the ConfigMap. As a result, the total delay from the moment when the ConfigMap is updated to the moment when new keys are projected to the pod can be as long as kubelet sync period + ttl of ConfigMaps cache in kubelet. -->
+
+<p>更新已经在容器中使用的 ConfigMap 时，最终也会更新映射键。Kubelet 实时检查是否在每个定期同步中都更新已安装的 ConfigMap。它使用其基于本地 ttl 的缓存来获取 ConfigMap 的当前值。结果，从更新 ConfigMap 到将新密钥映射到 Pod 的总延迟可以与 ConfigMap 在 kubelet 中缓存的 kubelet 同步周期 ttl 一样长。</p>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!-- A container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes/#using-subpath) volume will not receive ConfigMap updates. -->
+
+<p>使用 ConfigMap 作为子路径<a href="/docs/concepts/storage/volumes/#using-subpath">subPath</a>的容器将不会收到 ConfigMap 更新。</div>
+</blockquote>
+
+
+
+
+<!-- ## Understanding ConfigMaps and Pods -->
+
+<h2 id="了解-configmap-和-pod">了解 ConfigMap 和 Pod</h2>
+
+<!-- The ConfigMap API resource stores configuration data as key-value pairs. The data can be consumed in pods or provide the configurations for system components such as controllers. ConfigMap is similar to [Secrets](/docs/concepts/configuration/secret/), but provides a means of working with strings that don't contain sensitive information. Users and system components alike can store configuration data in ConfigMap. -->
+
+<p>ConfigMap API 资源将配置数据存储为键值对。数据可以在 Pod 中使用，也可以提供系统组件(如控制器)的配置。ConfigMap 与 <a href="/docs/concepts/configuration/secret/">Secrets</a>类似，但是提供了一种使用不包含敏感信息的字符串的方法。用户和系统组件都可以在 ConfigMap 中存储配置数据。</p>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!-- ConfigMaps should reference properties files, not replace them. Think of the ConfigMap as representing something similar to the Linux `/etc` directory and its contents. For example, if you create a [Kubernetes Volume](/docs/concepts/storage/volumes/) from a ConfigMap, each data item in the ConfigMap is represented by an individual file in the volume. -->
+
+<p>ConfigMap 应该引用属性文件，而不是替换它们。可以将 ConfigMap 表示为类似于 Linux <code>/etc</code> 目录及其内容的东西。例如，如果您从 ConfigMap 创建<a href="/docs/concepts/storage/volumes/">Kubernetes Volume</a>，则 ConfigMap 中的每个数据项都由该容器中的单个文件表示。</div>
+</blockquote>
+
+<!-- The ConfigMap's `data` field contains the configuration data. As shown in the example below, this can be simple -- like individual properties defined using `--from-literal` -- or complex -- like configuration files or JSON blobs defined using `--from-file`. -->
+
+<p>ConfigMap 的 <code>data</code> 字段包含配置数据。如下例所示，它可以很简单 &ndash; 就像使用 <code>--from-literal</code> &ndash; 定义的单个属性一样，也可以很复杂 &ndash; 例如使用 <code>--from-file</code> 定义的配置文件或 JSON blob。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>creationTimestamp:<span style="color:#bbb"> </span>2016-02-18T19:14:38Z<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>example-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># example of a simple property defined using --from-literal</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>example.property<span style="color:#666">.1</span>:<span style="color:#bbb"> </span>hello<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>example.property<span style="color:#666">.2</span>:<span style="color:#bbb"> </span>world<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># example of a complex property defined using --from-file</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>example.property.file:<span style="color:#bbb"> </span>|<span style="color:#b44;font-style:italic">-
+</span><span style="color:#b44;font-style:italic">    property.1=value-1</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>property<span style="color:#666">.2</span>=value<span style="color:#666">-2</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>property<span style="color:#666">.3</span>=value<span style="color:#666">-3</span></code></pre></div>
+<!-- ### Restrictions -->
+
+<h3 id="限制规定">限制规定</h3>
+
+<!-- - You must create a ConfigMap before referencing it in a Pod specification (unless you mark the ConfigMap as "optional"). If you reference a ConfigMap that doesn't exist, the Pod won't start. Likewise, references to keys that don't exist in the ConfigMap will prevent the pod from starting. -->
+
+<ul>
+<li>在 Pod 规范中引用它之前，必须先创建一个 ConfigMap(除非将 ConfigMap 标记为&rdquo;可选&rdquo;)。如果引用的 ConfigMap 不存在，则 Pod 将不会启动。同样，对 ConfigMap 中不存在的键的引用将阻止容器启动。</li>
+</ul>
+
+<!-- - If you use `envFrom` to define environment variables from ConfigMaps, keys that are considered invalid will be skipped. The pod will be allowed to start, but the invalid names will be recorded in the event log (`InvalidVariableNames`). The log message lists each skipped key. For example: -->
+
+<ul>
+<li><p>如果您使用 <code>envFrom</code> 从 ConfigMap 中定义环境变量，那么将忽略被认为无效的键。可以启动 Pod，但无效名称将记录在事件日志中(InvalidVariableNames)。日志消息列出了每个跳过的键。例如:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get events</code></pre></div></li>
+</ul>
+
+<p><!-- The output is similar to this: -->
+   输出与此类似:</p>
+
+<pre><code>   LASTSEEN FIRSTSEEN COUNT NAME          KIND  SUBOBJECT  TYPE      REASON                            SOURCE                MESSAGE
+   0s       0s        1     dapi-test-pod Pod              Warning   InvalidEnvironmentVariableNames   {kubelet, 127.0.0.1}  Keys [1badkey, 2alsobad] from the EnvFrom configMap default/myconfig were skipped since they are considered invalid environment variable names.
+</code></pre>
+
+<!-- - ConfigMaps reside in a specific [namespace](/docs/concepts/overview/working-with-objects/namespaces/). A ConfigMap can only be referenced by pods residing in the same namespace. -->
+
+<ul>
+<li>ConfigMaps reside in a specific <a href="/docs/concepts/overview/working-with-objects/namespaces/">命令空间</a>. A ConfigMap can only be referenced by pods residing in the same namespace.
+ConfigMap 驻留在特定的<a href="/docs/concepts/overview/working-with-objects/namespaces/">命令空间</a>中。ConfigMap 只能由位于相同命令空间中的 Pod 引用。</li>
+</ul>
+
+<!-- - Kubelet doesn't support the use of ConfigMaps for pods not found on the API server. This includes pods created via the Kubelet's `--manifest-url` flag, `--config` flag, or the Kubelet REST API. -->
+
+<ul>
+<li>Kubelet 不支持将 ConfigMap 用于未在 API 服务器上找到的 Pod。这包括通过 Kubelet 的 <code>--manifest-url</code> 参数，<code>--config</code> 参数或者 Kubelet REST API 创建的容器。</li>
+</ul>
+
+<p><blockquote class="note">
+  <div><strong>注意：</strong> <!-- These are not commonly-used ways to create pods. --></p>
+
+<p><p>这些不是创建 pods 的常用方法。</div>
+</blockquote></p>
+
+
+
+<!-- ---
+title: Configure a Pod to Use a ConfigMap
+content_template: templates/task
+weight: 150
+card:
+  name: tasks
+  weight: 50
+--- -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="接下来">接下来</h2>
+<!-- * Follow a real world example of [Configuring Redis using a ConfigMap](/docs/tutorials/configuration/configure-redis-using-configmap/). -->
+
+<ul>
+<li>遵循<a href="/docs/tutorials/configuration/configure-redis-using-configmap/">使用ConfigMap配置Redis</a>的真实案例。</li>
+</ul>
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/tasks/configure-pod-container/configure-pod-configmap.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/tasks\/configure-pod-container\/configure-pod-configmap\/",
+    "title" : "使用 ConfigMap 配置 Pod",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/tasks\/configure-pod-container\/configure-pod-configmap\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/configure-pod-container/configure-pod-configmap.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 March 13, 2020 at 7:54 PM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/6cf5ce0f3534f95286b8f9917e2ab6844709e0af/">fix bad format (#19489)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/tasks/configure-pod-container/configure-pod-configmap.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

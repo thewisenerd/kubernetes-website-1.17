@@ -1,0 +1,2374 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Kubernetes 架构 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/concepts/architecture/">
+<meta property="og:title" content="Kubernetes 架构">
+<meta name="twitter:title" content="Kubernetes 架构">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/architecture/">English</a></li>
+                
+                    <li><a href="/ko/docs/concepts/architecture/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/docs/concepts/architecture/">日本語 Japanese</a></li>
+                
+                    <li><a href="/fr/docs/concepts/architecture/">Français</a></li>
+                
+                    <li><a href="/de/docs/concepts/architecture/">Deutsch</a></li>
+                
+                    <li><a href="/es/docs/concepts/architecture/">Español</a></li>
+                
+                    <li><a href="/pt/docs/concepts/architecture/">Português</a></li>
+                
+                    <li><a href="/id/docs/concepts/architecture/">Bahasa Indonesia</a></li>
+                
+                    <li><a href="/vi/docs/concepts/architecture/">Tiếng Việt</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/concepts/architecture/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/concepts/architecture/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/concepts/architecture/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/concepts/architecture/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/concepts/architecture/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>概念</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/" class="YAH">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="概念" href="/zh/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="概述">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="概述" href="/zh/docs/concepts/overview/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 是什么？" href="/zh/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 组件" href="/zh/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API" href="/zh/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="使用 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="理解 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 对象管理" href="/zh/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="名称" href="/zh/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间" href="/zh/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="标签和选择器" href="/zh/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="注解" href="/zh/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="字段选择器" href="/zh/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="推荐使用的标签" href="/zh/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes 架构">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 架构" href="/zh/docs/concepts/architecture/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="节点" href="/zh/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云控制器管理器的基础概念" href="/zh/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器" href="/zh/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Master 节点通信" href="/zh/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/cluster-administration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="集群管理概述" href="/zh/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书" href="/zh/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云驱动" href="/zh/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理资源" href="/zh/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 控制面板的指标" href="/zh/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="日志架构" href="/zh/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 kubelet 垃圾回收策略" href="/zh/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器管理器指标" href="/zh/docs/concepts/cluster-administration/controller-metrics/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 中的代理" href="/zh/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装扩展（Addons）" href="/zh/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦" href="/zh/docs/concepts/cluster-administration/federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/concepts/extend-kubernetes/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展 Kubernetes 集群" href="/zh/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes API">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Custom Resources <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过聚合层扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Operator 模式" href="/zh/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网络插件" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="服务目录" href="/zh/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="容器" href="/zh/docs/concepts/containers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="镜像" href="/zh/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器运行时类(Runtime Class)" href="/zh/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器生命周期钩子" href="/zh/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器环境变量" href="/zh/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="工作负载">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="工作负载" href="/zh/docs/concepts/workloads/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pods">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Pod 概览" href="/zh/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Preset" href="/zh/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 拓扑扩展约束" href="/zh/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="干扰" href="/zh/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="临时容器" href="/zh/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Init 容器" href="/zh/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 的生命周期" href="/zh/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="控制器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="控制器" href="/zh/docs/concepts/workloads/controllers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/zh/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ReplicationController" href="/zh/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Deployments" href="/zh/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StatefulSets" href="/zh/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DaemonSet" href="/zh/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="垃圾收集" href="/zh/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="已完成资源的 TTL 控制器" href="/zh/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Jobs - Run to Completion <small>(EN)</small>" href="/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CronJob" href="/zh/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="存储">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="存储" href="/zh/docs/concepts/storage/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Volumes" href="/zh/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Persistent Volumes <small>(EN)</small>" href="/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照" href="/zh/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CSI 卷克隆" href="/zh/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Storage Classes" href="/zh/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照类" href="/zh/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="动态卷供应" href="/zh/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="特定于节点的卷数限制" href="/zh/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置" href="/zh/docs/concepts/configuration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展资源的资源箱打包" href="/zh/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置最佳实践" href="/zh/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 开销" href="/zh/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器管理计算资源" href="/zh/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Taint 和 Toleration" href="/zh/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Secret" href="/zh/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeconfig 文件组织集群访问" href="/zh/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度框架" href="/zh/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="服务、负载均衡和联网">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="服务、负载均衡和联网" href="/zh/docs/concepts/services-networking/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Endpoint Slices" href="/zh/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service 拓扑" href="/zh/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Services" href="/zh/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 与 Service 的 DNS" href="/zh/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用连接到 Service" href="/zh/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/zh/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress 控制器" href="/zh/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="网络策略" href="/zh/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HostAliases 向 Pod /etc/hosts 文件添加条目" href="/zh/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IPv4/IPv6 双协议栈" href="/zh/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安全">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安全" href="/zh/docs/concepts/security/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Overview of Cloud Native Security <small>(EN)</small>" href="/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="调度">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="调度" href="/zh/docs/concepts/scheduling/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 调度器" href="/zh/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度器性能调优" href="/zh/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="策略">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="策略" href="/zh/docs/concepts/policy/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 安全策略" href="/zh/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源配额" href="/zh/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+    
+    
+    
+    
+    
+    
+	 
+    
+    
+    
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/architecture/nodes.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>节点</h1>
+
+
+
+<!--
+A node is a worker machine in Kubernetes, previously known as a `minion`. A node
+may be a VM or physical machine, depending on the cluster. Each node contains
+the services necessary to run [pods](/docs/concepts/workloads/pods/pod/) and is managed by the master
+components. The services on a node include the [container runtime](/docs/concepts/overview/components/#node-components), kubelet and kube-proxy. See
+[The Kubernetes Node](https://git.k8s.io/community/contributors/design-proposals/architecture/architecture.md#the-kubernetes-node) section in the
+architecture design doc for more details.
+-->
+
+<p>在 Kubernetes 中，节点（Node）是执行工作的机器，以前叫做 <code>minion</code>。根据你的集群环境，节点可以是一个虚拟机或者物理机器。每个节点都包含用于运行 <a href="/docs/concepts/workloads/pods/pod/">pods</a> 的必要服务，并由主控组件管理。节点上的服务包括 <a href="/docs/concepts/overview/components/#node-components">容器运行时</a>、kubelet 和 kube-proxy。查阅架构设计文档中 <a href="https://git.k8s.io/community/contributors/design-proposals/architecture/architecture.md#the-kubernetes-node" target="_blank">Kubernetes 节点</a> 一节获取更多细节。</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e8%8a%82%e7%82%b9%e7%8a%b6%e6%80%81">节点状态</a></li>
+
+
+
+
+<li><a href="#%e7%ae%a1%e7%90%86">管理</a></li>
+
+
+
+
+<li><a href="#%e8%8a%82%e7%82%b9%e6%8b%93%e6%89%91">节点拓扑</a></li>
+
+
+
+
+<li><a href="#api-%e5%af%b9%e8%b1%a1">API 对象</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e6%8e%a5%e4%b8%8b%e6%9d%a5">接下来</a></li>
+
+
+
+</ul>
+
+
+<!--
+## Node Status
+-->
+
+<h2 id="节点状态">节点状态</h2>
+
+<!--
+A node's status contains the following information:
+
+* [Addresses](#addresses)
+* [Conditions](#condition)
+* [Capacity and Allocatable](#capacity)
+* [Info](#info)
+-->
+
+<p>一个节点的状态包含以下信息:</p>
+
+<ul>
+<li><a href="#addresses">地址</a></li>
+<li><a href="#condition">条件</a></li>
+<li><a href="#capacity">容量与可分配</a></li>
+<li><a href="#info">信息</a></li>
+</ul>
+
+<!--
+Node status and other details about a node can be displayed using below command:
+-->
+
+<p>可以使用以下命令显示节点状态和有关节点的其他详细信息：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe node &lt;insert-node-name-here&gt;</code></pre></div>
+<!--
+Each section is described in detail below.
+-->
+
+<p>下面对每个章节进行详细描述。</p>
+
+<!--
+### Addresses
+-->
+
+<h3 id="地址">地址</h3>
+
+<!--
+The usage of these fields varies depending on your cloud provider or bare metal configuration.
+-->
+
+<p>这些字段组合的用法取决于你的云服务商或者裸机配置。</p>
+
+<!--
+* HostName: The  as reported by the node's kernel. Can be overridden via the kubelet `--hostname-override` parameter.
+* ExternalIP: Typically the IP address of the node that is externally routable (available from outside the cluster).
+* InternalIP: Typichostnameally the IP address of the node that is routable only within the cluster.
+-->
+
+<ul>
+<li>HostName：由节点的内核指定。可以通过 kubelet 的 <code>--hostname-override</code> 参数覆盖。</li>
+<li>ExternalIP：通常是可以外部路由的节点 IP 地址（从集群外可访问）。</li>
+<li>InternalIP：通常是仅可在集群内部路由的节点 IP 地址。</li>
+</ul>
+
+<!--
+### Conditions {#condition}
+-->
+
+<h3 id="condition">条件</h3>
+
+<!--
+The `conditions` field describes the status of all `Running` nodes. Examples of conditions include:
+-->
+
+<p><code>conditions</code> 字段描述了所有 <code>Running</code> 节点的状态。条件的示例包括：</p>
+
+<!--
+| Node Condition | Description |
+|----------------|-------------|
+| `OutOfDisk`    | `True` if there is insufficient free space on the node for adding new pods, otherwise `False` |
+| `Ready`        | `True` if the node is healthy and ready to accept pods, `False` if the node is not healthy and is not accepting pods, and `Unknown` if the node controller has not heard from the node in the last `node-monitor-grace-period` (default is 40 seconds) |
+| `MemoryPressure`    | `True` if pressure exists on the node memory -- that is, if the node memory is low; otherwise `False` |
+| `PIDPressure`    | `True` if pressure exists on the processes -- that is, if there are too many processes on the node; otherwise `False` |
+| `DiskPressure`    | `True` if pressure exists on the disk size -- that is, if the disk capacity is low; otherwise `False` |
+| `NetworkUnavailable`    | `True` if the network for the node is not correctly configured, otherwise `False` |
+-->
+
+<table>
+<thead>
+<tr>
+<th>节点条件</th>
+<th>描述</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>OutOfDisk</code></td>
+<td><code>True</code> 表示节点的空闲空间不足以用于添加新 pods, 否则为 <code>False</code></td>
+</tr>
+
+<tr>
+<td><code>Ready</code></td>
+<td>表示节点是健康的并已经准备好接受 pods；<code>False</code> 表示节点不健康而且不能接受 pods；<code>Unknown</code> 表示节点控制器在最近 40 秒内没有收到节点的消息</td>
+</tr>
+
+<tr>
+<td><code>MemoryPressure</code></td>
+<td><code>True</code> 表示节点存在内存压力 &ndash; 即节点内存用量低，否则为 <code>False</code></td>
+</tr>
+
+<tr>
+<td><code>PIDPressure</code></td>
+<td><code>True</code> 表示节点存在进程压力 &ndash; 即进程过多；否则为 <code>False</code></td>
+</tr>
+
+<tr>
+<td><code>DiskPressure</code></td>
+<td><code>True</code> 表示节点存在磁盘压力 &ndash; 即磁盘可用量低，否则为 <code>False</code></td>
+</tr>
+
+<tr>
+<td><code>NetworkUnavailable</code></td>
+<td><code>True</code> 表示节点网络配置不正确；否则为 <code>False</code></td>
+</tr>
+</tbody>
+</table>
+
+<!--
+The node condition is represented as a JSON object. For example, the following response describes a healthy node.
+-->
+
+<p>节点条件使用一个 JSON 对象表示。例如，下面的响应描述了一个健康的节点。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#b44">&#34;conditions&#34;</span><span style="">:</span> [
+  {
+    <span style="color:#008000;font-weight:bold">&#34;type&#34;</span>: <span style="color:#b44">&#34;Ready&#34;</span>,
+    <span style="color:#008000;font-weight:bold">&#34;status&#34;</span>: <span style="color:#b44">&#34;True&#34;</span>,
+    <span style="color:#008000;font-weight:bold">&#34;reason&#34;</span>: <span style="color:#b44">&#34;KubeletReady&#34;</span>,
+    <span style="color:#008000;font-weight:bold">&#34;message&#34;</span>: <span style="color:#b44">&#34;kubelet is posting ready status&#34;</span>,
+    <span style="color:#008000;font-weight:bold">&#34;lastHeartbeatTime&#34;</span>: <span style="color:#b44">&#34;2019-06-05T18:38:35Z&#34;</span>,
+    <span style="color:#008000;font-weight:bold">&#34;lastTransitionTime&#34;</span>: <span style="color:#b44">&#34;2019-06-05T11:41:27Z&#34;</span>
+  }
+]</code></pre></div>
+<!--
+If the Status of the Ready condition remains `Unknown` or `False` for longer than the `pod-eviction-timeout`, an argument is passed to the [kube-controller-manager](/docs/admin/kube-controller-manager/) and all the Pods on the node are scheduled for deletion by the Node Controller. The default eviction timeout duration is **five minutes**. In some cases when the node is unreachable, the apiserver is unable to communicate with the kubelet on the node. The decision to delete the pods cannot be communicated to the kubelet until communication with the apiserver is re-established. In the meantime, the pods that are scheduled for deletion may continue to run on the partitioned node.
+-->
+
+<p>如果 Ready 条件处于状态 <code>Unknown</code> 或者 <code>False</code> 的时间超过了 <code>pod-eviction-timeout</code>（一个传递给 <a href="/docs/admin/kube-controller-manager/">kube-controller-manager</a> 的参数），节点上的所有 Pods 都会被节点控制器计划删除。默认的删除超时时长为<strong>5 分钟</strong>。某些情况下，当节点不可访问时，apiserver 不能和其上的 kubelet 通信。删除 pods 的决定不能传达给 kubelet，直到它重新建立和 apiserver 的连接为止。与此同时，被计划删除的 pods 可能会继续在分区节点上运行。</p>
+
+<!--
+In versions of Kubernetes prior to 1.5, the node controller would [force delete](/docs/concepts/workloads/pods/pod/#force-deletion-of-pods)
+these unreachable pods from the apiserver. However, in 1.5 and higher, the node controller does not force delete pods until it is
+confirmed that they have stopped running in the cluster. You can see the pods that might be running on an unreachable node as being in
+the `Terminating` or `Unknown` state. In cases where Kubernetes cannot deduce from the underlying infrastructure if a node has
+permanently left a cluster, the cluster administrator may need to delete the node object by hand.  Deleting the node object from
+Kubernetes causes all the Pod objects running on the node to be deleted from the apiserver, and frees up their names.
+-->
+
+<p>在 1.5 版本之前的 Kubernetes 里，节点控制器会将不能访问的 pods 从 apiserver 中<a href="/docs/concepts/workloads/pods/pod/#force-deletion-of-pods">强制删除</a>。但在 1.5 或更高的版本里，在节点控制器确认这些 pods 已经在集群停止运行前不会强制删除它们。你可以看到这些处于 <code>Terminating</code> 或者 <code>Unknown</code> 状态的 pods 可能在无法访问的节点上运行。为了防止 kubernetes 不能从底层基础设施中推断出一个节点是否已经永久的离开了集群，集群管理员可能需要手动删除这个节点对象。从 Kubernetes 删除节点对象将导致 apiserver 删除节点上所有运行的 Pod 对象并释放它们的名字。</p>
+
+<!--
+The node lifecycle controller automatically creates
+[taints](/docs/concepts/configuration/taint-and-toleration/) that represent conditions.
+When the scheduler is assigning a Pod to a Node, the scheduler takes the Node's taints
+into account, except for any taints that the Pod tolerates.
+-->
+
+<p>节点生命周期控制器会自动创建代表条件的<a href="/docs/concepts/configuration/taint-and-toleration/">污点</a>。
+当调度器将 Pod 分配给节点时，调度器会考虑节点上的污点，但是 Pod 可以容忍的污点除外。</p>
+
+<!--
+### Capacity and Allocatable {#capacity}
+-->
+
+<h3 id="capacity">容量与可分配</h3>
+
+<!--
+Describes the resources available on the node: CPU, memory and the maximum
+number of pods that can be scheduled onto the node.
+-->
+
+<p>描述节点上的可用资源：CPU、内存和可以调度到节点上的 pods 的最大数量。</p>
+
+<!--
+The fields in the capacity block indicate the total amount of resources that a
+Node has. The allocatable block indicates the amount of resources on a
+Node that is available to be consumed by normal Pods.
+-->
+
+<p>capacity 块中的字段指示节点拥有的资源总量。allocatable 块指示节点上可供普通 Pod 消耗的资源量。</p>
+
+<!--
+You may read more about capacity and allocatable resources while learning how
+to [reserve compute resources](/docs/tasks/administer-cluster/reserve-compute-resources/#node-allocatable) on a Node.
+-->
+
+<p>可以在学习如何在节点上<a href="/docs/tasks/administer-cluster/reserve-compute-resources/#node-allocatable">保留计算资源</a>的同时阅读有关容量和可分配资源的更多信息。</p>
+
+<!--
+### Info
+-->
+
+<h3 id="信息">信息</h3>
+
+<!--
+Describes general information about the node, such as kernel version, Kubernetes version (kubelet and kube-proxy version), Docker version (if used), and OS name.
+This information is gathered by Kubelet from the node.
+-->
+
+<p>关于节点的通用信息，例如内核版本、Kubernetes 版本（kubelet 和 kube-proxy 版本）、Docker 版本（如果使用了）和操作系统名称。这些信息由 kubelet 从节点上搜集而来。</p>
+
+<!--
+## Management
+-->
+
+<h2 id="管理">管理</h2>
+
+<!--
+Unlike [pods](/docs/concepts/workloads/pods/pod/) and [services](/docs/concepts/services-networking/service/),
+a node is not inherently created by Kubernetes: it is created externally by cloud
+providers like Google Compute Engine, or it exists in your pool of physical or virtual
+machines. So when Kubernetes creates a node, it creates
+an object that represents the node. After creation, Kubernetes
+checks whether the node is valid or not. For example, if you try to create
+a node from the following content:
+-->
+
+<p>与 <a href="/docs/concepts/workloads/pods/pod/">pods</a> 和 <a href="/docs/concepts/services-networking/service/">services</a> 不同，节点并不是在 Kubernetes 内部创建的：它是被外部的云服务商创建，例如 Google Compute Engine 或者你的集群中的物理或者虚拟机。这意味着当 Kubernetes 创建一个节点时，它其实仅仅创建了一个对象来代表这个节点。创建以后，Kubernetes 将检查这个节点是否可用。例如，如果你尝试使用如下内容创建一个节点：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#008000;font-weight:bold">&#34;kind&#34;</span>: <span style="color:#b44">&#34;Node&#34;</span>,
+  <span style="color:#008000;font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#b44">&#34;v1&#34;</span>,
+  <span style="color:#008000;font-weight:bold">&#34;metadata&#34;</span>: {
+    <span style="color:#008000;font-weight:bold">&#34;name&#34;</span>: <span style="color:#b44">&#34;10.240.79.157&#34;</span>,
+    <span style="color:#008000;font-weight:bold">&#34;labels&#34;</span>: {
+      <span style="color:#008000;font-weight:bold">&#34;name&#34;</span>: <span style="color:#b44">&#34;my-first-k8s-node&#34;</span>
+    }
+  }
+}</code></pre></div>
+<!--
+Kubernetes creates a node object internally (the representation), and
+validates the node by health checking based on the `metadata.name` field. If the node is valid -- that is, if all necessary
+services are running -- it is eligible to run a pod. Otherwise, it is
+ignored for any cluster activity until it becomes valid.
+-->
+
+<p>Kubernetes 会在内部创一个 Node 对象（用以表示节点），并基于  <code>metadata.name</code> 字段执行健康检查，对节点进行验证。如果节点可用，意即所有必要服务都已运行，它就符合了运行一个 pod 的条件；否则它将被所有的集群动作忽略直到变为可用。</p>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+Kubernetes keeps the object for the invalid node and keeps checking to see whether it becomes valid.
+You must explicitly delete the Node object to stop this process.--> Kubernetes 保留无效节点的对象，并继续检查它是否有效。必须显式删除 Node 对象以停止此过程。</div>
+</blockquote>
+
+<!--
+Currently, there are three components that interact with the Kubernetes node
+interface: node controller, kubelet, and kubectl.
+-->
+
+<p>当前，有 3 个组件同 Kubernetes 节点接口交互：节点控制器、kubelet 和 kubectl。</p>
+
+<!--
+### Node Controller
+-->
+
+<h3 id="节点控制器">节点控制器</h3>
+
+<!--
+The node controller is a Kubernetes master component which manages various
+aspects of nodes.
+-->
+
+<p>节点控制器是一个 Kubernetes master 组件，管理节点的方方面面。</p>
+
+<!--
+The node controller has multiple roles in a node's life. The first is assigning a
+CIDR block to the node when it is registered (if CIDR assignment is turned on).
+-->
+
+<p>节点控制器在节点的生命周期中扮演了多个角色。第一个是当节点注册时为它分配一个 CIDR block（如果打开了 CIDR 分配）。</p>
+
+<!--
+The second is keeping the node controller's internal list of nodes up to date with
+the cloud provider's list of available machines. When running in a cloud
+environment, whenever a node is unhealthy, the node controller asks the cloud
+provider if the VM for that node is still available. If not, the node
+controller deletes the node from its list of nodes.
+-->
+
+<p>第二个是使用云服务商提供了可用节点列表保持节点控制器内部的节点列表更新。如果在云环境下运行，任何时候当一个节点不健康时节点控制器将询问云服务节点的虚拟机是否可用。如果不可用，节点控制器会将这个节点从它的节点列表删除。</p>
+
+<!--
+The third is monitoring the nodes' health. The node controller is
+responsible for updating the NodeReady condition of NodeStatus to
+ConditionUnknown when a node becomes unreachable (i.e. the node controller stops
+receiving heartbeats for some reason, e.g. due to the node being down), and then later evicting
+all the pods from the node (using graceful termination) if the node continues
+to be unreachable. (The default timeouts are 40s to start reporting
+ConditionUnknown and 5m after that to start evicting pods.) The node controller
+checks the state of each node every `--node-monitor-period` seconds.
+-->
+
+<p>第三个是监控节点的健康情况。节点控制器负责在节点不能访问时（也即是节点控制器因为某些原因没有收到心跳，例如节点宕机）将它的 NodeStatus 的 NodeReady 状态更新为 ConditionUnknown。后续如果节点持续不可访问，节点控制器将删除节点上的所有 pods（使用优雅终止）。（默认情况下 40s 开始报告 ConditionUnknown，在那之后 5m 开始删除 pods。）节点控制器每隔 <code>--node-monitor-period</code> 秒检查每个节点的状态。</p>
+
+<!--
+#### Heartbeats
+-->
+
+<h4 id="心跳机制">心跳机制</h4>
+
+<!--
+Heartbeats, sent by Kubernetes nodes, help determine the availability of a node.
+There are two forms of heartbeats: updates of `NodeStatus` and the
+[Lease object](/docs/reference/generated/kubernetes-api/v1.17/#lease-v1-coordination-k8s-io).
+Each Node has an associated Lease object in the `kube-node-lease`
+<a class='glossary-tooltip' href='/docs/concepts/overview/working-with-objects/namespaces' target='_blank'>namespace<span class='tooltip-text'>命名空间是 Kubernetes 为了在同一物理集群上支持多个虚拟集群而使用的一种抽象。</span>
+</a>.
+Lease is a lightweight resource, which improves the performance
+of the node heartbeats as the cluster scales.
+-->
+
+<p>Kubernetes 节点发送的心跳有助于确定节点的可用性。
+心跳有两种形式：<code>NodeStatus</code> 和 <a href="/docs/reference/generated/kubernetes-api/v1.17/#lease-v1-coordination-k8s-io"><code>Lease</code> 对象</a>。
+每个节点在 <code>kube-node-lease</code><a class='glossary-tooltip' href='/docs/concepts/overview/working-with-objects/namespaces' target='_blank'>命名空间<span class='tooltip-text'>命名空间是 Kubernetes 为了在同一物理集群上支持多个虚拟集群而使用的一种抽象。</span>
+</a> 中都有一个关联的 <code>Lease</code> 对象。
+<code>Lease</code> 是一种轻量级的资源，可在集群扩展时提高节点心跳机制的性能。</p>
+
+<!--
+The kubelet is responsible for creating and updating the `NodeStatus` and
+a Lease object.
+-->
+
+<p>kubelet 负责创建和更新 <code>NodeStatus</code> 和 <code>Lease</code> 对象。</p>
+
+<!--
+- The kubelet updates the `NodeStatus` either when there is change in status,
+  or if there has been no update for a configured interval. The default interval
+  for `NodeStatus` updates is 5 minutes (much longer than the 40 second default
+  timeout for unreachable nodes).
+- The kubelet creates and then updates its Lease object every 10 seconds
+  (the default update interval). Lease updates occur independently from the
+  `NodeStatus` updates.
+-->
+
+<ul>
+<li>当状态发生变化时，或者在配置的时间间隔内没有更新时，kubelet 会更新 <code>NodeStatus</code>。
+<code>NodeStatus</code> 更新的默认间隔为 5 分钟（比无法访问的节点的 40 秒默认超时时间长很多）。</li>
+<li>kubelet 会每 10 秒（默认更新间隔时间）创建并更新其 <code>Lease</code> 对象。<code>Lease</code> 更新独立于 <code>NodeStatus</code> 更新而发生。</li>
+</ul>
+
+<!--
+#### Reliability
+-->
+
+<h4 id="可靠性">可靠性</h4>
+
+<!--
+In Kubernetes 1.4, we updated the logic of the node controller to better handle
+cases when a large number of nodes have problems with reaching the master
+(e.g. because the master has networking problem). Starting with 1.4, the node
+controller looks at the state of all nodes in the cluster when making a
+decision about pod eviction.
+-->
+
+<p>在 Kubernetes 1.4 中我们更新了节点控制器逻辑以更好地处理大批量节点访问 master 出问题的情况（例如 master 的网络出了问题）。从 1.4 开始，节点控制器在决定删除 pod 之前会检查集群中所有节点的状态。</p>
+
+<!--
+In most cases, node controller limits the eviction rate to
+`--node-eviction-rate` (default 0.1) per second, meaning it won't evict pods
+from more than 1 node per 10 seconds.
+-->
+
+<p>大部分情况下，节点控制器把驱逐频率限制在每秒 <code>--node-eviction-rate</code> 个（默认为 0.1）。这表示它每 10 秒钟内之多从一个节点驱逐 Pods。</p>
+
+<!--
+The node eviction behavior changes when a node in a given availability zone
+becomes unhealthy. The node controller checks what percentage of nodes in the zone
+are unhealthy (NodeReady condition is ConditionUnknown or ConditionFalse) at
+the same time. If the fraction of unhealthy nodes is at least
+`--unhealthy-zone-threshold` (default 0.55) then the eviction rate is reduced:
+if the cluster is small (i.e. has less than or equal to
+`--large-cluster-size-threshold` nodes - default 50) then evictions are
+stopped, otherwise the eviction rate is reduced to
+`--secondary-node-eviction-rate` (default 0.01) per second. The reason these
+policies are implemented per availability zone is because one availability zone
+might become partitioned from the master while the others remain connected. If
+your cluster does not span multiple cloud provider availability zones, then
+there is only one availability zone (the whole cluster).
+-->
+
+<p>当一个可用区域中的节点变为不健康时，它的驱逐行为将发生改变。节点控制器会同时检查可用区域中不健康（NodeReady  状态为 ConditionUnknown 或 ConditionFalse）的节点的百分比。如果不健康节点的部分超过 <code>--unhealthy-zone-threshold</code> （默认为 0.55），驱逐速率将会减小：如果集群较小（意即小于等于 <code>--large-cluster-size-threshold</code> 个 节点 - 默认为 50），驱逐操作将会停止，否则驱逐速率将降为每秒 <code>--secondary-node-eviction-rate</code> 个（默认为 0.01）。在单个可用区域实施这些策略的原因是当一个可用区域可能从 master 分区时其它的仍然保持连接。如果你的集群没有跨越云服务商的多个可用区域，那就只有一个可用区域整个集群）。</p>
+
+<!--
+A key reason for spreading your nodes across availability zones is so that the
+workload can be shifted to healthy zones when one entire zone goes down.
+Therefore, if all nodes in a zone are unhealthy then node controller evicts at
+the normal rate `--node-eviction-rate`.  The corner case is when all zones are
+completely unhealthy (i.e. there are no healthy nodes in the cluster). In such
+case, the node controller assumes that there's some problem with master
+connectivity and stops all evictions until some connectivity is restored.
+-->
+
+<p>在多个可用区域分布你的节点的一个关键原因是当整个可用区域故障时，工作负载可以转移到健康的可用区域。因此，如果一个可用区域中的所有节点都不健康时，节点控制器会以正常的速率 <code>--node-eviction-rate</code> 进行驱逐操作。在所有的可用区域都不健康（也即集群中没有健康节点）的极端情况下，节点控制器将假设 master 的连接出了某些问题，它将停止所有驱逐动作直到一些连接恢复。</p>
+
+<!--
+Starting in Kubernetes 1.6, the NodeController is also responsible for evicting
+pods that are running on nodes with `NoExecute` taints, when the pods do not tolerate
+the taints. Additionally, as an alpha feature that is disabled by default, the
+NodeController is responsible for adding taints corresponding to node problems like
+node unreachable or not ready. See [this documentation](/docs/concepts/configuration/taint-and-toleration/)
+for details about `NoExecute` taints and the alpha feature.
+-->
+
+<p>从 Kubernetes 1.6 开始，NodeController 还负责驱逐运行在拥有 <code>NoExecute</code> 污点的节点上的 pods，如果这些 pods 没有容忍这些污点。此外，作为一个默认禁用的 alpha 特性，NodeController 还负责根据节点故障（例如节点不可访问或没有 ready）添加污点。请查看<a href="/docs/concepts/configuration/assign-pod-node/#taints-and-tolerations-beta-feature">这个文档</a>了解关于 <code>NoExecute</code> 污点和这个 alpha 特性。</p>
+
+<!--
+Starting in version 1.8, the node controller can be made responsible for creating taints that represent
+Node conditions. This is an alpha feature of version 1.8.
+-->
+
+<p>从版本 1.8 开始，可以使节点控制器负责创建代表节点条件的污点。这是版本 1.8 的 Alpha 功能。</p>
+
+<!--
+### Self-Registration of Nodes
+-->
+
+<h3 id="节点自注册">节点自注册</h3>
+
+<!--
+When the kubelet flag `--register-node` is true (the default), the kubelet will attempt to
+register itself with the API server.  This is the preferred pattern, used by most distros.
+-->
+
+<p>当 kubelet 标志 <code>--register-node</code> 为 true （默认）时，它会尝试向 API 服务注册自己。这是首选模式，被绝大多数发行版选用。</p>
+
+<!--
+For self-registration, the kubelet is started with the following options:
+-->
+
+<p>对于自注册模式，kubelet 使用下列参数启动：</p>
+
+<!--
+  - `--kubeconfig` - Path to credentials to authenticate itself to the apiserver.
+  - `--cloud-provider` - How to talk to a cloud provider to read metadata about itself.
+  - `--register-node` - Automatically register with the API server.
+  - `--register-with-taints` - Register the node with the given list of taints (comma separated `<key>=<value>:<effect>`). No-op if `register-node` is false.
+  - `--node-ip` - IP address of the node.
+  - `--node-labels` - Labels to add when registering the node in the cluster (see label restrictions enforced by the [NodeRestriction admission plugin](/docs/reference/access-authn-authz/admission-controllers/#noderestriction) in 1.13+).
+  - `--node-status-update-frequency` - Specifies how often kubelet posts node status to master.
+-->
+
+<ul>
+<li><code>--kubeconfig</code> - 用于向 apiserver 验证自己的凭据路径。</li>
+<li><code>--cloud-provider</code> - 如何从云服务商读取关于自己的元数据。</li>
+<li><code>--register-node</code> - 自动向 API 服务注册。</li>
+<li><code>--register-with-taints</code> - 使用 taints 列表（逗号分隔的 <code>&lt;key&gt;=&lt;value&gt;:&lt;effect&gt;</code>）注册节点。当 <code>register-node</code> 为 false 时无效。</li>
+<li><code>--node-ip</code> - 节点 IP 地址。</li>
+<li><code>--node-labels</code> - 在集群中注册节点时要添加的标签（请参阅 <a href="/docs/reference/access-authn-authz/admission-controllers/#noderestriction">NodeRestriction 准入插件</a> 在 1.13+ 中实施的标签限制）。</li>
+<li><code>--node-status-update-frequency</code> - 指定 kubelet 向 master 发送状态的频率。</li>
+</ul>
+
+<!--
+When the [Node authorization mode](/docs/reference/access-authn-authz/node/) and
+[NodeRestriction admission plugin](/docs/reference/access-authn-authz/admission-controllers/#noderestriction) are enabled,
+kubelets are only authorized to create/modify their own Node resource.
+-->
+
+<p>启用<a href="/docs/reference/access-authn-authz/node/">节点授权模式</a> 和 <a href="/docs/reference/access-authn-authz/admission-controllers/#noderestriction">NodeRestriction 准入插件</a>时，仅授权小组件创建或修改其自己的节点资源。</p>
+
+<!--
+#### Manual Node Administration
+-->
+
+<h4 id="手动节点管理">手动节点管理</h4>
+
+<!--
+A cluster administrator can create and modify node objects.
+-->
+
+<p>集群管理员可以创建及修改节点对象。</p>
+
+<!--
+If the administrator wishes to create node objects manually, set the kubelet flag
+`--register-node=false`.
+-->
+
+<p>如果管理员希望手动创建节点对象，请设置 kubelet 标记 <code>--register-node=false</code>。</p>
+
+<!--
+The administrator can modify node resources (regardless of the setting of `--register-node`).
+Modifications include setting labels on the node and marking it unschedulable.
+-->
+
+<p>管理员可以修改节点资源（忽略 <code>--register-node</code> 设置）。修改包括在节点上设置 labels 及标记它为不可调度。</p>
+
+<!--
+Labels on nodes can be used in conjunction with node selectors on pods to control scheduling,
+e.g. to constrain a pod to only be eligible to run on a subset of the nodes.
+-->
+
+<p>节点上的 labels 可以和 pods 的节点 selectors 一起使用来控制调度，例如限制一个 pod 只能在一个符合要求的节点子集上运行。</p>
+
+<!--
+Marking a node as unschedulable prevents new pods from being scheduled to that
+node, but does not affect any existing pods on the node. This is useful as a
+preparatory step before a node reboot, etc. For example, to mark a node
+unschedulable, run this command:
+-->
+
+<p>标记一个节点为不可调度的将防止新建 pods 调度到那个节点之上，但不会影响任何已经在它之上的 pods。这是重启节点等操作之前的一个有用的准备步骤。例如，标记一个节点为不可调度的，执行以下命令：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl cordon <span style="color:#b8860b">$NODENAME</span></code></pre></div>
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+Pods created by a DaemonSet controller bypass the Kubernetes scheduler
+and do not respect the unschedulable attribute on a node. This assumes that daemons belong on
+the machine even if it is being drained of applications while it prepares for a reboot
+-->
+
+<p>请注意，被 daemonSet 控制器创建的 pods 将忽略 Kubernetes 调度器，且不会遵照节点上不可调度的属性。这个假设基于守护程序属于节点机器，即使在准备重启而隔离应用的时候。</div>
+</blockquote>
+
+<!--
+### Node capacity
+-->
+
+<h3 id="节点容量">节点容量</h3>
+
+<!--
+The capacity of the node (number of cpus and amount of memory) is part of the node object.
+Normally, nodes register themselves and report their capacity when creating the node object. If
+you are doing [manual node administration](#manual-node-administration), then you need to set node
+capacity when adding a node.
+-->
+
+<p>节点的容量（cpu 数量和内存容量）是节点对象的一部分。通常情况下，在创建节点对象时，它们会注册自己并报告自己的容量。如果你正在执行<a href="#manual-node-administration">手动节点管理</a>，那么你需要在添加节点时手动设置节点容量。</p>
+
+<!--
+The Kubernetes scheduler ensures that there are enough resources for all the pods on a node.  It
+checks that the sum of the requests of containers on the node is no greater than the node capacity.  It
+includes all containers started by the kubelet, but not containers started directly by the [container runtime](/docs/concepts/overview/components/#node-components) nor any process running outside of the containers.
+-->
+
+<p>Kubernetes 调度器保证一个节点上有足够的资源供其上的所有 pods 使用。它会检查节点上所有容器要求的总和不会超过节点的容量。这包括由 kubelet 启动的所有容器，但不包括由 <a href="/docs/concepts/overview/components/#node-components">container runtime</a> 直接启动的容器，也不包括在容器外部运行的任何进程。</p>
+
+<!--
+If you want to explicitly reserve resources for non-Pod processes, follow this tutorial to
+[reserve resources for system daemons](/docs/tasks/administer-cluster/reserve-compute-resources/#system-reserved).
+-->
+
+<p>如果要为非 Pod 进程显式保留资源。请按照本教程<a href="/docs/tasks/administer-cluster/reserve-compute-resources/#system-reserved">为系统守护程序保留资源</a>。</p>
+
+<!--
+## Node topology
+-->
+
+<h2 id="节点拓扑">节点拓扑</h2>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.17</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>alpha</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="alpha">
+该功能目前处于 <em>alpha</em> 状态，意味着：</p>
+
+<ul>
+<li>版本名称包含 alpha（例如 v1alpha1）。</li>
+<li>可能存在问题，启用该功能可能会暴露 bug。默认情况下被禁用。</li>
+<li>对该功能的支持可能在任何时候被取消，而不另行通知。</li>
+<li>API 可能会在以后的软件版本中以不兼容的方式被更改，而不另行通知。</li>
+<li>建议仅在短期测试集群中使用该功能，这是因为使用该功能会增加出现 bug 的风险，而且缺乏长期支持。</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<!--
+If you have enabled the `TopologyManager`
+[feature gate](/docs/reference/command-line-tools-reference/feature-gates/), then
+the kubelet can use topology hints when making resource assignment decisions.
+-->
+
+<p>如果启用了 <code>TopologyManager</code> <a href="/docs/reference/command-line-tools-reference/feature-gates/">功能开关</a>，则 kubelet 可以在做出资源分配决策时使用拓扑提示。</p>
+
+<!--
+## API Object
+-->
+
+<h2 id="api-对象">API 对象</h2>
+
+<!--
+Node is a top-level resource in the Kubernetes REST API. More details about the
+API object can be found at:
+[Node API object](/docs/reference/generated/kubernetes-api/v1.17/#node-v1-core).
+-->
+
+<p>节点是 Kubernetes REST API 的顶级资源。更多关于 API 对象的细节可以在这里找到：<a href="/docs/reference/generated/kubernetes-api/v1.17/#node-v1-core">节点 API 对象</a>。</p>
+
+
+
+<!--
+---
+reviewers:
+- caesarxuchao
+- dchen1107
+title: Nodes
+content_template: templates/concept
+weight: 10
+---
+-->
+
+
+
+<p>
+</p>
+
+
+
+
+<h2 id="接下来">接下来</h2>
+<!--
+* Read about [node components](https://kubernetes.io/docs/concepts/overview/components/#node-components)
+* Read about node-level topology: [Control Topology Management Policies on a node](/docs/tasks/administer-cluster/topology-manager/)
+-->
+
+<ul>
+<li>了解有关<a href="https://kubernetes.io/docs/concepts/overview/components/#node-components" target="_blank">节点组件</a>的信息。</li>
+<li>阅读有关节点级拓扑的信息：<a href="/docs/tasks/administer-cluster/topology-manager/">控制节点上的拓扑管理策略</a>。</li>
+</ul>
+
+
+
+
+
+
+    
+    
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/architecture/_index.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/concepts\/architecture\/",
+    "title" : "Kubernetes 架构",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/concepts\/architecture\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/architecture/_index.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 December 25, 2019 at 8:51 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/b8b2cc7c7443e32de70834a2b3d2186cae6eea5a/">ZH-trans: merge release1.16-temporary to master (#18217)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/architecture/_index.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

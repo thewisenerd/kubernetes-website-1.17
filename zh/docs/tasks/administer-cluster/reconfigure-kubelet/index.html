@@ -1,0 +1,2951 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>在实时集群上重新配置节点的 Kubelet - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/tasks/administer-cluster/reconfigure-kubelet/">
+<meta property="og:title" content="在实时集群上重新配置节点的 Kubelet">
+<meta name="twitter:title" content="在实时集群上重新配置节点的 Kubelet">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/tasks/administer-cluster/reconfigure-kubelet/">English</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/tasks/administer-cluster/reconfigure-kubelet/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/tasks/administer-cluster/reconfigure-kubelet/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/tasks/administer-cluster/reconfigure-kubelet/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/tasks/administer-cluster/reconfigure-kubelet/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/tasks/administer-cluster/reconfigure-kubelet/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+<h1>任务</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/" class="YAH">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="任务" href="/zh/docs/tasks/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="安装工具">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装工具" href="/zh/docs/tasks/tools/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="安装并设置 kubectl" href="/zh/docs/tasks/tools/install-kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装 Minikube" href="/zh/docs/tasks/tools/install-minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群" href="/zh/docs/tasks/administer-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="用 kubeadm 进行管理">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="用 kubeadm 进行管理" href="/zh/docs/tasks/administer-cluster/kubeadm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 进行证书管理" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="升级 kubeadm 集群" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理内存，CPU 和 API 资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理内存，CPU 和 API 资源" href="/zh/docs/tasks/administer-cluster/manage-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的内存请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的CPU请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间的最小和最大内存约束" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置CPU最小和最大限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置内存和 CPU 配额" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间下pod总数" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-pod-namespace/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Install a Network Policy Provider">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Install a Network Policy Provider" href="/zh/docs/tasks/administer-cluster/network-policy-provider/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Calico 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/calico-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Cilium 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/cilium-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kube-router 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/kube-router-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Romana 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/romana-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Weave Net 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/weave-network-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debug DNS 方案" href="/zh/docs/tasks/administer-cluster/dns-debugging-resolution/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Enabling Service Topology <small>(EN)</small>" href="/docs/tasks/administer-cluster/enabling-service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IP Masquerade Agent 用户指南" href="/zh/docs/tasks/administer-cluster/ip-masq-agent/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 云管理控制器" href="/zh/docs/tasks/administer-cluster/running-cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Safely Drain a Node while Respecting the PodDisruptionBudget <small>(EN)</small>" href="/docs/tasks/administer-cluster/safely-drain-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Kubernetes 运行 etcd 集群" href="/zh/docs/tasks/administer-cluster/configure-upgrade-etcd/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为系统守护进程预留计算资源" href="/zh/docs/tasks/administer-cluster/reserve-compute-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为节点发布扩展资源" href="/zh/docs/tasks/administer-cluster/extended-resource-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 CoreDNS 进行服务发现" href="/zh/docs/tasks/administer-cluster/coredns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 KMS 提供商进行数据加密" href="/zh/docs/tasks/administer-cluster/kms-provider/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kubernetes API 访问集群" href="/zh/docs/tasks/administer-cluster/access-cluster-api/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="关键插件 Pod 的调度保证" href="/zh/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="启用端点切片" href="/zh/docs/tasks/administer-cluster/enabling-endpointslices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间演练" href="/zh/docs/tasks/administer-cluster/namespaces-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 NodeLocal DNSCache" href="/zh/docs/tasks/administer-cluster/nodelocaldns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 sysctl" href="/zh/docs/tasks/administer-cluster/sysctl-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在实时集群上重新配置节点的 Kubelet" href="/zh/docs/tasks/administer-cluster/reconfigure-kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="声明网络策略" href="/zh/docs/tasks/administer-cluster/declare-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="开发云控制器管理器" href="/zh/docs/tasks/administer-cluster/developing-cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的 CPU 管理策略" href="/zh/docs/tasks/administer-cluster/cpu-management-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的拓扑管理策略" href="/zh/docs/tasks/administer-cluster/topology-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="搭建高可用的 Kubernetes Masters" href="/zh/docs/tasks/administer-cluster/highly-available-master/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="改变默认 StorageClass" href="/zh/docs/tasks/administer-cluster/change-default-storage-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="更改 PersistentVolume 的回收策略" href="/zh/docs/tasks/administer-cluster/change-pv-reclaim-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="自定义 DNS 服务" href="/zh/docs/tasks/administer-cluster/dns-custom-nameservers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群上运行的服务" href="/zh/docs/tasks/administer-cluster/access-cluster-services/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过命名空间共享集群" href="/zh/docs/tasks/administer-cluster/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过配置文件设置 Kubelet 参数" href="/zh/docs/tasks/administer-cluster/kubelet-config-file/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 API 对象配额" href="/zh/docs/tasks/administer-cluster/quota-api-object/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置多个调度器" href="/zh/docs/tasks/administer-cluster/configure-multiple-schedulers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置资源不足时的处理方式" href="/zh/docs/tasks/administer-cluster/out-of-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="限制存储消耗" href="/zh/docs/tasks/administer-cluster/limit-storage-consumption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群 DNS 服务自动伸缩" href="/zh/docs/tasks/administer-cluster/dns-horizontal-autoscaling/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群安全" href="/zh/docs/tasks/administer-cluster/securing-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群管理" href="/zh/docs/tasks/administer-cluster/cluster-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="静态加密 Secret 数据" href="/zh/docs/tasks/administer-cluster/encrypt-data/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置 Pods 和容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置 Pods 和容器" href="/zh/docs/tasks/configure-pod-container/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器和 Pod 分配内存资源" href="/zh/docs/tasks/configure-pod-container/assign-memory-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Assign CPU Resources to Containers and Pods" href="/zh/docs/tasks/configure-pod-container/assign-cpu-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure GMSA for Windows Pods and containers <small>(EN)</small>" href="/docs/tasks/configure-pod-container/configure-gmsa/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Windows 的 pod 和容器配置 RunAsUserName" href="/zh/docs/tasks/configure-pod-container/configure-runasusername/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 的服务质量" href="/zh/docs/tasks/configure-pod-container/quality-service-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器分派扩展资源" href="/zh/docs/tasks/configure-pod-container/extended-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用卷进行存储" href="/zh/docs/tasks/configure-pod-container/configure-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用 PersistentVolume 作为存储" href="/zh/docs/tasks/configure-pod-container/configure-persistent-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 使用投射卷作存储" href="/zh/docs/tasks/configure-pod-container/configure-projected-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure a Security Context for a Pod or Container <small>(EN)</small>" href="/docs/tasks/configure-pod-container/security-context/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Pod 配置服务账户" href="/zh/docs/tasks/configure-pod-container/configure-service-account/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="从私有仓库拉取镜像" href="/zh/docs/tasks/configure-pod-container/pull-image-private-registry/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置存活、就绪和启动探测器" href="/zh/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/tasks/configure-pod-container/assign-pods-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 初始化" href="/zh/docs/tasks/configure-pod-container/configure-pod-initialization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器的生命周期事件设置处理函数" href="/zh/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ConfigMap 配置 Pod" href="/zh/docs/tasks/configure-pod-container/configure-pod-configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Pod 中的容器之间共享进程命名空间" href="/zh/docs/tasks/configure-pod-container/share-process-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建静态 Pod" href="/zh/docs/tasks/configure-pod-container/static-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Docker Compose 文件转换为 Kubernetes 资源" href="/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理 Kubernetes 对象" href="/zh/docs/tasks/manage-kubernetes-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Configuration Files <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/declarative-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Kustomize <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/kustomization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Kubernetes Objects Using Imperative Commands <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/imperative-command/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用配置文件对 Kubernetes 对象进行命令式管理" href="/zh/docs/tasks/manage-kubernetes-objects/imperative-config/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="给应用注入数据">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="给应用注入数据" href="/zh/docs/tasks/inject-data-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器设置启动时要执行的命令及其入参" href="/zh/docs/tasks/inject-data-application/define-command-argument-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器设置环境变量" href="/zh/docs/tasks/inject-data-application/define-environment-variable-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 PodPreset 将信息注入 Pods" href="/zh/docs/tasks/inject-data-application/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Secret 安全地分发凭证" href="/zh/docs/tasks/inject-data-application/distribute-credentials-secure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过文件将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过环境变量将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/environment-variable-expose-pod-information/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行应用" href="/zh/docs/tasks/run-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="运行一个有状态的应用程序" href="/zh/docs/tasks/run-application/run-replicated-stateful-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubectl patch 更新 API 对象" href="/zh/docs/tasks/run-application/update-api-object-kubectl-patch/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="删除 StatefulSet" href="/zh/docs/tasks/run-application/delete-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="强制删除 StatefulSet 类型的 Pods" href="/zh/docs/tasks/run-application/force-delete-stateful-set-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="基于Replication Controller执行滚动升级" href="/zh/docs/tasks/run-application/rolling-update-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 水平自动伸缩" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Horizontal Pod Autoscaler演练" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="指定应用程序的中断预算（Disruption Budget）" href="/zh/docs/tasks/run-application/configure-pdb/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用Deployment运行一个无状态应用" href="/zh/docs/tasks/run-application/run-stateless-application-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="弹缩StatefulSet" href="/zh/docs/tasks/run-application/scale-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="运行一个单实例有状态应用" href="/zh/docs/tasks/run-application/run-single-instance-stateful-application/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行 Jobs">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行 Jobs" href="/zh/docs/tasks/job/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 CronJob 运行自动化任务" href="/zh/docs/tasks/job/automated-tasks-with-cron-jobs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用扩展进行并行处理" href="/zh/docs/tasks/job/parallel-processing-expansion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行粗粒度并行处理" href="/zh/docs/tasks/job/coarse-parallel-processing-work-queue/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行精细的并行处理" href="/zh/docs/tasks/job/fine-parallel-processing-work-queue/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="访问集群中的应用程序">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="访问集群中的应用程序" href="/zh/docs/tasks/access-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网页界面 (Dashboard)" href="/zh/docs/tasks/access-application-cluster/web-ui-dashboard/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群" href="/zh/docs/tasks/access-application-cluster/access-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用端口转发来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/port-forward-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用服务来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/service-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建一个外部负载均衡器" href="/zh/docs/tasks/access-application-cluster/create-external-load-balancer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置你的云平台防火墙" href="/zh/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up Ingress on Minikube with the NGINX Ingress Controller <small>(EN)</small>" href="/docs/tasks/access-application-cluster/ingress-minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="列出集群中所有运行容器的镜像" href="/zh/docs/tasks/access-application-cluster/list-all-running-container-images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为集群配置 DNS" href="/zh/docs/tasks/access-application-cluster/configure-dns-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Service 把前端连接到后端" href="/zh/docs/tasks/access-application-cluster/connecting-frontend-backend/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="同 Pod 内的容器使用共享卷通信" href="/zh/docs/tasks/access-application-cluster/communicate-containers-same-pod-shared-volume/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置对多集群的访问" href="/zh/docs/tasks/access-application-cluster/configure-access-multiple-clusters/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="监控、日志和排错">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="监控、日志和排错" href="/zh/docs/tasks/debug-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Auditing" href="/zh/docs/tasks/debug-application-cluster/audit/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Auditing with Falco <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/falco/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Logging Using Stackdriver <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/logging-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StackDriver 中的事件" href="/zh/docs/tasks/debug-application-cluster/events-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 crictl 对 Kubernetes 节点进行调试" href="/zh/docs/tasks/debug-application-cluster/crictl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ElasticSearch 和 Kibana 进行日志管理" href="/zh/docs/tasks/debug-application-cluster/logging-elasticsearch-kibana/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在本地开发和调试服务" href="/zh/docs/tasks/debug-application-cluster/local-debugging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用自测与调试" href="/zh/docs/tasks/debug-application-cluster/debug-application-introspection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="排错" href="/zh/docs/tasks/debug-application-cluster/troubleshooting/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="确定 Pod 失败的原因" href="/zh/docs/tasks/debug-application-cluster/determine-reason-pod-failure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="节点健康监测" href="/zh/docs/tasks/debug-application-cluster/monitor-node-health/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="获取正在运行容器的 Shell" href="/zh/docs/tasks/debug-application-cluster/get-shell-running-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Init 容器" href="/zh/docs/tasks/debug-application-cluster/debug-init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Pods 和 Replication Controllers" href="/zh/docs/tasks/debug-application-cluster/debug-pod-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Service" href="/zh/docs/tasks/debug-application-cluster/debug-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试StatefulSet" href="/zh/docs/tasks/debug-application-cluster/debug-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源指标管道" href="/zh/docs/tasks/debug-application-cluster/resource-metrics-pipeline/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源监控工具" href="/zh/docs/tasks/debug-application-cluster/resource-usage-monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-cluster/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/tasks/access-kubernetes-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="使用自定义资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用自定义资源" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Extend the Kubernetes API with CustomResourceDefinitions <small>(EN)</small>" href="/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用户自定义资源版本" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definition-versioning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置聚合层" href="/zh/docs/tasks/access-kubernetes-api/configure-aggregation-layer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="设置一个扩展的 API server" href="/zh/docs/tasks/access-kubernetes-api/setup-extension-api-server/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HTTP 代理访问 Kubernetes API" href="/zh/docs/tasks/access-kubernetes-api/http-proxy-access-api/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="TLS">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="管理集群中的 TLS 认证" href="/zh/docs/tasks/tls/managing-tls-in-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书轮换" href="/zh/docs/tasks/tls/certificate-rotation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="联邦 - 在多个集群上运行一个应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="联邦 - 在多个集群上运行一个应用" href="/zh/docs/tasks/federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="将 CoreDNS 设置为联邦集群的 DNS 提供者" href="/zh/docs/tasks/federation/set-up-coredns-provider-federation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用联合服务来实现跨集群的服务发现" href="/zh/docs/tasks/federation/federation-service-discovery/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="管理联邦控制平面">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理联邦控制平面" href="/zh/docs/tasks/federation/administer-federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="联邦 ConfigMap" href="/zh/docs/tasks/federation/administer-federation/configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 DaemonSet" href="/zh/docs/tasks/federation/administer-federation/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Deployment" href="/zh/docs/tasks/federation/administer-federation/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Job" href="/zh/docs/tasks/federation/administer-federation/job/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 ReplicaSet" href="/zh/docs/tasks/federation/administer-federation/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Secret" href="/zh/docs/tasks/federation/administer-federation/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦事件" href="/zh/docs/tasks/federation/administer-federation/events/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦命名空间" href="/zh/docs/tasks/federation/administer-federation/namespaces/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在联邦中设置放置策略" href="/zh/docs/tasks/federation/set-up-placement-policies-federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群守护进程">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群守护进程" href="/zh/docs/tasks/manage-daemon/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行回滚" href="/zh/docs/tasks/manage-daemon/rollback-daemon-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行滚动更新" href="/zh/docs/tasks/manage-daemon/update-daemon-set/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安装服务目录">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装服务目录" href="/zh/docs/tasks/service-catalog/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Helm 安装 Service Catalog" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-helm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 SC 安装服务目录" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-sc/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="网络">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="网络" href="/zh/docs/tasks/network/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="验证 IPv4/IPv6 双协议栈" href="/zh/docs/tasks/network/validate-dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用插件扩展 kubectl" href="/zh/docs/tasks/extend-kubectl/kubectl-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理巨页（HugePages）" href="/zh/docs/tasks/manage-hugepages/scheduling-hugepages/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度 GPUs" href="/zh/docs/tasks/manage-gpus/scheduling-gpus/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/administer-cluster/reconfigure-kubelet.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>在实时集群上重新配置节点的 Kubelet</h1>
+
+
+
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.11</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+该功能目前处于 <em>beta</em> 状态，意味着：</p>
+
+<ul>
+<li>版本名称包含 beta （例如 v2beta3）。</li>
+<li>代码经过了充分测试，启用该功能被认为是安全的。默认情况下被启用。</li>
+<li>对整体功能的支持在未来不会被移除，尽管细节上可能会做更改。</li>
+<li>在后续的 beta 或稳定版本中，对象的模式、语义可能以不兼容的方式发生变化。当这种情况发生时，我们将提供迁移到下一个版本的说明。这可能需要删除、编辑和重建 API 对象，编辑过程可能需要一些思考。这可能导致依赖该功能的应用程序停机一段时间。</li>
+<li>建议仅在非业务关键场景使用该功能，因为在后续版本中可能会发生不兼容的更改。如果您有多个可以独立升级的集群，那么您可能可以放松这个限制。</li>
+<li><strong>请尝试使用我们的 beta 版功能，并给出反馈！在它们退出 beta 测试阶段之后，我们将很难去做更多的更改。</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<!--
+[Dynamic Kubelet Configuration](https://github.com/kubernetes/enhancements/issues/281)
+allows you to change the configuration of each Kubelet in a live Kubernetes
+cluster by deploying a ConfigMap and configuring each Node to use it.
+-->
+
+<p><a href="https://github.com/kubernetes/enhancements/issues/281" target="_blank">动态Kubelet配置</a>
+引导你在一个运行的 Kubernetes 集群上更改每一个 Kubelet 的配置，通过部署 ConfigMap 并配置每个节点来使用它。</p>
+
+<blockquote class="warning">
+  <div><strong>警告：</strong> <!--
+All Kubelet configuration parameters can be changed dynamically,
+but this is unsafe for some parameters. Before deciding to change a parameter
+dynamically, you need a strong understanding of how that change will affect your
+cluster's behavior. Always carefully test configuration changes on a small set
+of nodes before rolling them out cluster-wide. Advice on configuring specific
+fields is available in the inline `KubeletConfiguration`
+[type documentation](https://github.com/kubernetes/kubernetes/blob/release-1.11/pkg/kubelet/apis/kubeletconfig/v1beta1/types.go).
+-->
+
+<p><strong>警告</strong>：所有Kubelet配置参数都可以动态地更改，但这对某些参数来说是不安全的。在决定动态更改参数之前，你需要深刻理解这种变化将如何影响你的集群的行为。
+在把一组节点推广到集群范围之前，都要仔细地测试这些节点上的配置变化。与配置相关的建议可以在具体的文件下找到，内联 <code>KubeletConfiguration</code>
+<a href="https://github.com/kubernetes/kubernetes/blob/release-1.11/pkg/kubelet/apis/kubeletconfig/v1beta1/types.go" target="_blank">类型文档</a>。</div>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%87%86%e5%a4%87%e5%bc%80%e5%a7%8b">准备开始</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%9c%a8%e4%bd%a0%e9%9b%86%e7%be%a4%e4%b8%ad%e7%9a%84%e4%b8%80%e4%b8%aa%e5%ae%9e%e6%97%b6%e8%8a%82%e7%82%b9%e4%b8%8a%e9%85%8d%e7%bd%aekubelet">在你集群中的一个实时节点上配置Kubelet</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#kubectl-%e8%a1%a5%e4%b8%81%e7%a4%ba%e4%be%8b">Kubectl 补丁示例</a></li>
+
+
+
+
+<li><a href="#%e4%ba%86%e8%a7%a3-kubelet-%e6%a3%80%e6%9f%a5%e7%82%b9%e7%9a%84%e9%85%8d%e7%bd%ae%e6%96%b9%e5%bc%8f">了解 Kubelet 检查点的配置方式</a></li>
+
+
+
+
+<li><a href="#%e4%ba%86%e8%a7%a3%e8%8a%82%e7%82%b9%e9%85%8d%e7%bd%ae%e9%94%99%e8%af%af%e4%bf%a1%e6%81%af">了解节点配置错误信息</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+
+<h2 id="准备开始">准备开始</h2>
+<!--
+- Kubernetes v1.11 or higher on both the Master and the Nodes
+- kubectl v1.11 or higher, configured to communicate with the cluster
+- The Kubelet's `--dynamic-config-dir` flag must be set to a writable
+ directory on the Node.
+-->
+
+<ul>
+<li>Kubernetes v1.11 或者更高版本配置在主节点和节点上</li>
+<li>kubectl v1.11 或者更高版本和集群配置通信</li>
+<li>The Kubelet <code>--dynamic-config-dir</code> flag 必须设置在节点的可写目录上</li>
+</ul>
+
+
+
+
+<!-- ## Reconfiguring the Kubelet on a Live Node in your Cluster -->
+
+<h2 id="在你集群中的一个实时节点上配置kubelet">在你集群中的一个实时节点上配置Kubelet</h2>
+
+<!-- ### Basic Workflow Overview -->
+
+<h3 id="基本工作流程概述">基本工作流程概述</h3>
+
+<!--
+The basic workflow for configuring a Kubelet in a live cluster is as follows:
+
+1. Write a YAML or JSON configuration file containing the
+Kubelet's configuration.
+2. Wrap this file in a ConfigMap and save it to the Kubernetes control plane.
+3. Update the Kubelet's corresponding Node object to use this ConfigMap.
+-->
+
+<p>在实时集群中配置 Kubelet 的基本工作流程如下：</p>
+
+<ol>
+<li>编写一个 YAML 或 JSON 的配置文件包含 Kubelet 的配置。</li>
+<li>将此文件包装在 ConfigMap 中并将其保存到 Kubernetes 控制平面。</li>
+<li>更新 Kubelet 的相应节点对象以使用此 ConfigMap。</li>
+</ol>
+
+<!--
+Each Kubelet watches a configuration reference on its respective Node object.
+When this reference changes, the Kubelet downloads the new configuration,
+updates a local reference to refer to the file, and exits.
+For the feature to work correctly, you must be running an OS-level service
+manager (such as systemd), which will restart the Kubelet if it exits. When the
+Kubelet is restarted, it will begin using the new configuration.
+-->
+
+<p>每个 Kubelet 都会在其各自的节点对象上查看配置引用。当此引用更改时，Kubelet 将下载新配置，
+更新本地引用以引用该文件，然后退出。
+要想使该功能正常地工作，您必须运行操作系统级别的服务管理器（如systemd），如果退出，将重启Kubelet。
+当Kubelet重新启动时，它将开始使用新配置。</p>
+
+<!--
+The new configuration completely overrides configuration provided by `--config`,
+and is overridden by command-line flags. Unspecified values in the new configuration
+will receive default values appropriate to the configuration version
+(e.g. `kubelet.config.k8s.io/v1beta1`), unless overridden by flags.
+-->
+
+<p>这个新配置完全地覆盖 <code>--config</code> 所提供的配置，并被命令行标志覆盖。新配置中未指定的值将收到适合配置版本的默认值
+(e.g. <code>kubelet.config.k8s.io/v1beta1</code>)，除非被标志覆盖。</p>
+
+<!--
+The status of the Node's Kubelet configuration is reported via
+`Node.Spec.Status.Config`. Once you have updated a Node to use the new
+ConfigMap, you can observe this status to confirm that the Node is using the
+intended configuration.
+-->
+
+<p>这个节点的 Kubelet 配置状态通过命令 <code>Node.Spec.Status.Config</code> 获取。一旦您已经改变了一个节点去使用新的 ConfigMap ，
+您就可以观察此状态以确认这个节点正在使用的预期配置。</p>
+
+<!--
+This document describes editing Nodes using `kubectl edit`.
+There are other ways to modify a Node's spec, including `kubectl patch`, for
+example, which facilitate scripted workflows.
+-->
+
+<p>这个文档描述编辑节点信息用命令 <code>kubectl edit</code>，还有一些其他的方式去修改节点的规范，包括命令 <code>kubectl patch</code>，
+例如，哪一个更利于脚本化的工作流程。</p>
+
+<!--
+This document only describes a single Node consuming each ConfigMap. Keep in
+mind that it is also valid for multiple Nodes to consume the same ConfigMap.
+-->
+
+<p>这个文档仅仅讲述了在单节点上使用每一个 ConfigMap。请注意对于多个节点使用相同的 ConfigMap 也是有效的。</p>
+
+<blockquote class="warning">
+  <div><strong>警告：</strong> <!--
+While it is *possible* to change the configuration by
+updating the ConfigMap in-place, this causes all Kubelets configured with
+that ConfigMap to update simultaneously. It is much safer to treat ConfigMaps
+as immutable by convention, aided by `kubectl`'s `--append-hash` option,
+and incrementally roll out updates to `Node.Spec.ConfigSource`.
+-->
+
+<p><strong>警告</strong>：通过更新本地的 ConfigMap <em>有可能</em> 会改变配置信息，这样会导致所有 Kubelets 所配置的 ConfigMap 同步更新。
+它是更安全的去处理 ConfigMap 按照惯例不变，借助于 <code>kubectl</code>&rsquo;s <code>--append-hash</code> 选项，并逐步把更新推广到 <code>Node.Spec.ConfigSource</code>。</div>
+</blockquote>
+
+<!-- ### Automatic RBAC rules for Node Authorizer -->
+
+<h3 id="节点授权器的自动rbac规则">节点授权器的自动RBAC规则</h3>
+
+<!--
+Previously, you were required to manually create RBAC rules
+to allow Nodes to access their assigned ConfigMaps. The Node Authorizer now
+automatically configures these rules.
+-->
+
+<p>以前，您需要手动创建RBAC规则允许节点访问其分配的ConfigMaps。 节点授权器现在
+自动地配置这些规则。</p>
+
+<!-- ### Generating a file that contains the current configuration -->
+
+<h3 id="生成包含当前配置的文件">生成包含当前配置的文件</h3>
+
+<!--
+The Dynamic Kubelet Configuration feature allows you to provide an override for
+the entire configuration object, rather than a per-field overlay. This is a
+simpler model that makes it easier to trace the source of configuration values
+and debug issues. The compromise, however, is that you must start with knowledge
+of the existing configuration to ensure that you only change the fields you
+intend to change.
+-->
+
+<p>动态 Kubelet 配置特性允许您提供覆盖对于整个配置对象，而不是每个字段的叠加。 这是一个
+更简单的模型，可以更轻松地跟踪配置值的来源和调试问题。 然而，妥协是你必须从现有配置的认识开始，
+以确保您只更改您打算修改的字段。</p>
+
+<!--
+Ideally, the Kubelet would be bootstrapped from a file on disk
+and you could edit this file (which could also be version-controlled),
+to create the first Kubelet ConfigMap
+(see [Set Kubelet parameters via a config file](/docs/tasks/administer-cluster/kubelet-config-file)),
+Currently, the Kubelet is bootstrapped with **a combination of this file and command-line flags**
+that can override the configuration in the file.
+As a workaround, you can generate a config file containing a Node's current
+configuration by accessing the Kubelet server's `configz` endpoint via the
+kubectl proxy. This endpoint, in its current implementation, is intended to be
+used only as a debugging aid. Do not rely on the  of this endpoint for
+production scenarios. The examples below use the `jq` command to streamline
+working with JSON. To follow the tasks as written, you need to have `jq`
+installed, but you can adapt the tasks if you prefer to extract the
+`kubeletconfig` subobject manually.
+-->
+
+<p>理想情况下，Kubelet 将被引导从磁盘上的一个文件，并且你可以编辑这个文件（也可以是版本控制的），
+去创建第一个 Kubelet ConfigMap (参考文档 <a href="/docs/tasks/administer-cluster/kubelet-config-file">通过配置文件设置Kubelet参数</a>)，
+目前，Kubelet 使用 <strong>文件和命令行标志的组合</strong> 进行引导来覆盖文件中的配置。
+作为解决方法，您可以生成一个配置文件包含节点当前的组态，通过 kubectl 代理访问Kubelet服务器的 <code>configz</code> 端点。
+该端点在其当前实现中，旨在被用来作为一个调试辅助工具。在生产环境下，不要依赖此端点的特性。
+下面的例子使用 <code>jq</code> 命令来简化使用 JSON。按照所写的步骤，您需要安装 <code>jq</code> ，
+但如果您喜欢手动提取 <code>kubeletconfig</code> 子对象，您也可以完成这个任务。</p>
+
+<!-- #### Generate the configuration file -->
+
+<h4 id="生成配置文件">生成配置文件</h4>
+
+<!--
+1. Choose a Node to reconfigure. In this example, the name of this Node is
+    referred to as `NODE_NAME`.
+2. Start the kubectl proxy in the background using the following command:
+
+      ```bash
+      kubectl proxy --port=8001 &
+      ```
+
+3. Run the following command to download and unpack the configuration from the
+    `configz` endpoint. The command is long, so be careful when copying and
+    pasting. **If you use zsh**, note that common zsh configurations add backslashes
+    to escape the opening and closing curly braces around the variable name in the URL.
+    For example: `${NODE_NAME}` will be rewritten as `$\{NODE_NAME\}` during the paste.
+    You must remove the backslashes before running the command, or the command will fail.
+
+      ```bash
+      NODE_NAME="the-name-of-the-node-you-are-reconfiguring"; curl -sSL "http://localhost:8001/api/v1/nodes/${NODE_NAME}/proxy/configz" | jq '.kubeletconfig|.kind="KubeletConfiguration"|.apiVersion="kubelet.config.k8s.io/v1beta1"' > kubelet_configz_${NODE_NAME}
+      ```
+-->
+
+<ol>
+<li>选择一个节点去重新配置，在此示例中，此节点的名称为 <code>NODE_NAME</code>。</li>
+
+<li><p>使用以下命令在后台启动 kubectl 代理：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">  kubectl proxy --port<span style="color:#666">=</span><span style="color:#666">8001</span> &amp;</code></pre></div></li>
+
+<li><p>运行以下命令从 <code>configz</code> 端点中下载并解压配置。这个命令很长，因此在复制和黏贴时要小心。
+<strong>如果您使用 zsh</strong>，请注意常见的 zsh 配置添加反斜杠转义 URL 中变量名称周围的大括号的开始和结束。
+例如：在粘贴期间，<code>$ {NODE_NAME}</code> 将被重写为 <code>$\{NODE_NAME\}</code>。
+您必须在运行命令之前删除反斜杠，否则命令将失败。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">  <span style="color:#b8860b">NODE_NAME</span><span style="color:#666">=</span><span style="color:#b44">&#34;the-name-of-the-node-you-are-reconfiguring&#34;</span>; curl -sSL <span style="color:#b44">&#34;http://localhost:8001/api/v1/nodes/</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">NODE_NAME</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">/proxy/configz&#34;</span> | jq <span style="color:#b44">&#39;.kubeletconfig|.kind=&#34;KubeletConfiguration&#34;|.apiVersion=&#34;kubelet.config.k8s.io/v1beta1&#34;&#39;</span> &gt; kubelet_configz_<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">NODE_NAME</span><span style="color:#b68;font-weight:bold">}</span></code></pre></div></li>
+</ol>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <strong>注意</strong>：You need to manually add the <code>kind</code> and <code>apiVersion</code> to the downloaded
+object，because they are not reported by the <code>configz</code> endpoint。
+您需要手动将 <code>kind</code> 和 <code>apiVersion</code> 添加到下载对象中，因为它们不是由 <code>configz</code> 端点报出的。</div>
+</blockquote>
+
+<!-- #### Edit the configuration file -->
+
+<h4 id="修改配置文件">修改配置文件</h4>
+
+<!--
+Using a text editor, change one of the parameters in the
+file generated by the previous procedure. For example, you
+might edit the QPS parameter `eventRecordQPS`.
+-->
+
+<p>使用文本编辑器，在这个文件里，改变之前的程序生成的一个参数。例如，你或许会修改 QPS 参数  <code>eventRecordQPS</code>。</p>
+
+<!-- #### Push the configuration file to the control plane -->
+
+<h4 id="把配置文件推送到控制平面">把配置文件推送到控制平面</h4>
+
+<!--
+Push the edited configuration file to the control plane with the
+following command:
+
+```bash
+kubectl -n kube-system create configmap my-node-config --from-file=kubelet=kubelet_configz_${NODE_NAME} --append-hash -o yaml
+```
+-->
+
+<p>用以下命令把配置文件推送到控制平面：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl -n kube-system create configmap my-node-config --from-file<span style="color:#666">=</span><span style="color:#b8860b">kubelet</span><span style="color:#666">=</span>kubelet_configz_<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">NODE_NAME</span><span style="color:#b68;font-weight:bold">}</span> --append-hash -o yaml</code></pre></div>
+<!--
+This is an example of a valid response:
+
+```none
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2017-09-14T20:23:33Z
+  name: my-node-config-gkt4c2m4b2
+  namespace: kube-system
+  resourceVersion: "119980"
+  selfLink: /api/v1/namespaces/kube-system/configmaps/my-node-config-gkt4c2m4b2
+  uid: 946d785e-998a-11e7-a8dd-42010a800006
+data:
+  kubelet: |
+    {...}
+```
+-->
+
+<p>这是一个有效响应的例子：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-none" data-lang="none">apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2017-09-14T20:23:33Z
+  name: my-node-config-gkt4c2m4b2
+  namespace: kube-system
+  resourceVersion: &#34;119980&#34;
+  selfLink: /api/v1/namespaces/kube-system/configmaps/my-node-config-gkt4c2m4b2
+  uid: 946d785e-998a-11e7-a8dd-42010a800006
+data:
+  kubelet: |
+    {...}</code></pre></div>
+<!--
+The ConfigMap is created in the `kube-system` namespace because this
+ConfigMap configures a Kubelet, which is Kubernetes system component.
+-->
+
+<p>ConfigMap 是在 <code>kube-system</code> 命名空间中创建的，因为 ConfigMap 配置了 Kubelet，它是 Kubernetes 的系统组件。</p>
+
+<!--
+The `--append-hash` option appends a short checksum of the ConfigMap contents
+to the name. This is convenient for an edit-then-push workflow, because it
+automatically, yet deterministically, generates new names for new ConfigMaps.
+The name that includes this generated hash is referred to as `CONFIG_MAP_NAME`
+in the following examples.
+-->
+
+<p><code>--append-hash</code> 选项给 ConfigMap 内容附加了一个简短校验和。这对于编辑然后推送工作流程很方便，因为它
+自动并确定地为新 ConfigMaps 生成新的名称。在以下示例中，包含生成的哈希名称为 <code>CONFIG_MAP_NAME</code>。</p>
+
+<!-- #### Set the Node to use the new configuration -->
+
+<h4 id="用新配置创建新的节点">用新配置创建新的节点</h4>
+
+<!--
+Edit the Node's reference to point to the new ConfigMap with the
+following command:
+
+```bash
+kubectl edit node ${NODE_NAME}
+```
+
+In your text editor, add the following YAML under `spec`:
+
+```yaml
+configSource:
+    configMap:
+        name: CONFIG_MAP_NAME
+        namespace: kube-system
+        kubeletConfigKey: kubelet
+```
+-->
+
+<p>用下面的命令行编辑节点的参数来指向新的 ConfigMap：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl edit node <span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">NODE_NAME</span><span style="color:#b68;font-weight:bold">}</span></code></pre></div>
+<!-- In your text editor, add the following YAML under `spec`: -->
+
+<p>在您的文本编辑器中，在 <code>spec</code> 下增添以下 YAML：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">configSource:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>configMap:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>CONFIG_MAP_NAME<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>kubeletConfigKey:<span style="color:#bbb"> </span>kubelet</code></pre></div>
+<!--
+You must specify all three of `name`, `namespace`, and `kubeletConfigKey`.
+The `kubeletConfigKey` parameter shows the Kubelet which key of the ConfigMap
+contains its config.
+-->
+
+<p>您必须指定这三个参数中的每一个<code>name</code>，<code>namespace</code>和<code>kubeletConfigKey</code>。
+<code>kubeletConfigKey</code>这个参数显示出 Kubelet 上的哪个 key 包含了 ConfigMap 的配置。</p>
+
+<!-- #### Observe that the Node begins using the new configuration -->
+
+<h4 id="使用新配置监察节点">使用新配置监察节点</h4>
+
+<!--
+Retrieve the Node using the `kubectl get node ${NODE_NAME} -o yaml` command and inspect
+`Node.Status.Config`. The config sources corresponding to the `active`,
+`assigned`, and `lastKnownGood` configurations are reported in the status.
+
+- The `active` configuration is the version the Kubelet is currently running with.
+- The `assigned` configuration is the latest version the Kubelet has resolved based on
+  `Node.Spec.ConfigSource`.
+- The `lastKnownGood` configuration is the version the
+  Kubelet will fall back to if an invalid config is assigned in `Node.Spec.ConfigSource`.
+-->
+
+<p>用 <code>kubectl get node ${NODE_NAME} -o yaml</code> 命令回收节点并用命令 <code>Node.Status.Config</code> 检查节点状态配置。
+在这个状态报告的配置里，对应这些配置源<code>active</code>，<code>assigned</code>和 <code>lastKnownGood</code>。</p>
+
+<ul>
+<li><code>active</code> 是 Kubelet 当前运行的版本。</li>
+<li><code>assigned</code> 参数是 Kubelet 基于 <code>Node.Spec.ConfigSource</code> 的最新版本。</li>
+<li><code>lastKnownGood</code> 参数是 Kubelet 的回退版本，如果在 <code>Node.Spec.ConfigSource</code> 中分配了无效的配置。</li>
+</ul>
+
+<!--
+The`lastKnownGood` configuration might not be present if it is set to its default value,
+the local config deployed with the node. The status will update `lastKnownGood` to
+match a valid `assigned` config after the Kubelet becomes comfortable with the config.
+The details of how the Kubelet determines a config should become the `lastKnownGood` are
+not guaranteed by the API, but is currently implemented as a 10-minute grace period.
+-->
+
+<p>如果用本地的配置部署节点，使其设置成默认值，这个<code>lastKnownGood</code>配置可能不存在。
+在 Kubelet 配置好后，将更新 <code>lastKnownGood</code> 去匹配一个有效的 <code>assigned</code> 配置。
+判断如何配置 Kubelet 的细节是使<code>lastKnownGood</code>不受 API 限制，但目前实施为 10 分钟的宽限期。</p>
+
+<!--
+You can use the following command (using `jq`) to filter down
+to the config status:
+
+```bash
+kubectl get no ${NODE_NAME} -o json | jq '.status.config'
+```
+
+The following is an example response:
+
+```json
+{
+  "active": {
+    "configMap": {
+      "kubeletConfigKey": "kubelet",
+      "name": "my-node-config-9mbkccg2cc",
+      "namespace": "kube-system",
+      "resourceVersion": "1326",
+      "uid": "705ab4f5-6393-11e8-b7cc-42010a800002"
+    }
+  },
+  "assigned": {
+    "configMap": {
+      "kubeletConfigKey": "kubelet",
+      "name": "my-node-config-9mbkccg2cc",
+      "namespace": "kube-system",
+      "resourceVersion": "1326",
+      "uid": "705ab4f5-6393-11e8-b7cc-42010a800002"
+    }
+  },
+  "lastKnownGood": {
+    "configMap": {
+      "kubeletConfigKey": "kubelet",
+      "name": "my-node-config-9mbkccg2cc",
+      "namespace": "kube-system",
+      "resourceVersion": "1326",
+      "uid": "705ab4f5-6393-11e8-b7cc-42010a800002"
+    }
+  }
+}
+
+```
+-->
+
+<p>您可以使用以下命令（using <code>jq</code>）过滤到配置状态：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get no <span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">NODE_NAME</span><span style="color:#b68;font-weight:bold">}</span> -o json | jq <span style="color:#b44">&#39;.status.config&#39;</span></code></pre></div>
+<p>以下是一个响应示例：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#008000;font-weight:bold">&#34;active&#34;</span>: {
+    <span style="color:#008000;font-weight:bold">&#34;configMap&#34;</span>: {
+      <span style="color:#008000;font-weight:bold">&#34;kubeletConfigKey&#34;</span>: <span style="color:#b44">&#34;kubelet&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;name&#34;</span>: <span style="color:#b44">&#34;my-node-config-9mbkccg2cc&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;namespace&#34;</span>: <span style="color:#b44">&#34;kube-system&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;resourceVersion&#34;</span>: <span style="color:#b44">&#34;1326&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;uid&#34;</span>: <span style="color:#b44">&#34;705ab4f5-6393-11e8-b7cc-42010a800002&#34;</span>
+    }
+  },
+  <span style="color:#008000;font-weight:bold">&#34;assigned&#34;</span>: {
+    <span style="color:#008000;font-weight:bold">&#34;configMap&#34;</span>: {
+      <span style="color:#008000;font-weight:bold">&#34;kubeletConfigKey&#34;</span>: <span style="color:#b44">&#34;kubelet&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;name&#34;</span>: <span style="color:#b44">&#34;my-node-config-9mbkccg2cc&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;namespace&#34;</span>: <span style="color:#b44">&#34;kube-system&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;resourceVersion&#34;</span>: <span style="color:#b44">&#34;1326&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;uid&#34;</span>: <span style="color:#b44">&#34;705ab4f5-6393-11e8-b7cc-42010a800002&#34;</span>
+    }
+  },
+  <span style="color:#008000;font-weight:bold">&#34;lastKnownGood&#34;</span>: {
+    <span style="color:#008000;font-weight:bold">&#34;configMap&#34;</span>: {
+      <span style="color:#008000;font-weight:bold">&#34;kubeletConfigKey&#34;</span>: <span style="color:#b44">&#34;kubelet&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;name&#34;</span>: <span style="color:#b44">&#34;my-node-config-9mbkccg2cc&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;namespace&#34;</span>: <span style="color:#b44">&#34;kube-system&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;resourceVersion&#34;</span>: <span style="color:#b44">&#34;1326&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;uid&#34;</span>: <span style="color:#b44">&#34;705ab4f5-6393-11e8-b7cc-42010a800002&#34;</span>
+    }
+  }
+}</code></pre></div>
+<!--
+If an error occurs, the Kubelet reports it in the `Node.Status.Config.Error`
+structure. Possible errors are listed in
+[Understanding Node.Status.Config.Error messages](#understanding-node-status-config-error-messages).
+You can search for the identical text in the Kubelet log for additional details
+and context about the error.
+-->
+
+<p>如果发生错误，Kubelet 会在 <code>Node.Status.Config.Error</code> 中显示出它的结构体。可能的错误列在 <a href="#了解节点配置错误信息">了解节点配置错误信息</a>。
+您可以在 Kubelet 日志中搜索相同的文本以获取更多详细信息和有关错误的上下文。</p>
+
+<!-- #### Make more changes -->
+
+<h4 id="做出更多的改变">做出更多的改变</h4>
+
+<!--
+Follow the workflow above to make more changes and push them again. Each time
+you push a ConfigMap with new contents, the --append-hash kubectl option creates
+the ConfigMap with a new name. The safest rollout strategy is to first create a
+new ConfigMap, and then update the Node to use the new ConfigMap.
+-->
+
+<p>按照下面的工作流程做出更多的改变并再次推送它们。你每次推送一个 ConfigMap 的新内容时，&ndash;append-hash kubectl 选项都会给 ConfigMap 创建一个新的名称。
+最安全的推出策略是首先创建一个新的 ConfigMap，然后更新 节点 以使用新的 ConfigMap。</p>
+
+<!-- #### Reset the Node to use its local default configuration -->
+
+<h4 id="重置节点以使用其本地默认配置">重置节点以使用其本地默认配置</h4>
+
+<!--
+To reset the Node to use the configuration it was provisioned with, edit the
+Node using `kubectl edit node ${NODE_NAME}` and remove the
+`Node.Spec.ConfigSource` field.
+-->
+
+<p>重置节点去使用已经配好的的配置，用 <code>kubectl edit node $ {NODE_NAME}</code> 命令编辑节点，并删除
+<code>Node.Spec.ConfigSource</code> 字段。</p>
+
+<!-- #### Observe that the Node is using its local default configuration -->
+
+<h4 id="监察正在使用本地默认配置的节点">监察正在使用本地默认配置的节点</h4>
+
+<!--
+After removing this subfield, `Node.Status.Config` eventually becomes
+empty, since all config sources have been reset to `nil`, which indicates that
+the local default config is `assigned`, `active`, and `lastKnownGood`, and no
+error is reported.
+-->
+
+<p>在删除此字段后，<code>Node.Status.Config</code> 最终变成空，所有配置源都已重置为 <code>nil</code>，这表示
+本地默认配置是<code>assigned</code>，<code>active</code> 和 <code>lastKnownGood</code>这三个参数，没有报告错误。</p>
+
+
+
+
+<!-- ## Kubectl Patch Example -->
+
+<h2 id="kubectl-补丁示例">Kubectl 补丁示例</h2>
+
+<!--
+You can change a Node's configSource using several different mechanisms.
+This example uses `kubectl patch`:
+
+```bash
+kubectl patch node ${NODE_NAME} -p "{\"spec\":{\"configSource\":{\"configMap\":{\"name\":\"${CONFIG_MAP_NAME}\",\"namespace\":\"kube-system\",\"kubeletConfigKey\":\"kubelet\"}}}}"
+```
+-->
+
+<p>您可以使用几种不同的机制来更改节点的 configSource。
+这个例子使用<code>kubectl patch</code>：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl patch node <span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">NODE_NAME</span><span style="color:#b68;font-weight:bold">}</span> -p <span style="color:#b44">&#34;{\&#34;spec\&#34;:{\&#34;configSource\&#34;:{\&#34;configMap\&#34;:{\&#34;name\&#34;:\&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">CONFIG_MAP_NAME</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">\&#34;,\&#34;namespace\&#34;:\&#34;kube-system\&#34;,\&#34;kubeletConfigKey\&#34;:\&#34;kubelet\&#34;}}}}&#34;</span></code></pre></div>
+<!-- ## Understanding how the Kubelet checkpoints config -->
+
+<h2 id="了解-kubelet-检查点的配置方式">了解 Kubelet 检查点的配置方式</h2>
+
+<!--
+When a new config is assigned to the Node, the Kubelet downloads and unpacks the
+config payload as a set of files on the local disk. The Kubelet also records metadata
+that locally tracks the assigned and last-known-good config sources, so that the
+Kubelet knows which config to use across restarts, even if the API server becomes
+unavailable. After checkpointing a config and the relevant metadata, the Kubelet
+exits if it detects that the assigned config has changed. When the Kubelet is
+restarted by the OS-level service manager (such as `systemd`), it reads the new
+metadata and uses the new config.
+-->
+
+<p>当为节点分配新配置时，Kubelet 会在本地磁盘上，下载并解压配置负载为一组文件。Kubelet 还记录元数据
+在本地跟踪已分配和最后已知良好的配置源，以便 Kubelet 知道在重新启动时使用哪个配置，即使 API 服务器变为不可用。在检查点配置和相关元数据之后，如果检测到已分配的配置改变了，则 Kubelet 退出。当 Kubelet 被 OS 级服务管理器（例如<code>systemd</code>）重新启动时，它会读取新的元数据并使用新配置。</p>
+
+<!--
+The recorded metadata is fully resolved, meaning that it contains all necessary
+information to choose a specific config version - typically a `UID` and `ResourceVersion`.
+This is in contrast to `Node.Spec.ConfigSource`, where the intended config is declared
+via the idempotent `namespace/name` that identifies the target ConfigMap; the Kubelet
+tries to use the latest version of this ConfigMap.
+-->
+
+<p>当记录的元数据已被完全解析时，意味着它包含的所有必需的信息去选择一个指定的
+配置版本通常是<code>UID</code>和<code>ResourceVersion</code>。与<code>Node.Spec.ConfigSource</code>形成对比，
+通过幂等<code>namespace/name</code>预期声明配置来标识目标 ConfigMap；Kubelet 尝试使用此 ConfigMap 的最新版本。</p>
+
+<!--
+When you are debugging problems on a node, you can inspect the Kubelet's config
+metadata and checkpoints. The structure of the Kubelet's checkpointing directory is:
+
+```none
+- --dynamic-config-dir (root for managing dynamic config)
+| - meta
+  | - assigned (encoded kubeletconfig/v1beta1.SerializedNodeConfigSource object, indicating the assigned config)
+  | - last-known-good (encoded kubeletconfig/v1beta1.SerializedNodeConfigSource object, indicating the last-known-good config)
+| - checkpoints
+  | - uid1 (dir for versions of object identified by uid1)
+    | - resourceVersion1 (dir for unpacked files from resourceVersion1 of object with uid1)
+    | - ...
+  | - ...
+```
+-->
+
+<p>当您在节点上调试问题时，可以检查 Kubelet 的配置元数据和检查点。Kubelet 的检查点目录结构是：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-none" data-lang="none">- --dynamic-config-dir (root for managing dynamic config)
+| - meta
+  | - assigned (encoded kubeletconfig/v1beta1.SerializedNodeConfigSource object, indicating the assigned config)
+  | - last-known-good (encoded kubeletconfig/v1beta1.SerializedNodeConfigSource object, indicating the last-known-good config)
+| - checkpoints
+  | - uid1 (dir for versions of object identified by uid1)
+    | - resourceVersion1 (dir for unpacked files from resourceVersion1 of object with uid1)
+    | - ...
+  | - ...</code></pre></div>
+<!-- ## Understanding Node.Status.Config.Error messages -->
+
+<h2 id="了解节点配置错误信息">了解节点配置错误信息</h2>
+
+<!--
+The following table describes error messages that can occur
+when using Dynamic Kubelet Config. You can search for the identical text
+in the Kubelet log for additional details and context about the error.
+-->
+
+<p>下表描述了使用 Dynamic Kubelet 配置时可能发生的错误消息。您可以在 Kubelet 日志中搜索相同的文本
+来获取有关错误的其他详细信息和上下文。</p>
+
+<!--
+<table>
+<table align="left">
+<tr>
+    <th>Error Message</th>
+    <th>Possible Causes</th>
+</tr>
+<tr>
+    <td><p>failed to load config, see Kubelet log for details</p></td>
+    <td><p>The Kubelet likely could not parse the downloaded config payload, or encountered a filesystem error attempting to load the payload from disk.</p></td>
+</tr>
+<tr>
+    <td><p>failed to validate config, see Kubelet log for details</p></td>
+    <td><p>The configuration in the payload, combined with any command-line flag overrides, and the sum of feature gates from flags, the config file, and the remote payload, was determined to be invalid by the Kubelet.</p></td>
+</tr>
+<tr>
+    <td><p>invalid NodeConfigSource, exactly one subfield must be non-nil, but all were nil</p></td>
+    <td><p>Since Node.Spec.ConfigSource is validated by the API server to contain at least one non-nil subfield, this likely means that the Kubelet is older than the API server and does not recognize a newer source type.</p></td>
+</tr>
+<tr>
+    <td><p>failed to sync: failed to download config, see Kubelet log for details</p></td>
+    <td><p>The Kubelet could not download the config. It is possible that Node.Spec.ConfigSource could not be resolved to a concrete API object, or that network errors disrupted the download attempt. The Kubelet will retry the download when in this error state.</p></td>
+</tr>
+<tr>
+    <td><p>failed to sync: internal failure, see Kubelet log for details</p></td>
+    <td><p>The Kubelet encountered some internal problem and failed to update its config as a result. Examples include filesystem errors and reading objects from the internal informer cache.</p></td>
+</tr>
+<tr>
+    <td><p>internal failure, see Kubelet log for details</p></td>
+    <td><p>The Kubelet encountered some internal problem while manipulating config, outside of the configuration sync loop.</p></td>
+</tr>
+</table>
+-->
+
+<table>
+<table align="left">
+<tr>
+    <th>错误信息</th>
+    <th>可能的原因</th>
+</tr>
+<tr>
+    <td><p>无法加载配置，请参阅 Kubelet 日志了解详细信息</p></td>
+    <td><p>Kubelet可能无法解析下载配置的有效负载，或者当尝试从磁盘中加载有效负载时，遇到文件系统错误。</p></td>
+</tr>
+<tr>
+    <td><p>无法验证配置，请参阅 Kubelet 日志了解详细信息</p></td>
+    <td><p>有效负载中的配置将任何命令行标志所覆盖的和这些标志的特性们合并，包括配置文件和远程有效负载，
+    它们一起被 Kubelet 确定为无效。</p></td>
+</tr>
+<tr>
+    <td><p>无效的 NodeConfigSource，理应刚好一个子字段必须是非空的，但这些字段都是空的</p></td>
+    <td><p>由 API 服务器验证 Node.Spec.ConfigSource 是否包含至少一个非空子字段，可能原因是 Kubelet 比 API 服务器版本低，不识别更新的源类型。</p></td>
+</tr>
+<tr>
+    <td><p>无法同步：无法下载配置，请参阅 Kubelet 日志了解详细信息</p></td>
+    <td><p>Kubelet 无法下载配置。可能是 Node.Spec.ConfigSource 无法解析为具体的 API 对象，或者网络错误中断了下载。 当处于此错误状态时，Kubelet 将重新下载。</p></td>
+</tr>
+<tr>
+    <td><p>无法同步：内部故障，请参阅 Kubelet 日志了解详细信息</p></td>
+    <td><p>Kubelet遇到了一些内部问题，因此无法更新其配置。 例如包括文件系统错误和从内部函数缓存中读取对象。</p></td>
+</tr>
+<tr>
+    <td><p>内部故障，请参阅 Kubelet 日志了解详细信息</p></td>
+    <td><p>在配置同步循环之外操作配置时，Kubelet 遇到了一些内部问题。</p></td>
+</tr>
+</table>
+
+
+
+<!--
+
+---
+reviewers:
+- mtaufen
+- dawnchen
+title: Reconfigure a Node's Kubelet in a Live Cluster
+content_template: templates/task
+---
+
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/tasks/administer-cluster/reconfigure-kubelet.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/tasks\/administer-cluster\/reconfigure-kubelet\/",
+    "title" : "在实时集群上重新配置节点的 Kubelet",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/tasks\/administer-cluster\/reconfigure-kubelet\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/administer-cluster/reconfigure-kubelet.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 December 25, 2019 at 8:51 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/b8b2cc7c7443e32de70834a2b3d2186cae6eea5a/">ZH-trans: merge release1.16-temporary to master (#18217)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/tasks/administer-cluster/reconfigure-kubelet.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

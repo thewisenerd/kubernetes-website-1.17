@@ -1,0 +1,3080 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>将 Docker Compose 文件转换为 Kubernetes 资源 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/">
+<meta property="og:title" content="将 Docker Compose 文件转换为 Kubernetes 资源">
+<meta name="twitter:title" content="将 Docker Compose 文件转换为 Kubernetes 资源">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/tasks/configure-pod-container/translate-compose-kubernetes/">English</a></li>
+                
+                    <li><a href="/fr/docs/tasks/configure-pod-container/translate-compose-kubernetes/">Français</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+<h1>任务</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/" class="YAH">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="任务" href="/zh/docs/tasks/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="安装工具">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装工具" href="/zh/docs/tasks/tools/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="安装并设置 kubectl" href="/zh/docs/tasks/tools/install-kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装 Minikube" href="/zh/docs/tasks/tools/install-minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群" href="/zh/docs/tasks/administer-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="用 kubeadm 进行管理">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="用 kubeadm 进行管理" href="/zh/docs/tasks/administer-cluster/kubeadm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 进行证书管理" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="升级 kubeadm 集群" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理内存，CPU 和 API 资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理内存，CPU 和 API 资源" href="/zh/docs/tasks/administer-cluster/manage-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的内存请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的CPU请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间的最小和最大内存约束" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置CPU最小和最大限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置内存和 CPU 配额" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间下pod总数" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-pod-namespace/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Install a Network Policy Provider">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Install a Network Policy Provider" href="/zh/docs/tasks/administer-cluster/network-policy-provider/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Calico 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/calico-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Cilium 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/cilium-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kube-router 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/kube-router-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Romana 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/romana-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Weave Net 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/weave-network-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debug DNS 方案" href="/zh/docs/tasks/administer-cluster/dns-debugging-resolution/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Enabling Service Topology <small>(EN)</small>" href="/docs/tasks/administer-cluster/enabling-service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IP Masquerade Agent 用户指南" href="/zh/docs/tasks/administer-cluster/ip-masq-agent/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 云管理控制器" href="/zh/docs/tasks/administer-cluster/running-cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Safely Drain a Node while Respecting the PodDisruptionBudget <small>(EN)</small>" href="/docs/tasks/administer-cluster/safely-drain-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Kubernetes 运行 etcd 集群" href="/zh/docs/tasks/administer-cluster/configure-upgrade-etcd/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为系统守护进程预留计算资源" href="/zh/docs/tasks/administer-cluster/reserve-compute-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为节点发布扩展资源" href="/zh/docs/tasks/administer-cluster/extended-resource-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 CoreDNS 进行服务发现" href="/zh/docs/tasks/administer-cluster/coredns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 KMS 提供商进行数据加密" href="/zh/docs/tasks/administer-cluster/kms-provider/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kubernetes API 访问集群" href="/zh/docs/tasks/administer-cluster/access-cluster-api/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="关键插件 Pod 的调度保证" href="/zh/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="启用端点切片" href="/zh/docs/tasks/administer-cluster/enabling-endpointslices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间演练" href="/zh/docs/tasks/administer-cluster/namespaces-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 NodeLocal DNSCache" href="/zh/docs/tasks/administer-cluster/nodelocaldns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 sysctl" href="/zh/docs/tasks/administer-cluster/sysctl-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在实时集群上重新配置节点的 Kubelet" href="/zh/docs/tasks/administer-cluster/reconfigure-kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="声明网络策略" href="/zh/docs/tasks/administer-cluster/declare-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="开发云控制器管理器" href="/zh/docs/tasks/administer-cluster/developing-cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的 CPU 管理策略" href="/zh/docs/tasks/administer-cluster/cpu-management-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的拓扑管理策略" href="/zh/docs/tasks/administer-cluster/topology-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="搭建高可用的 Kubernetes Masters" href="/zh/docs/tasks/administer-cluster/highly-available-master/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="改变默认 StorageClass" href="/zh/docs/tasks/administer-cluster/change-default-storage-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="更改 PersistentVolume 的回收策略" href="/zh/docs/tasks/administer-cluster/change-pv-reclaim-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="自定义 DNS 服务" href="/zh/docs/tasks/administer-cluster/dns-custom-nameservers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群上运行的服务" href="/zh/docs/tasks/administer-cluster/access-cluster-services/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过命名空间共享集群" href="/zh/docs/tasks/administer-cluster/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过配置文件设置 Kubelet 参数" href="/zh/docs/tasks/administer-cluster/kubelet-config-file/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 API 对象配额" href="/zh/docs/tasks/administer-cluster/quota-api-object/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置多个调度器" href="/zh/docs/tasks/administer-cluster/configure-multiple-schedulers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置资源不足时的处理方式" href="/zh/docs/tasks/administer-cluster/out-of-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="限制存储消耗" href="/zh/docs/tasks/administer-cluster/limit-storage-consumption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群 DNS 服务自动伸缩" href="/zh/docs/tasks/administer-cluster/dns-horizontal-autoscaling/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群安全" href="/zh/docs/tasks/administer-cluster/securing-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群管理" href="/zh/docs/tasks/administer-cluster/cluster-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="静态加密 Secret 数据" href="/zh/docs/tasks/administer-cluster/encrypt-data/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置 Pods 和容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置 Pods 和容器" href="/zh/docs/tasks/configure-pod-container/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器和 Pod 分配内存资源" href="/zh/docs/tasks/configure-pod-container/assign-memory-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Assign CPU Resources to Containers and Pods" href="/zh/docs/tasks/configure-pod-container/assign-cpu-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure GMSA for Windows Pods and containers <small>(EN)</small>" href="/docs/tasks/configure-pod-container/configure-gmsa/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Windows 的 pod 和容器配置 RunAsUserName" href="/zh/docs/tasks/configure-pod-container/configure-runasusername/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 的服务质量" href="/zh/docs/tasks/configure-pod-container/quality-service-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器分派扩展资源" href="/zh/docs/tasks/configure-pod-container/extended-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用卷进行存储" href="/zh/docs/tasks/configure-pod-container/configure-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用 PersistentVolume 作为存储" href="/zh/docs/tasks/configure-pod-container/configure-persistent-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 使用投射卷作存储" href="/zh/docs/tasks/configure-pod-container/configure-projected-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure a Security Context for a Pod or Container <small>(EN)</small>" href="/docs/tasks/configure-pod-container/security-context/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Pod 配置服务账户" href="/zh/docs/tasks/configure-pod-container/configure-service-account/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="从私有仓库拉取镜像" href="/zh/docs/tasks/configure-pod-container/pull-image-private-registry/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置存活、就绪和启动探测器" href="/zh/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/tasks/configure-pod-container/assign-pods-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 初始化" href="/zh/docs/tasks/configure-pod-container/configure-pod-initialization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器的生命周期事件设置处理函数" href="/zh/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ConfigMap 配置 Pod" href="/zh/docs/tasks/configure-pod-container/configure-pod-configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Pod 中的容器之间共享进程命名空间" href="/zh/docs/tasks/configure-pod-container/share-process-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建静态 Pod" href="/zh/docs/tasks/configure-pod-container/static-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Docker Compose 文件转换为 Kubernetes 资源" href="/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理 Kubernetes 对象" href="/zh/docs/tasks/manage-kubernetes-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Configuration Files <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/declarative-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Kustomize <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/kustomization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Kubernetes Objects Using Imperative Commands <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/imperative-command/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用配置文件对 Kubernetes 对象进行命令式管理" href="/zh/docs/tasks/manage-kubernetes-objects/imperative-config/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="给应用注入数据">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="给应用注入数据" href="/zh/docs/tasks/inject-data-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器设置启动时要执行的命令及其入参" href="/zh/docs/tasks/inject-data-application/define-command-argument-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器设置环境变量" href="/zh/docs/tasks/inject-data-application/define-environment-variable-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 PodPreset 将信息注入 Pods" href="/zh/docs/tasks/inject-data-application/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Secret 安全地分发凭证" href="/zh/docs/tasks/inject-data-application/distribute-credentials-secure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过文件将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过环境变量将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/environment-variable-expose-pod-information/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行应用" href="/zh/docs/tasks/run-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="运行一个有状态的应用程序" href="/zh/docs/tasks/run-application/run-replicated-stateful-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubectl patch 更新 API 对象" href="/zh/docs/tasks/run-application/update-api-object-kubectl-patch/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="删除 StatefulSet" href="/zh/docs/tasks/run-application/delete-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="强制删除 StatefulSet 类型的 Pods" href="/zh/docs/tasks/run-application/force-delete-stateful-set-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="基于Replication Controller执行滚动升级" href="/zh/docs/tasks/run-application/rolling-update-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 水平自动伸缩" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Horizontal Pod Autoscaler演练" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="指定应用程序的中断预算（Disruption Budget）" href="/zh/docs/tasks/run-application/configure-pdb/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用Deployment运行一个无状态应用" href="/zh/docs/tasks/run-application/run-stateless-application-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="弹缩StatefulSet" href="/zh/docs/tasks/run-application/scale-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="运行一个单实例有状态应用" href="/zh/docs/tasks/run-application/run-single-instance-stateful-application/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行 Jobs">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行 Jobs" href="/zh/docs/tasks/job/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 CronJob 运行自动化任务" href="/zh/docs/tasks/job/automated-tasks-with-cron-jobs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用扩展进行并行处理" href="/zh/docs/tasks/job/parallel-processing-expansion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行粗粒度并行处理" href="/zh/docs/tasks/job/coarse-parallel-processing-work-queue/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行精细的并行处理" href="/zh/docs/tasks/job/fine-parallel-processing-work-queue/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="访问集群中的应用程序">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="访问集群中的应用程序" href="/zh/docs/tasks/access-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网页界面 (Dashboard)" href="/zh/docs/tasks/access-application-cluster/web-ui-dashboard/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群" href="/zh/docs/tasks/access-application-cluster/access-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用端口转发来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/port-forward-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用服务来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/service-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建一个外部负载均衡器" href="/zh/docs/tasks/access-application-cluster/create-external-load-balancer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置你的云平台防火墙" href="/zh/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up Ingress on Minikube with the NGINX Ingress Controller <small>(EN)</small>" href="/docs/tasks/access-application-cluster/ingress-minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="列出集群中所有运行容器的镜像" href="/zh/docs/tasks/access-application-cluster/list-all-running-container-images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为集群配置 DNS" href="/zh/docs/tasks/access-application-cluster/configure-dns-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Service 把前端连接到后端" href="/zh/docs/tasks/access-application-cluster/connecting-frontend-backend/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="同 Pod 内的容器使用共享卷通信" href="/zh/docs/tasks/access-application-cluster/communicate-containers-same-pod-shared-volume/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置对多集群的访问" href="/zh/docs/tasks/access-application-cluster/configure-access-multiple-clusters/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="监控、日志和排错">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="监控、日志和排错" href="/zh/docs/tasks/debug-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Auditing" href="/zh/docs/tasks/debug-application-cluster/audit/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Auditing with Falco <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/falco/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Logging Using Stackdriver <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/logging-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StackDriver 中的事件" href="/zh/docs/tasks/debug-application-cluster/events-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 crictl 对 Kubernetes 节点进行调试" href="/zh/docs/tasks/debug-application-cluster/crictl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ElasticSearch 和 Kibana 进行日志管理" href="/zh/docs/tasks/debug-application-cluster/logging-elasticsearch-kibana/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在本地开发和调试服务" href="/zh/docs/tasks/debug-application-cluster/local-debugging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用自测与调试" href="/zh/docs/tasks/debug-application-cluster/debug-application-introspection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="排错" href="/zh/docs/tasks/debug-application-cluster/troubleshooting/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="确定 Pod 失败的原因" href="/zh/docs/tasks/debug-application-cluster/determine-reason-pod-failure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="节点健康监测" href="/zh/docs/tasks/debug-application-cluster/monitor-node-health/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="获取正在运行容器的 Shell" href="/zh/docs/tasks/debug-application-cluster/get-shell-running-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Init 容器" href="/zh/docs/tasks/debug-application-cluster/debug-init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Pods 和 Replication Controllers" href="/zh/docs/tasks/debug-application-cluster/debug-pod-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Service" href="/zh/docs/tasks/debug-application-cluster/debug-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试StatefulSet" href="/zh/docs/tasks/debug-application-cluster/debug-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源指标管道" href="/zh/docs/tasks/debug-application-cluster/resource-metrics-pipeline/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源监控工具" href="/zh/docs/tasks/debug-application-cluster/resource-usage-monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-cluster/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/tasks/access-kubernetes-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="使用自定义资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用自定义资源" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Extend the Kubernetes API with CustomResourceDefinitions <small>(EN)</small>" href="/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用户自定义资源版本" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definition-versioning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置聚合层" href="/zh/docs/tasks/access-kubernetes-api/configure-aggregation-layer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="设置一个扩展的 API server" href="/zh/docs/tasks/access-kubernetes-api/setup-extension-api-server/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HTTP 代理访问 Kubernetes API" href="/zh/docs/tasks/access-kubernetes-api/http-proxy-access-api/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="TLS">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="管理集群中的 TLS 认证" href="/zh/docs/tasks/tls/managing-tls-in-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书轮换" href="/zh/docs/tasks/tls/certificate-rotation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="联邦 - 在多个集群上运行一个应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="联邦 - 在多个集群上运行一个应用" href="/zh/docs/tasks/federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="将 CoreDNS 设置为联邦集群的 DNS 提供者" href="/zh/docs/tasks/federation/set-up-coredns-provider-federation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用联合服务来实现跨集群的服务发现" href="/zh/docs/tasks/federation/federation-service-discovery/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="管理联邦控制平面">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理联邦控制平面" href="/zh/docs/tasks/federation/administer-federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="联邦 ConfigMap" href="/zh/docs/tasks/federation/administer-federation/configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 DaemonSet" href="/zh/docs/tasks/federation/administer-federation/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Deployment" href="/zh/docs/tasks/federation/administer-federation/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Job" href="/zh/docs/tasks/federation/administer-federation/job/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 ReplicaSet" href="/zh/docs/tasks/federation/administer-federation/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Secret" href="/zh/docs/tasks/federation/administer-federation/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦事件" href="/zh/docs/tasks/federation/administer-federation/events/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦命名空间" href="/zh/docs/tasks/federation/administer-federation/namespaces/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在联邦中设置放置策略" href="/zh/docs/tasks/federation/set-up-placement-policies-federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群守护进程">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群守护进程" href="/zh/docs/tasks/manage-daemon/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行回滚" href="/zh/docs/tasks/manage-daemon/rollback-daemon-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行滚动更新" href="/zh/docs/tasks/manage-daemon/update-daemon-set/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安装服务目录">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装服务目录" href="/zh/docs/tasks/service-catalog/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Helm 安装 Service Catalog" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-helm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 SC 安装服务目录" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-sc/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="网络">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="网络" href="/zh/docs/tasks/network/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="验证 IPv4/IPv6 双协议栈" href="/zh/docs/tasks/network/validate-dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用插件扩展 kubectl" href="/zh/docs/tasks/extend-kubectl/kubectl-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理巨页（HugePages）" href="/zh/docs/tasks/manage-hugepages/scheduling-hugepages/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度 GPUs" href="/zh/docs/tasks/manage-gpus/scheduling-gpus/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>将 Docker Compose 文件转换为 Kubernetes 资源</h1>
+
+
+
+
+<!--
+What's Kompose? It's a conversion tool for all things compose (namely Docker Compose) to container orchestrators (Kubernetes or OpenShift).
+-->
+
+<p>Kompose 是什么？它是个转换工具，可将 compose（即 Docker Compose）所组装的所有内容转换成容器编排器（Kubernetes 或 OpenShift）可识别的形式。</p>
+
+<!--
+More information can be found on the Kompose website at [http://kompose.io](http://kompose.io).
+-->
+
+<p>更多信息请参考 Kompose 官网 <a href="http://kompose.io" target="_blank">http://kompose.io</a>。</p>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%87%86%e5%a4%87%e5%bc%80%e5%a7%8b">准备开始</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%ae%89%e8%a3%85-kompose">安装 Kompose</a></li>
+
+
+
+
+<li><a href="#github-%e5%8f%91%e5%b8%83%e7%89%88%e6%9c%ac">GitHub 发布版本</a></li>
+
+
+
+
+<li><a href="#go">Go</a></li>
+
+
+
+
+<li><a href="#centos">CentOS</a></li>
+
+
+
+
+<li><a href="#fedora">Fedora</a></li>
+
+
+
+
+<li><a href="#macos">macOS</a></li>
+
+
+
+
+<li><a href="#%e4%bd%bf%e7%94%a8-kompose">使用 Kompose</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e7%94%a8%e6%88%b7%e6%8c%87%e5%8d%97">用户指南</a></li>
+
+
+
+
+<li><a href="#kompose-convert"><code>kompose convert</code></a></li>
+
+
+
+
+<li><a href="#kompose-up"><code>kompose up</code></a></li>
+
+
+
+
+<li><a href="#kompose-down"><code>kompose down</code></a></li>
+
+
+
+
+<li><a href="#%e6%9e%84%e5%bb%ba%e5%92%8c%e6%8e%a8%e9%80%81-docker-%e9%95%9c%e5%83%8f">构建和推送 Docker 镜像</a></li>
+
+
+
+
+<li><a href="#%e5%85%b6%e4%bb%96%e8%bd%ac%e6%8d%a2%e6%96%b9%e5%bc%8f">其他转换方式</a></li>
+
+
+
+
+<li><a href="#%e6%a0%87%e7%ad%be">标签</a></li>
+
+
+
+
+<li><a href="#%e9%87%8d%e5%90%af">重启</a></li>
+
+
+
+
+<li><a href="#docker-compose-%e7%89%88%e6%9c%ac">Docker Compose 版本</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+
+<h2 id="准备开始">准备开始</h2>
+<p>你必须拥有一个 Kubernetes 的集群，同时你的 Kubernetes 集群必须带有 kubectl 命令行工具。
+如果你还没有集群，你可以通过 <a href="/docs/getting-started-guides/minikube">Minikube</a> 构建一
+个你自己的集群，或者你可以使用下面任意一个 Kubernetes 工具构建：
+<!--
+You need to have a Kubernetes cluster, and the kubectl command-line tool must
+be configured to communicate with your cluster. If you do not already have a
+cluster, you can create one by using
+[Minikube](/docs/getting-started-guides/minikube),
+or you can use one of these Kubernetes playgrounds:
+--></p>
+
+<ul>
+<li><a href="https://www.katacoda.com/courses/kubernetes/playground" target="_blank">Katacoda</a></li>
+<li><a href="http://labs.play-with-k8s.com/" target="_blank">Play with Kubernetes</a></li>
+</ul>
+ 
+
+<p>要获知版本信息，请输入 <code>kubectl version</code>.</p>
+
+
+
+
+<!--
+## Install Kompose
+-->
+
+<h2 id="安装-kompose">安装 Kompose</h2>
+
+<!--
+We have multiple ways to install Kompose. Our preferred method is downloading the binary from the latest GitHub release.
+-->
+
+<p>我们有很多种方式安装 Kompose。首选方式是从最新的 GitHub 发布页面下载二进制文件。</p>
+
+<!--
+## GitHub release
+-->
+
+<h2 id="github-发布版本">GitHub 发布版本</h2>
+
+<!--
+Kompose is released via GitHub on a three-week cycle, you can see all current releases on the [GitHub release page](https://github.com/kubernetes/kompose/releases).
+-->
+
+<p>Kompose 通过 GitHub 发布版本，发布周期为三星期。您可以在<a href="https://github.com/kubernetes/kompose/releases" target="_blank">GitHub 发布页面</a>上看到所有当前版本。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#080;font-style:italic"># Linux</span>
+curl -L https://github.com/kubernetes/kompose/releases/download/v1.16.0/kompose-linux-amd64 -o kompose
+
+<span style="color:#080;font-style:italic"># macOS</span>
+curl -L https://github.com/kubernetes/kompose/releases/download/v1.16.0/kompose-darwin-amd64 -o kompose
+
+<span style="color:#080;font-style:italic"># Windows</span>
+curl -L https://github.com/kubernetes/kompose/releases/download/v1.16.0/kompose-windows-amd64.exe -o kompose.exe
+
+chmod +x kompose
+sudo mv ./kompose /usr/local/bin/kompose</code></pre></div>
+<!--
+Alternatively, you can download the [tarball](https://github.com/kubernetes/kompose/releases).
+-->
+
+<p>或者，您可以下载 <a href="https://github.com/kubernetes/kompose/releases" target="_blank">tarball</a>。</p>
+
+<h2 id="go">Go</h2>
+
+<!--
+Installing using `go get` pulls from the master branch with the latest development changes.
+-->
+
+<p>用 <code>go get</code> 命令从主分支拉取最新的开发变更的方法安装 Kompose。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">go get -u github.com/kubernetes/kompose</code></pre></div>
+<h2 id="centos">CentOS</h2>
+
+<!--
+Kompose is in [EPEL](https://fedoraproject.org/wiki/EPEL) CentOS repository.
+If you don't have [EPEL](https://fedoraproject.org/wiki/EPEL) repository already installed and enabled you can do it by running  `sudo yum install epel-release`
+-->
+
+<p>Kompose 位于 <a href="https://fedoraproject.org/wiki/EPEL" target="_blank">EPEL</a> CentOS 代码仓库。
+如果您还没有安装启用 <a href="https://fedoraproject.org/wiki/EPEL" target="_blank">EPEL</a> 代码仓库，请运行命令 <code>sudo yum install epel-release</code>。</p>
+
+<!--
+If you have [EPEL](https://fedoraproject.org/wiki/EPEL) enabled in your system, you can install Kompose like any other package.
+-->
+
+<p>如果您的系统中已经启用了 <a href="https://fedoraproject.org/wiki/EPEL" target="_blank">EPEL</a>，您就可以像安装其他软件包一样安装 Kompose。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo yum -y install kompose</code></pre></div>
+<h2 id="fedora">Fedora</h2>
+
+<!--
+Kompose is in Fedora 24, 25 and 26 repositories. You can install it just like any other package.
+-->
+
+<p>Kompose 位于 Fedora 24、25 和 26 的代码仓库。您可以像安装其他软件包一样安装 Kompose。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo dnf -y install kompose</code></pre></div>
+<h2 id="macos">macOS</h2>
+
+<!--
+On macOS you can install latest release via [Homebrew](https://brew.sh):
+-->
+
+<p>在 macOS 上您可以通过 <a href="https://brew.sh" target="_blank">Homebrew</a> 安装 Kompose 的最新版本：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">brew install kompose</code></pre></div>
+<!--
+## Use Kompose
+-->
+
+<h2 id="使用-kompose">使用 Kompose</h2>
+
+<!--
+In just a few steps, we'll take you from Docker Compose to Kubernetes. All
+you need is an existing `docker-compose.yml` file.
+-->
+
+<p>再需几步，我们就把你从 Docker Compose 带到 Kubernetes。
+您只需要一个现有的 <code>docker-compose.yml</code> 文件。</p>
+
+<ol>
+<li><!--Go to the directory containing your `docker-compose.yml` file. If you don't
+have one, test using this one.-->
+
+<p>进入 <code>docker-compose.yml</code> 文件所在的目录。如果没有，请使用下面这个进行测试。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#bbb">  </span>version:<span style="color:#bbb"> </span><span style="color:#b44">&#34;2&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>services:<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>redis-master:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/redis:e2e<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;6379&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>redis-slave:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>gcr.io/google_samples/gb-redisslave:v3<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;6379&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>environment:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>GET_HOSTS_FROM=dns<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>frontend:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>gcr.io/google-samples/gb-frontend:v4<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;80:80&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>environment:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>GET_HOSTS_FROM=dns<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>kompose.service.type:<span style="color:#bbb"> </span>LoadBalancer</code></pre></div></li>
+
+<li><!--Run the `kompose up` command to deploy to Kubernetes directly, or skip to
+the next step instead to generate a file to use with `kubectl`.-->
+
+<p>运行 <code>kompose up</code> 命令直接部署到 Kubernetes，或者跳到下一步，生成 <code>kubectl</code> 使用的文件。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">  $ kompose up
+  We are going to create Kubernetes Deployments, Services and PersistentVolumeClaims <span style="color:#a2f;font-weight:bold">for</span> your Dockerized application.
+  If you need different kind of resources, use the <span style="color:#b44">&#39;kompose convert&#39;</span> and <span style="color:#b44">&#39;kubectl create -f&#39;</span> commands instead.
+
+  INFO Successfully created Service: redis          
+  INFO Successfully created Service: web            
+  INFO Successfully created Deployment: redis       
+  INFO Successfully created Deployment: web         
+
+  Your application has been deployed to Kubernetes. You can run <span style="color:#b44">&#39;kubectl get deployment,svc,pods,pvc&#39;</span> <span style="color:#a2f;font-weight:bold">for</span> details.</code></pre></div></li>
+
+<li><!--To convert the `docker-compose.yml` file to files that you can use with
+`kubectl`, run `kompose convert` and then `kubectl create -f <output file>`.-->
+
+<p>要将 <code>docker-compose.yml</code> 转换为 <code>kubectl</code> 可用的文件，请运行 <code>kompose convert</code> 命令进行转换，然后运行 <code>kubectl create -f &lt;output file&gt;</code> 进行创建。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">  $ kompose convert                           
+  INFO Kubernetes file <span style="color:#b44">&#34;frontend-service.yaml&#34;</span> created         
+  INFO Kubernetes file <span style="color:#b44">&#34;redis-master-service.yaml&#34;</span> created     
+  INFO Kubernetes file <span style="color:#b44">&#34;redis-slave-service.yaml&#34;</span> created      
+  INFO Kubernetes file <span style="color:#b44">&#34;frontend-deployment.yaml&#34;</span> created      
+  INFO Kubernetes file <span style="color:#b44">&#34;redis-master-deployment.yaml&#34;</span> created  
+  INFO Kubernetes file <span style="color:#b44">&#34;redis-slave-deployment.yaml&#34;</span> created   </code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">  $ kubectl create -f frontend-service.yaml,redis-master-service.yaml,redis-slave-service.yaml,frontend-deployment.yaml,redis-master-deployment.yaml,redis-slave-deployment.yaml
+  service/frontend created
+  service/redis-master created
+  service/redis-slave created
+  deployment.apps/frontend created
+  deployment.apps/redis-master created
+  deployment.apps/redis-slave created</code></pre></div></li>
+</ol>
+
+<!--
+      Your deployments are running in Kubernetes.
+-->
+
+<pre><code>  您部署的应用在 Kubernetes 中运行起来了。
+</code></pre>
+
+<ol>
+<li><p><!--Access your application.-->访问您的应用。</p>
+
+<p><!--If you're already using `minikube` for your development process:--></p>
+
+<p>如果您在开发过程中使用 <code>minikube</code>，请执行：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">  $ minikube service frontend</code></pre></div>
+<p><!--Otherwise, let's look up what IP your service is using!-->
+  否则，我们要查看一下您的服务使用了什么 IP！</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">  $ kubectl describe svc frontend
+  Name:                   frontend
+  Namespace:              default
+  Labels:                 <span style="color:#b8860b">service</span><span style="color:#666">=</span>frontend
+  Selector:               <span style="color:#b8860b">service</span><span style="color:#666">=</span>frontend
+  Type:                   LoadBalancer
+  IP:                     <span style="color:#666">10</span>.0.0.183
+  LoadBalancer Ingress:   <span style="color:#666">192</span>.0.2.89
+  Port:                   <span style="color:#666">80</span>      <span style="color:#666">80</span>/TCP
+  NodePort:               <span style="color:#666">80</span>      <span style="color:#666">31144</span>/TCP
+  Endpoints:              <span style="color:#666">172</span>.17.0.4:80
+  Session Affinity:       None
+  No events.</code></pre></div>
+<p><!--If you're using a cloud provider, your IP will be listed next to `LoadBalancer Ingress`.-->
+  如果您使用的是云提供商，您的 IP 将在 <code>LoadBalancer Ingress</code> 字段给出。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">  $ curl http://192.0.2.89</code></pre></div></li>
+</ol>
+
+
+
+
+<!--
+## User Guide
+-->
+
+<h2 id="用户指南">用户指南</h2>
+
+<!--
+- CLI
+  - [`kompose convert`](#kompose-convert)
+  - [`kompose up`](#kompose-up)
+  - [`kompose down`](#kompose-down)
+- Documentation
+  - [Build and Push Docker Images](#build-and-push-docker-images)
+  - [Alternative Conversions](#alternative-conversions)
+  - [Labels](#labels)
+  - [Restart](#restart)
+  - [Docker Compose Versions](#docker-compose-versions)
+-->
+
+<ul>
+<li>CLI
+
+<ul>
+<li><a href="#kompose-convert"><code>kompose convert</code></a></li>
+<li><a href="#kompose-up"><code>kompose up</code></a></li>
+<li><a href="#kompose-down"><code>kompose down</code></a></li>
+</ul></li>
+<li>文档
+
+<ul>
+<li><a href="#构建和推送-docker-镜像">构建和推送 Docker 镜像</a></li>
+<li><a href="#其他转换方式">其他转换方式</a></li>
+<li><a href="#标签">标签</a></li>
+<li><a href="#重启">重启</a></li>
+<li><a href="#docker-compose-版本">Docker Compose 版本</a></li>
+</ul></li>
+</ul>
+
+<!--
+Kompose has support for two providers: OpenShift and Kubernetes.
+You can choose a targeted provider using global option `--provider`. If no provider is specified, Kubernetes is set by default.
+-->
+
+<p>Kompose 支持两种驱动：OpenShift 和 Kubernetes。
+您可以通过全局选项 <code>--provider</code> 选择驱动方式。如果没有指定，会将 Kubernetes 作为默认驱动。</p>
+
+<h2 id="kompose-convert"><code>kompose convert</code></h2>
+
+<p>Kompose 支持将 V1、V2 和 V3 版本的 Docker Compose 文件转换为 Kubernetes 和 OpenShift 资源对象。</p>
+
+<h3 id="kubernetes">Kubernetes</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kompose --file docker-voting.yml convert
+WARN Unsupported key networks - ignoring
+WARN Unsupported key build - ignoring
+INFO Kubernetes file <span style="color:#b44">&#34;worker-svc.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;db-svc.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;redis-svc.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;result-svc.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;vote-svc.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;redis-deployment.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;result-deployment.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;vote-deployment.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;worker-deployment.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;db-deployment.yaml&#34;</span> created
+
+$ ls
+db-deployment.yaml  docker-compose.yml         docker-gitlab.yml  redis-deployment.yaml  result-deployment.yaml  vote-deployment.yaml  worker-deployment.yaml
+db-svc.yaml         docker-voting.yml          redis-svc.yaml     result-svc.yaml        vote-svc.yaml           worker-svc.yaml</code></pre></div>
+<!--
+You can also provide multiple docker-compose files at the same time:
+-->
+
+<p>您也可以同时提供多个 docker-compose 文件进行转换：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kompose -f docker-compose.yml -f docker-guestbook.yml convert
+INFO Kubernetes file <span style="color:#b44">&#34;frontend-service.yaml&#34;</span> created         
+INFO Kubernetes file <span style="color:#b44">&#34;mlbparks-service.yaml&#34;</span> created         
+INFO Kubernetes file <span style="color:#b44">&#34;mongodb-service.yaml&#34;</span> created          
+INFO Kubernetes file <span style="color:#b44">&#34;redis-master-service.yaml&#34;</span> created     
+INFO Kubernetes file <span style="color:#b44">&#34;redis-slave-service.yaml&#34;</span> created      
+INFO Kubernetes file <span style="color:#b44">&#34;frontend-deployment.yaml&#34;</span> created      
+INFO Kubernetes file <span style="color:#b44">&#34;mlbparks-deployment.yaml&#34;</span> created      
+INFO Kubernetes file <span style="color:#b44">&#34;mongodb-deployment.yaml&#34;</span> created       
+INFO Kubernetes file <span style="color:#b44">&#34;mongodb-claim0-persistentvolumeclaim.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;redis-master-deployment.yaml&#34;</span> created  
+INFO Kubernetes file <span style="color:#b44">&#34;redis-slave-deployment.yaml&#34;</span> created   
+
+$ ls
+mlbparks-deployment.yaml  mongodb-service.yaml                       redis-slave-service.jsonmlbparks-service.yaml  
+frontend-deployment.yaml  mongodb-claim0-persistentvolumeclaim.yaml  redis-master-service.yaml
+frontend-service.yaml     mongodb-deployment.yaml                    redis-slave-deployment.yaml
+redis-master-deployment.yaml</code></pre></div>
+<!--
+When multiple docker-compose files are provided the configuration is merged. Any configuration that is common will be over ridden by subsequent file.
+-->
+
+<p>当提供多个 docker-compose 文件时，配置将会合并。任何通用的配置都将被后续文件覆盖。</p>
+
+<h3 id="openshift">OpenShift</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kompose --provider openshift --file docker-voting.yml convert
+WARN <span style="color:#666">[</span>worker<span style="color:#666">]</span> Service cannot be created because of missing port.
+INFO OpenShift file <span style="color:#b44">&#34;vote-service.yaml&#34;</span> created             
+INFO OpenShift file <span style="color:#b44">&#34;db-service.yaml&#34;</span> created               
+INFO OpenShift file <span style="color:#b44">&#34;redis-service.yaml&#34;</span> created            
+INFO OpenShift file <span style="color:#b44">&#34;result-service.yaml&#34;</span> created           
+INFO OpenShift file <span style="color:#b44">&#34;vote-deploymentconfig.yaml&#34;</span> created    
+INFO OpenShift file <span style="color:#b44">&#34;vote-imagestream.yaml&#34;</span> created         
+INFO OpenShift file <span style="color:#b44">&#34;worker-deploymentconfig.yaml&#34;</span> created  
+INFO OpenShift file <span style="color:#b44">&#34;worker-imagestream.yaml&#34;</span> created       
+INFO OpenShift file <span style="color:#b44">&#34;db-deploymentconfig.yaml&#34;</span> created      
+INFO OpenShift file <span style="color:#b44">&#34;db-imagestream.yaml&#34;</span> created           
+INFO OpenShift file <span style="color:#b44">&#34;redis-deploymentconfig.yaml&#34;</span> created   
+INFO OpenShift file <span style="color:#b44">&#34;redis-imagestream.yaml&#34;</span> created        
+INFO OpenShift file <span style="color:#b44">&#34;result-deploymentconfig.yaml&#34;</span> created  
+INFO OpenShift file <span style="color:#b44">&#34;result-imagestream.yaml&#34;</span> created  </code></pre></div>
+<!--
+It also supports creating buildconfig for build directive in a service. By default, it uses the remote repo for the current git branch as the source repo, and the current branch as the source branch for the build. You can specify a different source repo and branch using ``--build-repo`` and ``--build-branch`` options respectively.
+-->
+
+<p>kompose 还支持为服务中的构建指令创建 buildconfig。
+默认情况下，它使用当前 git 分支的 remote 仓库作为源仓库，使用当前分支作为构建的源分支。
+您可以分别使用 <code>--build-repo</code> 和 <code>--build-branch</code> 选项指定不同的源仓库和分支。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kompose --provider openshift --file buildconfig/docker-compose.yml convert
+WARN <span style="color:#666">[</span>foo<span style="color:#666">]</span> Service cannot be created because of missing port.
+INFO OpenShift Buildconfig using git@github.com:rtnpro/kompose.git::master as source.
+INFO OpenShift file <span style="color:#b44">&#34;foo-deploymentconfig.yaml&#34;</span> created     
+INFO OpenShift file <span style="color:#b44">&#34;foo-imagestream.yaml&#34;</span> created          
+INFO OpenShift file <span style="color:#b44">&#34;foo-buildconfig.yaml&#34;</span> created</code></pre></div>
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+If you are manually pushing the Openshift artifacts using ``oc create -f``, you need to ensure that you push the imagestream artifact before the buildconfig artifact, to workaround this Openshift issue: https://github.com/openshift/origin/issues/4518 .
+-->
+
+<p>如果使用 <code>oc create -f</code> 手动推送 Openshift 工件，则需要确保在构建配置工件之前推送 imagestream 工件，以解决 Openshift 的这个问题：<a href="https://github.com/openshift/origin/issues/4518" target="_blank">https://github.com/openshift/origin/issues/4518</a> 。</div>
+</blockquote>
+
+<h2 id="kompose-up"><code>kompose up</code></h2>
+
+<!--
+Kompose supports a straightforward way to deploy your "composed" application to Kubernetes or OpenShift via `kompose up`.
+-->
+
+<p>Kompose 支持通过 <code>kompose up</code> 直接将您的&rdquo;复合的（composed）&rdquo; 应用程序部署到 Kubernetes 或 OpenShift。</p>
+
+<h3 id="kubernetes-1">Kubernetes</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kompose --file ./examples/docker-guestbook.yml up
+We are going to create Kubernetes deployments and services <span style="color:#a2f;font-weight:bold">for</span> your Dockerized application.
+If you need different kind of resources, use the <span style="color:#b44">&#39;kompose convert&#39;</span> and <span style="color:#b44">&#39;kubectl create -f&#39;</span> commands instead.
+
+INFO Successfully created service: redis-master   
+INFO Successfully created service: redis-slave    
+INFO Successfully created service: frontend       
+INFO Successfully created deployment: redis-master
+INFO Successfully created deployment: redis-slave
+INFO Successfully created deployment: frontend    
+
+Your application has been deployed to Kubernetes. You can run <span style="color:#b44">&#39;kubectl get deployment,svc,pods&#39;</span> <span style="color:#a2f;font-weight:bold">for</span> details.
+
+$ kubectl get deployment,svc,pods
+NAME                                              DESIRED       CURRENT       UP-TO-DATE   AVAILABLE   AGE
+deployment.extensions/frontend                    <span style="color:#666">1</span>             <span style="color:#666">1</span>             <span style="color:#666">1</span>            <span style="color:#666">1</span>           4m
+deployment.extensions/redis-master                <span style="color:#666">1</span>             <span style="color:#666">1</span>             <span style="color:#666">1</span>            <span style="color:#666">1</span>           4m
+deployment.extensions/redis-slave                 <span style="color:#666">1</span>             <span style="color:#666">1</span>             <span style="color:#666">1</span>            <span style="color:#666">1</span>           4m
+
+NAME                         TYPE               CLUSTER-IP    EXTERNAL-IP   PORT<span style="color:#666">(</span>S<span style="color:#666">)</span>      AGE
+service/frontend             ClusterIP          <span style="color:#666">10</span>.0.174.12   &lt;none&gt;        <span style="color:#666">80</span>/TCP       4m
+service/kubernetes           ClusterIP          <span style="color:#666">10</span>.0.0.1      &lt;none&gt;        <span style="color:#666">443</span>/TCP      13d
+service/redis-master         ClusterIP          <span style="color:#666">10</span>.0.202.43   &lt;none&gt;        <span style="color:#666">6379</span>/TCP     4m
+service/redis-slave          ClusterIP          <span style="color:#666">10</span>.0.1.85     &lt;none&gt;        <span style="color:#666">6379</span>/TCP     4m
+
+NAME                                READY         STATUS        RESTARTS     AGE
+pod/frontend-2768218532-cs5t5       <span style="color:#666">1</span>/1           Running       <span style="color:#666">0</span>            4m
+pod/redis-master-1432129712-63jn8   <span style="color:#666">1</span>/1           Running       <span style="color:#666">0</span>            4m
+pod/redis-slave-2504961300-nve7b    <span style="color:#666">1</span>/1           Running       <span style="color:#666">0</span>            4m</code></pre></div>
+<!--
+**Note**:
+- You must have a running Kubernetes cluster with a pre-configured kubectl context.
+- Only deployments and services are generated and deployed to Kubernetes. If you need different kind of resources, use the `kompose convert` and `kubectl create -f` commands instead.
+-->
+
+<p><strong>注意</strong>：</p>
+
+<ul>
+<li>您必须有一个运行正常的 Kubernetes 集群，该集群具有预先配置的 kubectl 上下文。</li>
+<li>此操作仅生成 Deployment 和 Service 对象并将其部署到 Kubernetes。如果需要部署其他不同类型的资源，请使用 <code>kompose convert</code> 和 <code>kubectl create -f</code> 命令。</li>
+</ul>
+
+<h3 id="openshift-1">OpenShift</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kompose --file ./examples/docker-guestbook.yml --provider openshift up
+We are going to create OpenShift DeploymentConfigs and Services <span style="color:#a2f;font-weight:bold">for</span> your Dockerized application.
+If you need different kind of resources, use the <span style="color:#b44">&#39;kompose convert&#39;</span> and <span style="color:#b44">&#39;oc create -f&#39;</span> commands instead.
+
+INFO Successfully created service: redis-slave    
+INFO Successfully created service: frontend       
+INFO Successfully created service: redis-master   
+INFO Successfully created deployment: redis-slave
+INFO Successfully created ImageStream: redis-slave
+INFO Successfully created deployment: frontend    
+INFO Successfully created ImageStream: frontend   
+INFO Successfully created deployment: redis-master
+INFO Successfully created ImageStream: redis-master
+
+Your application has been deployed to OpenShift. You can run <span style="color:#b44">&#39;oc get dc,svc,is&#39;</span> <span style="color:#a2f;font-weight:bold">for</span> details.
+
+$ oc get dc,svc,is
+NAME               REVISION                              DESIRED       CURRENT    TRIGGERED BY
+dc/frontend        <span style="color:#666">0</span>                                     <span style="color:#666">1</span>             <span style="color:#666">0</span>          config,image<span style="color:#666">(</span>frontend:v4<span style="color:#666">)</span>
+dc/redis-master    <span style="color:#666">0</span>                                     <span style="color:#666">1</span>             <span style="color:#666">0</span>          config,image<span style="color:#666">(</span>redis-master:e2e<span style="color:#666">)</span>
+dc/redis-slave     <span style="color:#666">0</span>                                     <span style="color:#666">1</span>             <span style="color:#666">0</span>          config,image<span style="color:#666">(</span>redis-slave:v1<span style="color:#666">)</span>
+NAME               CLUSTER-IP                            EXTERNAL-IP   PORT<span style="color:#666">(</span>S<span style="color:#666">)</span>    AGE
+svc/frontend       <span style="color:#666">172</span>.30.46.64                          &lt;none&gt;        <span style="color:#666">80</span>/TCP     8s
+svc/redis-master   <span style="color:#666">172</span>.30.144.56                         &lt;none&gt;        <span style="color:#666">6379</span>/TCP   8s
+svc/redis-slave    <span style="color:#666">172</span>.30.75.245                         &lt;none&gt;        <span style="color:#666">6379</span>/TCP   8s
+NAME               DOCKER REPO                           TAGS          UPDATED
+is/frontend        <span style="color:#666">172</span>.30.12.200:5000/fff/frontend                     
+is/redis-master    <span style="color:#666">172</span>.30.12.200:5000/fff/redis-master                 
+is/redis-slave     <span style="color:#666">172</span>.30.12.200:5000/fff/redis-slave    v1  </code></pre></div>
+<!--
+**Note**:
+- You must have a running OpenShift cluster with a pre-configured `oc` context (`oc login`)
+-->
+
+<p><strong>注意</strong>：</p>
+
+<ul>
+<li>您必须有一个运行正常的 OpenShift 集群，该集群具有预先配置的 <code>oc</code> 上下文 (<code>oc login</code>)。</li>
+</ul>
+
+<h2 id="kompose-down"><code>kompose down</code></h2>
+
+<!--
+Once you have deployed "composed" application to Kubernetes, `$ kompose down` will help you to take the application out by deleting its deployments and services. If you need to remove other resources, use the 'kubectl' command.
+-->
+
+<p>您一旦将&rdquo;复合(composed)&rdquo; 应用部署到 Kubernetes，<code>$ kompose down</code> 命令将能帮您通过删除 Deployment 和 Service 对象来删除应用。如果需要删除其他资源，请使用 &lsquo;kubectl&rsquo; 命令。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kompose --file docker-guestbook.yml down
+INFO Successfully deleted service: redis-master   
+INFO Successfully deleted deployment: redis-master
+INFO Successfully deleted service: redis-slave    
+INFO Successfully deleted deployment: redis-slave
+INFO Successfully deleted service: frontend       
+INFO Successfully deleted deployment: frontend</code></pre></div>
+<!--
+**Note**:
+- You must have a running Kubernetes cluster with a pre-configured kubectl context.
+## Build and Push Docker Images
+Kompose supports both building and pushing Docker images. When using the `build` key within your Docker Compose file, your image will:
+  - Automatically be built with Docker using the `image` key specified within your file
+  - Be pushed to the correct Docker repository using local credentials (located at `.docker/config`)
+Using an [example Docker Compose file](https://raw.githubusercontent.com/kubernetes/kompose/master/examples/buildconfig/docker-compose.yml):
+-->
+
+<p><strong>注意</strong>：</p>
+
+<ul>
+<li>您必须有一个运行正常的 Kubernetes 集群，该集群具有预先配置的 kubectl 上下文。</li>
+</ul>
+
+<h2 id="构建和推送-docker-镜像">构建和推送 Docker 镜像</h2>
+
+<p>Kompose 支持构建和推送 Docker 镜像。如果 Docker Compose 文件中使用了 <code>build</code> 关键字，您的镜像将会：</p>
+
+<ul>
+<li>使用文档中指定的 <code>image</code> 键自动构建 Docker 镜像</li>
+<li>使用本地凭据推送到正确的 Docker 仓库</li>
+</ul>
+
+<p>使用 <a href="https://raw.githubusercontent.com/kubernetes/kompose/master/examples/buildconfig/docker-compose.yml" target="_blank">Docker Compose 文件示例</a></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">version:<span style="color:#bbb"> </span><span style="color:#b44">&#34;2&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>services:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>foo:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>build:<span style="color:#bbb"> </span><span style="color:#b44">&#34;./build&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>docker.io/foo/bar</code></pre></div>
+<!--
+Using `kompose up` with a `build` key:
+-->
+
+<p>使用带有 <code>build</code> 键的 <code>kompose up</code> 命令：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-none" data-lang="none">$ kompose up
+INFO Build key detected. Attempting to build and push image &#39;docker.io/foo/bar&#39;
+INFO Building image &#39;docker.io/foo/bar&#39; from directory &#39;build&#39;
+INFO Image &#39;docker.io/foo/bar&#39; from directory &#39;build&#39; built successfully
+INFO Pushing image &#39;foo/bar:latest&#39; to registry &#39;docker.io&#39;
+INFO Attempting authentication credentials &#39;https://index.docker.io/v1/
+INFO Successfully pushed image &#39;foo/bar:latest&#39; to registry &#39;docker.io&#39;
+INFO We are going to create Kubernetes Deployments, Services and PersistentVolumeClaims for your Dockerized application. If you need different kind of resources, use the &#39;kompose convert&#39; and &#39;kubectl create -f&#39; commands instead.
+
+INFO Deploying application in &#34;default&#34; namespace
+INFO Successfully created Service: foo            
+INFO Successfully created Deployment: foo         
+
+Your application has been deployed to Kubernetes. You can run &#39;kubectl get deployment,svc,pods,pvc&#39; for details.</code></pre></div>
+<!--
+In order to disable the functionality, or choose to use BuildConfig generation (with OpenShift) `--build (local|build-config|none)` can be passed.
+-->
+
+<p>要想禁用该功能，或者使用 BuildConfig 中的版本（在 OpenShift 中），可以通过传递 <code>--build (local|build-config|none)</code> 参数来实现。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#080;font-style:italic"># Disable building/pushing Docker images</span>
+$ kompose up --build none
+
+<span style="color:#080;font-style:italic"># Generate Build Config artifacts for OpenShift</span>
+$ kompose up --provider openshift --build build-config</code></pre></div>
+<!--
+## Alternative Conversions
+The default `kompose` transformation will generate Kubernetes [Deployments](/docs/concepts/workloads/controllers/deployment/) and [Services](/docs/concepts/services-networking/service/), in yaml format. You have alternative option to generate json with `-j`. Also, you can alternatively generate [Replication Controllers](/docs/concepts/workloads/controllers/replicationcontroller/) objects, [Daemon Sets](/docs/concepts/workloads/controllers/daemonset/), or [Helm](https://github.com/helm/helm) charts.
+-->
+
+<h2 id="其他转换方式">其他转换方式</h2>
+
+<p>默认的 <code>kompose</code> 转换会生成 yaml 格式的 Kubernetes <a href="/docs/concepts/workloads/controllers/deployment/">Deployment</a> 和 <a href="/docs/concepts/services-networking/service/">Service</a> 对象。
+您可以选择通过 <code>-j</code> 参数生成 json 格式的对象。
+您也可以替换生成 <a href="/docs/concepts/workloads/controllers/replicationcontroller/">Replication Controllers</a> 对象、<a href="/docs/concepts/workloads/controllers/daemonset/">Daemon Sets</a> 或 <a href="https://github.com/helm/helm" target="_blank">Helm</a> charts。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kompose convert -j
+INFO Kubernetes file <span style="color:#b44">&#34;redis-svc.json&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;web-svc.json&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;redis-deployment.json&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;web-deployment.json&#34;</span> created</code></pre></div>
+<!--
+The `*-deployment.json` files contain the Deployment objects.
+-->
+
+<p><code>*-deployment.json</code> 文件中包含 Deployment 对象。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kompose convert --replication-controller
+INFO Kubernetes file <span style="color:#b44">&#34;redis-svc.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;web-svc.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;redis-replicationcontroller.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;web-replicationcontroller.yaml&#34;</span> created</code></pre></div>
+<!--
+The `*-replicationcontroller.yaml` files contain the Replication Controller objects. If you want to specify replicas (default is 1), use `--replicas` flag: `$ kompose convert --replication-controller --replicas 3`
+-->
+
+<p><code>*-replicationcontroller.yaml</code> 文件包含 Replication Controller 对象。如果您想指定副本数（默认为 1），可以使用 <code>--replicas</code> 参数：<code>$ kompose convert --replication-controller --replicas 3</code></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kompose convert --daemon-set
+INFO Kubernetes file <span style="color:#b44">&#34;redis-svc.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;web-svc.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;redis-daemonset.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;web-daemonset.yaml&#34;</span> created</code></pre></div>
+<!--
+The `*-daemonset.yaml` files contain the Daemon Set objects
+If you want to generate a Chart to be used with [Helm](https://github.com/kubernetes/helm) simply do:
+-->
+
+<p><code>*-daemonset.yaml</code> 文件包含 Daemon Set 对象。</p>
+
+<p>如果您想生成 <a href="https://github.com/kubernetes/helm" target="_blank">Helm</a> 可用的 Chart，只需简单的执行下面的命令：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kompose convert -c
+INFO Kubernetes file <span style="color:#b44">&#34;web-svc.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;redis-svc.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;web-deployment.yaml&#34;</span> created
+INFO Kubernetes file <span style="color:#b44">&#34;redis-deployment.yaml&#34;</span> created
+chart created in <span style="color:#b44">&#34;./docker-compose/&#34;</span>
+
+$ tree docker-compose/
+docker-compose
+├── Chart.yaml
+├── README.md
+└── templates
+    ├── redis-deployment.yaml
+    ├── redis-svc.yaml
+    ├── web-deployment.yaml
+    └── web-svc.yaml</code></pre></div>
+<!--
+The chart structure is aimed at providing a skeleton for building your Helm charts.
+## Labels
+`kompose` supports Kompose-specific labels within the `docker-compose.yml` file in order to explicitly define a service's behavior upon conversion.
+- `kompose.service.type` defines the type of service to be created.
+For example:
+-->
+
+<p>这个图标结构旨在为构建 Helm Chart 提供框架。</p>
+
+<h2 id="标签">标签</h2>
+
+<p><code>kompose</code> 支持 <code>docker-compose.yml</code> 文件中用于 Kompose 的标签，以便在转换时明确定义 Service 的行为。</p>
+
+<ul>
+<li><p><code>kompose.service.type</code> 定义要创建的 Service 类型。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">version:<span style="color:#bbb"> </span><span style="color:#b44">&#34;2&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>services:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>nginx:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>image:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb"></span>dockerfile:<span style="color:#bbb"> </span>foobar<span style="color:#bbb">
+</span><span style="color:#bbb"></span>build:<span style="color:#bbb"> </span>./foobar<span style="color:#bbb">
+</span><span style="color:#bbb"></span>cap_add:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>ALL<span style="color:#bbb">
+</span><span style="color:#bbb"></span>container_name:<span style="color:#bbb"> </span>foobar<span style="color:#bbb">
+</span><span style="color:#bbb"></span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kompose.service.type:<span style="color:#bbb"> </span>nodeport</code></pre></div></li>
+</ul>
+
+<!--
+- `kompose.service.expose` defines if the service needs to be made accessible from outside the cluster or not. If the value is set to "true", the provider sets the endpoint automatically, and for any other value, the value is set as the hostname. If multiple ports are defined in a service, the first one is chosen to be the exposed.
+  - For the Kubernetes provider, an ingress resource is created and it is assumed that an ingress controller has already been configured.
+  - For the OpenShift provider, a route is created.
+For example:
+-->
+
+<ul>
+<li><code>kompose.service.expose</code> 定义 是否允许从集群外部访问 Service。如果该值被设置为 &ldquo;true&rdquo;，提供程序将自动设置端点，对于任何其他值，该值将被设置为主机名。如果在 Service 中定义了多个端口，则选择第一个端口作为公开端口。
+
+<ul>
+<li>对于 Kubernetes 驱动程序，创建了一个 Ingress 资源，并且假定已经配置了相应的 Ingress 控制器。</li>
+<li>对于 OpenShift 驱动程序, 创建一个 route。</li>
+</ul></li>
+</ul>
+
+<p>例如：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">version:<span style="color:#bbb"> </span><span style="color:#b44">&#34;2&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>services:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>web:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>tuna/docker-counter23<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">     </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;5000:5000&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>links:<span style="color:#bbb">
+</span><span style="color:#bbb">     </span>-<span style="color:#bbb"> </span>redis<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>kompose.service.expose:<span style="color:#bbb"> </span><span style="color:#b44">&#34;counter.example.com&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>redis:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>redis:<span style="color:#666">3.0</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">     </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;6379&#34;</span></code></pre></div>
+<!--
+The currently supported options are:
+| Key                  | Value                               |
+|----------------------|-------------------------------------|
+| kompose.service.type | nodeport / clusterip / loadbalancer |
+| kompose.service.expose| true / hostname |
+-->
+
+<p>当前支持的选项有:</p>
+
+<table>
+<thead>
+<tr>
+<th>键</th>
+<th>值</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>kompose.service.type</td>
+<td>nodeport / clusterip / loadbalancer</td>
+</tr>
+
+<tr>
+<td>kompose.service.expose</td>
+<td>true / hostname</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+The `kompose.service.type` label should be defined with `ports` only, otherwise `kompose` will fail.
+-->
+
+<p><code>kompose.service.type</code> 标签应该只用<code>ports</code>来定义，否则 <code>kompose</code> 会失败。</div>
+</blockquote>
+
+<!--
+## Restart
+If you want to create normal pods without controllers you can use `restart` construct of docker-compose to define that. Follow table below to see what happens on the `restart` value.
+-->
+
+<h2 id="重启">重启</h2>
+
+<p>如果你想创建没有控制器的普通 Pod，可以使用 docker-compose 的 <code>restart</code> 结构来定义它。请参考下表了解 <code>restart</code> 的不同参数。</p>
+
+<!--
+| `docker-compose` `restart` | object created    | Pod `restartPolicy` |
+|----------------------------|-------------------|---------------------|
+| `""`                       | controller object | `Always`            |
+| `always`                   | controller object | `Always`            |
+| `on-failure`               | Pod               | `OnFailure`         |
+| `no`                       | Pod               | `Never`             |
+-->
+
+<table>
+<thead>
+<tr>
+<th><code>docker-compose</code> <code>restart</code></th>
+<th>创建的对象</th>
+<th>Pod <code>restartPolicy</code></th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>&quot;&quot;</code></td>
+<td>控制器对象</td>
+<td><code>Always</code></td>
+</tr>
+
+<tr>
+<td><code>always</code></td>
+<td>控制器对象</td>
+<td><code>Always</code></td>
+</tr>
+
+<tr>
+<td><code>on-failure</code></td>
+<td>Pod</td>
+<td><code>OnFailure</code></td>
+</tr>
+
+<tr>
+<td><code>no</code></td>
+<td>Pod</td>
+<td><code>Never</code></td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+The controller object could be `deployment` or `replicationcontroller`, etc.
+-->
+
+<p>控制器对象可以是 <code>deployment</code> 或 <code>replicationcontroller</code> 等。</div>
+</blockquote>
+
+<!--
+For e.g. `pival` service will become pod down here. This container calculated value of `pi`.
+-->
+
+<p>例如，<code>pival</code> Service 将在这里变成 Pod。这个容器的计算值为 <code>pi</code>。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">version:<span style="color:#bbb"> </span><span style="color:#b44">&#39;2&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>services:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>pival:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>perl<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>command:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;perl&#34;</span>,<span style="color:#bbb">  </span><span style="color:#b44">&#34;-Mbignum=bpi&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;-wle&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;print bpi(2000)&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>restart:<span style="color:#bbb"> </span><span style="color:#b44">&#34;on-failure&#34;</span></code></pre></div>
+<!--
+### Warning about Deployment Config's
+If the Docker Compose file has a volume specified for a service, the Deployment (Kubernetes) or DeploymentConfig (OpenShift) strategy is changed to "Recreate" instead of "RollingUpdate" (default). This is done to avoid multiple instances of a service from accessing a volume at the same time.
+-->
+
+<h3 id="关于-deployment-config-的提醒">关于 Deployment Config 的提醒</h3>
+
+<p>如果 Docker Compose 文件中为服务声明了卷，Deployment (Kubernetes) 或 DeploymentConfig (OpenShift) 的策略会从 &ldquo;RollingUpdate&rdquo; (默认) 变为 &ldquo;Recreate&rdquo;。
+这样做的目的是为了避免服务的多个实例同时访问卷。</p>
+
+<!--
+If the Docker Compose file has service name with `_` in it (eg.`web_service`), then it will be replaced by `-` and the service name will be renamed accordingly (eg.`web-service`). Kompose does this because "Kubernetes" doesn't allow `_` in object name.
+Please note that changing service name might break some `docker-compose` files.
+-->
+
+<p>如果 Docker Compose 文件中的服务名包含 <code>_</code> (例如 <code>web_service</code>)，那么将会被替换为 <code>-</code>，服务也相应的会重命名(例如 <code>web-service</code>)。
+Kompose 这样做的原因是 &ldquo;Kubernetes&rdquo; 不允许对象名称中包含 <code>_</code>。</p>
+
+<!--
+## Docker Compose Versions
+Kompose supports Docker Compose versions: 1, 2 and 3. We have limited support on versions 2.1 and 3.2 due to their experimental nature.
+A full list on compatibility between all three versions is listed in our [conversion document](https://github.com/kubernetes/kompose/blob/master/docs/conversion.md) including a list of all incompatible Docker Compose keys.
+-->
+
+<h2 id="docker-compose-版本">Docker Compose 版本</h2>
+
+<p>Kompose 支持的 Docker Compose 版本包括：1、2 和 3。有限支持 2.1 和 3.2 版本，因为它们还在实验阶段。</p>
+
+<p>所有三个版本的兼容性列表请查看我们的 <a href="https://github.com/kubernetes/kompose/blob/master/docs/conversion.md" target="_blank">转换文档</a>，文档中列出了所有不兼容的 Docker Compose 关键字。</p>
+
+
+
+<!--
+---
+reviewers:
+- cdrage
+title: Translate a Docker Compose File to Kubernetes Resources
+content_template: templates/task
+weight: 170
+---
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/tasks/configure-pod-container/translate-compose-kubernetes.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/tasks\/configure-pod-container\/translate-compose-kubernetes\/",
+    "title" : "将 Docker Compose 文件转换为 Kubernetes 资源",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/tasks\/configure-pod-container\/translate-compose-kubernetes\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 December 25, 2019 at 8:51 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/b8b2cc7c7443e32de70834a2b3d2186cae6eea5a/">ZH-trans: merge release1.16-temporary to master (#18217)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/tasks/configure-pod-container/translate-compose-kubernetes.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html id="docs" lang="ja" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Pod - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/ja/docs/concepts/workloads/pods/">
+<meta property="og:title" content="Pod">
+<meta name="twitter:title" content="Pod">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ja/" class="logo" title="プロダクショングレードのコンテナ管理基盤 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ja/docs/" class="active">ドキュメント</a></li>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <li><a href="/ja/case-studies/">ケーススタディ</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    日本語 Japanese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/workloads/pods/">English</a></li>
+                
+                    <li><a href="/zh/docs/concepts/workloads/pods/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/docs/concepts/workloads/pods/">한국어 Korean</a></li>
+                
+                    <li><a href="/fr/docs/concepts/workloads/pods/">Français</a></li>
+                
+                    <li><a href="/es/docs/concepts/workloads/pods/">Español</a></li>
+                
+                    <li><a href="/id/docs/concepts/workloads/pods/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ja/docs/concepts/workloads/pods/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ja/docs/concepts/workloads/pods/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ja/docs/concepts/workloads/pods/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ja/docs/concepts/workloads/pods/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ja/docs/concepts/workloads/pods/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ja/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Kubernetesの基本を学ぶ</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ja/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>手を動かす準備はできていますか？本チュートリアルでは、Node.jsを使った簡単な"Hello World"を実行するKubernetesクラスタをビルドします。</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ja/docs/home/">ドキュメント</a></h3>
+           <p>チュートリアル、サンプルやドキュメントのリファレンスを使って Kubernetes の利用方法を学んでください。あなたは<a href="/editdocs/" data-auto-burger-exclude>ドキュメントへコントリビュートをする</a>こともできます!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Kubernetesのコードを編集することに興味がありますか？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHubで参照する</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">コミュニティを探す</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>フォーラム</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>イベントカレンダー</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>コンセプト</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ja/docs/home/">ホーム</a></li>
+		
+		
+		<li><a href="/ja/docs/setup/">はじめに</a></li>
+		
+		
+		<li><a href="/ja/docs/concepts/" class="YAH">コンセプト</a></li>
+		
+		
+		<li><a href="/ja/docs/tasks/">タスク</a></li>
+		
+		
+		<li><a href="/ja/docs/tutorials/">チュートリアル</a></li>
+		
+		
+		<li><a href="/ja/docs/reference/">リファレンス</a></li>
+		
+		
+		<li><a href="/ja/docs/contribute/">貢献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="検索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  のドキュメントは積極的にメンテナンスされていません。現在表示されているバージョンはスナップショットです。最新のドキュメントはこちらです: 
+	 <a href="https://kubernetes.io/docs/home/">最新バージョン</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="コンセプト" href="/ja/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="概要">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesとは何か？" href="/ja/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetesのコンポーネント" href="/ja/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API" href="/ja/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetesのオブジェクトについて">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesオブジェクトを理解する" href="/ja/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetesオブジェクト管理" href="/ja/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="名前" href="/ja/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Namespace(名前空間)" href="/ja/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ラベル(Labels)とセレクター(Selectors)" href="/ja/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="アノテーション(Annotations)" href="/ja/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="フィールドセレクター(Field Selectors)" href="/ja/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="推奨ラベル(Recommended Labels)" href="/ja/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetesのアーキテクチャー">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ノード" href="/ja/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="マスターとノード間の通信" href="/ja/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Controllers <small>(EN)</small>" href="/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="クラウドコントローラーマネージャーとそのコンセプト" href="/ja/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="コンテナ">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Images <small>(EN)</small>" href="/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="コンテナ環境変数" href="/ja/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ランタイムクラス(Runtime Class)" href="/ja/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="コンテナライフサイクルフック" href="/ja/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="ワークロード">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pod">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Podについての概観(Pod Overview)" href="/ja/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod" href="/ja/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Podのライフサイクル" href="/ja/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Initコンテナ(Init Containers)" href="/ja/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Preset" href="/ja/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Topology Spread Constraints <small>(EN)</small>" href="/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Disruptions <small>(EN)</small>" href="/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ephemeral Containers <small>(EN)</small>" href="/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="コントローラー">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/ja/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="ReplicationController <small>(EN)</small>" href="/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Deployment" href="/ja/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StatefulSet" href="/ja/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DaemonSet" href="/ja/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ガベージコレクション" href="/ja/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="終了したリソースのためのTTLコントローラー(TTL Controller for Finished Resources)" href="/ja/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Jobs - Run to Completion <small>(EN)</small>" href="/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CronJob" href="/ja/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Service、負荷分散とネットワーキング">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="EndpointSlices <small>(EN)</small>" href="/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service" href="/ja/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Topology <small>(EN)</small>" href="/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ServiceとPodに対するDNS" href="/ja/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="サービスとアプリケーションの接続" href="/ja/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/ja/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ingress Controllers <small>(EN)</small>" href="/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Network Policies <small>(EN)</small>" href="/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Adding entries to Pod /etc/hosts with HostAliases <small>(EN)</small>" href="/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="IPv4/IPv6 dual-stack <small>(EN)</small>" href="/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="ストレージ">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Volumes <small>(EN)</small>" href="/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Persistent Volumes <small>(EN)</small>" href="/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Volume Snapshots <small>(EN)</small>" href="/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CSI Volume Cloning" href="/ja/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Storage Classes <small>(EN)</small>" href="/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="VolumeSnapshotClass" href="/ja/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ボリュームの動的プロビジョニング(Dynamic Volume Provisioning)" href="/ja/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Node-specific Volume Limits <small>(EN)</small>" href="/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="設定">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Bin Packing for Extended Resources <small>(EN)</small>" href="/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="設定のベストプラクティス" href="/ja/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Compute Resources for Containers <small>(EN)</small>" href="/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Overhead <small>(EN)</small>" href="/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Node上へのPodのスケジューリング" href="/ja/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Taints and Tolerations <small>(EN)</small>" href="/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Secrets <small>(EN)</small>" href="/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Organizing Cluster Access Using kubeconfig Files <small>(EN)</small>" href="/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduling Framework <small>(EN)</small>" href="/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Security">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Overview of Cloud Native Security <small>(EN)</small>" href="/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Policies">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Quotas <small>(EN)</small>" href="/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Security Policies <small>(EN)</small>" href="/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="スケジューリング">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesのスケジューラー" href="/ja/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="スケジューラーのパフォーマンスチューニング" href="/ja/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="クラスターの管理">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Administration Overview <small>(EN)</small>" href="/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Certificates <small>(EN)</small>" href="/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloud Providers <small>(EN)</small>" href="/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Resources <small>(EN)</small>" href="/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Logging Architecture <small>(EN)</small>" href="/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Metrics For The Kubernetes Control Plane <small>(EN)</small>" href="/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring kubelet Garbage Collection <small>(EN)</small>" href="/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Proxies in Kubernetes <small>(EN)</small>" href="/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="コントローラーマネージャーの指標" href="/ja/docs/concepts/cluster-administration/controller-metrics/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Addons <small>(EN)</small>" href="/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetesを拡張する">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesクラスターの拡張" href="/ja/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes APIの拡張">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="アグリゲーションレイヤーを使ったKubernetes APIの拡張" href="/ja/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="カスタムリソース" href="/ja/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Compute, Storage, and Networking Extensions">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Network Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="オペレーターパターン" href="/ja/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Catalog <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+    
+    
+    
+    
+    
+    
+	 
+    
+    
+    
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ja/docs/concepts/workloads/pods/pod-overview.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Podについての概観(Pod Overview)</h1>
+
+
+
+<p>このページでは、Kubernetesのオブジェクトモデルにおいて、デプロイ可能な最小単位のオブジェクトである<code>Pod</code>に関して概観します。</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#pod%e3%81%ab%e3%81%a4%e3%81%84%e3%81%a6%e7%90%86%e8%a7%a3%e3%81%99%e3%82%8b">Podについて理解する</a></li>
+
+
+
+
+<li><a href="#pod%e3%82%92%e5%88%a9%e7%94%a8%e3%81%99%e3%82%8b">Podを利用する</a></li>
+
+
+
+
+<li><a href="#pod%e3%83%86%e3%83%b3%e3%83%97%e3%83%ac%e3%83%bc%e3%83%88">Podテンプレート</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e6%ac%a1%e3%81%ae%e9%a0%85%e7%9b%ae">次の項目</a></li>
+
+
+
+</ul>
+
+
+<h2 id="podについて理解する">Podについて理解する</h2>
+
+<p><em>Pod</em> は、Kubernetesアプリケーションの基本的な実行単位です。これは、作成またはデプロイするKubernetesオブジェクトモデルの中で最小かつ最も単純な単位です。Podは、<a class='glossary-tooltip' href='/ja/docs/reference/glossary/?all=true#term-cluster' target='_blank'>クラスター<span class='tooltip-text'>Kubernetesが管理するコンテナ化されたアプリケーションを実行する、ノードと呼ばれるマシンの集合です。クラスターには、少なくとも1つのワーカーノードと少なくとも1つのマスターノードがあります。</span>
+</a>で実行されているプロセスを表します。</p>
+
+<p>Podは、アプリケーションのコンテナ(いくつかの場合においては複数のコンテナ)、ストレージリソース、ユニークなネットワークIP、およびコンテナの実行方法を管理するオプションをカプセル化します。Podはデプロイメントの単位、すなわち<em>Kubernetesのアプリケーションの単一インスタンス</em> で、単一の<a class='glossary-tooltip' href='/docs/concepts/overview/what-is-kubernetes/#why-containers' target='_blank'>コンテナ<span class='tooltip-text'>軽量でポータブルなソフトウェアとそのすべての依存関係が含まれている実行可能なイメージ</span>
+</a>または密結合なリソースを共有する少数のコンテナで構成される場合があります。</p>
+
+<p><a href="https://www.docker.com" target="_blank">Docker</a>はKubernetesのPod内で使われる最も一般的なコンテナランタイムですが、Podは他の<a href="/ja/docs/setup/production-environment/container-runtimes/">コンテナランタイム</a>も同様にサポートしています。</p>
+
+<p>Kubernetesクラスター内でのPodは2つの主な方法で使うことができます。</p>
+
+<ul>
+<li><strong>単一のコンテナを稼働させるPod</strong> : いわゆる<em>「1Pod1コンテナ」</em> 構成のモデルは、最も一般的なKubernetesのユースケースです。<br />
+このケースでは、ユーザーはPodを単一のコンテナのラッパーとして考えることができ、Kubernetesはコンテナを直接扱うというよりは、Podを管理することになります。</li>
+<li><strong>協調して稼働させる必要がある複数のコンテナを稼働させるPod</strong> : 単一のPodは、リソースを共有する必要があるような、密接に連携した複数の同じ環境にあるコンテナからなるアプリケーションをカプセル化することもできます。  これらの同じ環境にあるコンテナ群は、サービスの結合力の強いユニットを構成することができます。<br />
+&ndash; 1つのコンテナが、共有されたボリュームからファイルをパブリックな場所に送信し、一方では分割された<em>サイドカー</em> コンテナがそれらのファイルを更新します。そのPodはそれらのコンテナとストレージリソースを、単一の管理可能なエンティティとしてまとめます。</li>
+</ul>
+
+<p><a href="http://kubernetes.io/blog" target="_blank">Kubernetes Blog</a>にて、Podのユースケースに関するいくつかの追加情報を見ることができます。さらなる情報を得たい場合は、下記のページを参照ください。</p>
+
+<ul>
+<li><a href="https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns" target="_blank">The Distributed System Toolkit: Patterns for Composite Containers</a><br /></li>
+<li><a href="https://kubernetes.io/blog/2016/06/container-design-patterns" target="_blank">Container Design Patterns</a></li>
+</ul>
+
+<p>各Podは、与えられたアプリケーションの単一のインスタンスを稼働するためのものです。もしユーザーのアプリケーションを水平にスケールさせたい場合(例: 複数インスタンスを稼働させる)、複数のPodを使うべきです。1つのPodは各インスタンスに対応しています。
+Kubernetesにおいて、これは一般的に<em>レプリケーション</em> と呼ばれます。<br />
+レプリケーションされたPodは、通常コントローラーと呼ばれる抽象概念によって単一のグループとして作成、管理されます。<br />
+さらなる情報に関しては<a href="#pods-and-controllers">Podとコントローラー</a>を参照して下さい。</p>
+
+<h3 id="podがどのように複数のコンテナを管理しているか">Podがどのように複数のコンテナを管理しているか</h3>
+
+<p>Podは凝集性の高いサービスのユニットを構成するような複数の協調プロセス(コンテナ）をサポートするためにデザインされました。
+単一のPod内のコンテナ群は、クラスター内において同一の物理マシンもしくは仮想マシン上において自動で同じ環境に配備され、スケジュールされます。コンテナはリソースや依存関係を共有し、お互いにコミュニケートし、それらがいつ、どのように削除されるかを調整できます。</p>
+
+<p>注意点として、単一のPod内で同じ環境に配備され、同時管理される複数のコンテナをグルーピングするのは、比較的に発展的なユースケースとなります。
+ユーザーは、コンテナ群が密接に連携するような、特定のインスタンスにおいてのみこのパターンを使用するべきです。
+例えば、ユーザーが共有ボリューム内にあるファイル用のWebサーバとして稼働するコンテナと、下記のダイアグラムにあるような、リモートのソースからファイルを更新するような分離された<em>サイドカー</em> コンテナを持っているような場合です。</p>
+
+<figure>
+    <img src="/images/docs/pod.svg"
+         alt="Podのダイアグラム" width="50%"/> 
+</figure>
+
+<p>Podは、Podによって構成されたコンテナ群のために2種類の共有リソースを提供します。 <em>ネットワーキング</em> と<em>ストレージ</em> です。</p>
+
+<h4 id="ネットワーキング">ネットワーキング</h4>
+
+<p>各Podは固有のIPアドレスを割り当てられます。単一のPod内の各コンテナは、IPアドレスやネットワークポートを含む、そのネットワークの名前空間を共有します。<em>Pod内の</em> コンテナは<code>localhost</code>を使用してお互いに疎通できます。単一のPod内のコンテナが<em>Pod外</em> のエンティティと疎通する場合、共有されたネットワークリソース(ポートなど）をどのように使うかに関して調整しなければなりません。</p>
+
+<h4 id="ストレージ">ストレージ</h4>
+
+<p>単一のPodは共有されたストレージ<a class='glossary-tooltip' href='/docs/concepts/storage/volumes/' target='_blank'>ボリューム<span class='tooltip-text'>ポッド内のコンテナからアクセス可能なデータを含むディレクトリ。</span>
+</a>のセットを指定できます。Pod内の全てのコンテナは、その共有されたボリュームにアクセスでき、コンテナ間でデータを共有することを可能にします。ボリュームもまた、もしPod内のコンテナの1つが再起動が必要になった場合に備えて、データを永続化できます。<br />
+単一のPod内での共有ストレージをKubernetesがどう実装しているかについてのさらなる情報については、<a href="/docs/concepts/storage/volumes/">Volumes</a>を参照してください。</p>
+
+<h2 id="podを利用する">Podを利用する</h2>
+
+<p>ユーザーはまれに、Kubenetes内で独立したPodを直接作成する場合があります(シングルトンPodなど)。
+これはPodが比較的、一時的な使い捨てエンティティとしてデザインされているためです。Podが作成された時（ユーザーによって直接的、またはコントローラーによって間接的に作成された場合）、ユーザーのクラスター内の単一の<a class='glossary-tooltip' href='/docs/concepts/architecture/nodes/' target='_blank'>ノード<span class='tooltip-text'>ノードはKubernetesのワーカーマシンです。</span>
+</a>上で稼働するようにスケジューリングされます。そのPodはプロセスが停止されたり、Podオブジェクトが削除されたり、Podがリソースの欠如のために<em>追い出され</em> たり、ノードが故障するまでノード上に残り続けます。</p>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> 単一のPod内でのコンテナを再起動することと、そのPodを再起動することを混同しないでください。Podはそれ自体は実行されませんが、コンテナが実行される環境であり、削除されるまで存在し続けます。</div>
+</blockquote>
+
+<p>Podは、Podそれ自体によって自己修復しません。もし、稼働されていないノード上にPodがスケジュールされた場合や、スケジューリング操作自体が失敗した場合、Podが削除されます。同様に、Podはリソースの欠如や、ノードのメンテナンスによる追い出しがあった場合はそこで停止します。Kubernetesは<em>コントローラー</em> と呼ばれる高レベルの抽象概念を使用し、それは比較的使い捨て可能なPodインスタンスの管理を行います。<br />
+このように、Podを直接使うのは可能ですが、コントローラーを使用したPodを管理する方がより一般的です。KubernetesがPodのスケーリングと修復機能を実現するためにコントローラーをどのように使うかに関する情報は<a href="#pods-and-controllers">Podとコントローラー</a>を参照してください。</p>
+
+<h3 id="podとコントローラー">Podとコントローラー</h3>
+
+<p>単一のコントローラーは、ユーザーのために複数のPodを作成・管理し、レプリケーションやロールアウト、クラスターのスコープ内で自己修復の機能をハンドリングします。例えば、もしノードが故障した場合、コントローラーは異なるノード上にPodを置き換えるようにスケジューリングすることで、自動的にリプレース可能となります。</p>
+
+<p>1つまたはそれ以上のPodを含むコントローラーの例は下記の通りです。</p>
+
+<ul>
+<li><a href="/docs/concepts/workloads/controllers/deployment/">Deployment</a></li>
+<li><a href="/docs/concepts/workloads/controllers/statefulset/">StatefulSet</a></li>
+<li><a href="/docs/concepts/workloads/controllers/daemonset/">DaemonSet</a></li>
+</ul>
+
+<p>通常は、コントローラーはユーザーが作成したPodテンプレートを使用して、担当するPodを作成します。</p>
+
+<h2 id="podテンプレート">Podテンプレート</h2>
+
+<p>Podテンプレートは、<a href="/docs/concepts/workloads/controllers/replicationcontroller/">ReplicationController</a>、 <a href="/docs/concepts/jobs/run-to-completion-finite-workloads/">Job</a>や、
+<a href="/docs/concepts/workloads/controllers/daemonset/">DaemonSet</a>のような他のオブジェクト内で含まれるPodの仕様となります。
+コントローラーは実際のPodを作成するためにPodテンプレートを使用します。<br />
+下記のサンプルは、メッセージを表示する単一のコンテナを含んだ、シンプルなPodのマニフェストとなります。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>myapp-pod<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>myapp<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>myapp-container<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>command:<span style="color:#bbb"> </span>[<span style="color:#b44">&#39;sh&#39;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#39;-c&#39;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#39;echo Hello Kubernetes! &amp;&amp; sleep 3600&#39;</span>]</code></pre></div>
+<p>全てのレプリカの現在の理想的な状態を指定するというよりも、Podテンプレートはクッキーの抜き型のようなものです。一度クッキーがカットされると、そのクッキーは抜き型から離れて関係が無くなります。そこにはいわゆる”量子もつれ”といったものはありません。テンプレートに対するその後の変更や新しいテンプレートへの切り替えは、すでに作成されたPod上には直接的な影響はありません。
+同様に、ReplicationControllerによって作成されたPodは、変更後に直接更新されます。これはPodとの意図的な違いとなり、そのPodに属する全てのコンテナの現在の理想的な状態を指定します。このアプローチは根本的にシステムのセマンティクスを単純化し、機能の柔軟性を高めます。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="次の項目">次の項目</h2>
+<ul>
+<li><a href="/ja/docs/concepts/workloads/pods/pod/">Pod</a>について更に学びましょう</li>
+<li>Podの振る舞いに関して学ぶには下記を参照してください
+
+<ul>
+<li><a href="/ja/docs/concepts/workloads/pods/pod/#podの終了">Podの停止</a></li>
+<li><a href="/ja/docs/concepts/workloads/pods/pod-lifecycle/">Podのライフサイクル</a></li>
+</ul></li>
+</ul>
+
+
+
+
+
+
+    
+    
+
+    
+            
+  <h2>フィードバック</h2>
+  <p class="feedback--prompt">このページは役に立ちましたか？ </p>
+  <button class="button feedback--yes">はい</button>
+  <button class="button feedback--no">いいえ</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      問題を報告する</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      改善を提案</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/workloads/pods/_index.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ja\/docs\/concepts\/workloads\/pods\/",
+    "title" : "Pod",
+    "permalink" : "https:\/\/kubernetes.io\/ja\/docs\/concepts\/workloads\/pods\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Issue作成</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ja/docs/concepts/workloads/pods/_index.md" class="button issue">ページ編集</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    ページの最終更新 January 21, 2020 at 1:39 PM PST by
+    <a href="https://github.com/kubernetes/website/commit/0c86e6515a888dd1fefddec23f95ff1ee8425205/">First Japanese l10n work for release-1.16 (#18790)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/workloads/pods/_index.md">ページ履歴</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ja/docs/home/">ホーム</a>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <a href="/ja/case-studies/">ケーススタディ</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>フォーラム</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>イベントカレンダー</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">コントリビュート</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

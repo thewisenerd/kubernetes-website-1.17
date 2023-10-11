@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html id="docs" lang="en" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Guide for scheduling Windows containers in Kubernetes - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/docs/setup/production-environment/windows/user-guide-windows-containers/">
+<meta property="og:title" content="Guide for scheduling Windows containers in Kubernetes">
+<meta name="twitter:title" content="Guide for scheduling Windows containers in Kubernetes">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/" class="logo" title="Production-Grade Container Orchestration - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/blog/">Blog</a></li>
+            
+            <li><a href="/training/">Training</a></li>
+            
+            <li><a href="/partners/">Partners</a></li>
+            
+            <li><a href="/community/">Community</a></li>
+            
+            <li><a href="/case-studies/">Case Studies</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    English <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/zh/docs/setup/production-environment/windows/user-guide-windows-containers/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/docs/setup/production-environment/windows/user-guide-windows-containers/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/docs/setup/production-environment/windows/user-guide-windows-containers/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/docs/setup/production-environment/windows/user-guide-windows-containers/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/docs/setup/production-environment/windows/user-guide-windows-containers/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/docs/setup/production-environment/windows/user-guide-windows-containers/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/docs/setup/production-environment/windows/user-guide-windows-containers/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/docs/setup/production-environment/windows/user-guide-windows-containers/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Learn Kubernetes Basics</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/docs/home/">Documentation</a></h3>
+           <p>Learn how to use Kubernetes with conceptual, tutorial, and reference documentation. You can even <a href="/editdocs/" data-auto-burger-exclude>help contribute to the docs</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/blog/">Blog</a></h3>
+           <p>Read the latest news for Kubernetes and the containers space in general, and get technical how-tos hot off the presses.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Interested in hacking on the core Kubernetes code base?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>View On GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explore the community</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>Getting started</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/docs/home/">HOME</a></li>
+		
+		
+		<li><a href="/docs/setup/" class="YAH">GETTING STARTED</a></li>
+		
+		
+		<li><a href="/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/docs/tasks/">TASKS</a></li>
+		
+		
+		<li><a href="/docs/tutorials/">TUTORIALS</a></li>
+		
+		
+		<li><a href="/docs/reference/">REFERENCE</a></li>
+		
+		
+		<li><a href="/docs/contribute/">CONTRIBUTE</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Search" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation is no longer actively maintained. The version you are currently viewing is a static snapshot. For up-to-date documentation, see the 
+	 <a href="https://kubernetes.io/docs/home/">latest version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Getting started" href="/docs/setup/"></a>
+
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Release notes and version skew">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="v1.17 Release Notes" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes version and version skew support policy" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Learning environment">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Minikube" href="/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Kind" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Production environment">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Container runtimes" href="/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Bootstrapping clusters with kubeadm">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installing kubeadm" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Troubleshooting kubeadm" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Creating a single control-plane cluster with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Customizing control plane configuration with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Options for Highly Available topology" href="/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Creating Highly Available clusters with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Set up a High Availability etcd cluster with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuring each kubelet in your cluster using kubeadm" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuring your kubernetes cluster to self-host the control plane" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with kops" href="/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with KRIB" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Kubespray" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Turnkey Cloud Solutions">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Alibaba Cloud" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on AWS EC2" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Azure" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on CenturyLink Cloud" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Google Compute Engine" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Tencent Kubernetes Engine" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="On-Premises VMs">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Cloudstack" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes on DC/OS" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="oVirt" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows in Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Intro to Windows support in Kubernetes" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for adding Windows Nodes in Kubernetes" href="/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for scheduling Windows containers in Kubernetes" href="/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Best practices">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running in multiple zones" href="/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Building large clusters" href="/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Validate node setup" href="/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI certificates and requirements" href="/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/setup/production-environment/windows/user-guide-windows-containers.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Guide for scheduling Windows containers in Kubernetes</h1>
+
+
+
+<p>Windows applications constitute a large portion of the services and applications that run in many organizations. This guide walks you through the steps to configure and deploy a Windows container in Kubernetes.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#objectives">Objectives</a></li>
+
+
+
+
+<li><a href="#before-you-begin">Before you begin</a></li>
+
+
+
+
+<li><a href="#getting-started-deploying-a-windows-container">Getting Started: Deploying a Windows container</a></li>
+
+
+
+
+<li><a href="#observability">Observability</a></li>
+
+
+
+
+<li><a href="#using-configurable-container-usernames">Using configurable Container usernames</a></li>
+
+
+
+
+<li><a href="#managing-workload-identity-with-group-managed-service-accounts">Managing Workload Identity with Group Managed Service Accounts</a></li>
+
+
+
+
+<li><a href="#taints-and-tolerations">Taints and Tolerations</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<h2 id="objectives">Objectives</h2>
+
+<ul>
+<li>Configure an example deployment to run Windows containers on the Windows node</li>
+<li>(Optional) Configure an Active Directory Identity for your Pod using Group Managed Service Accounts (GMSA)</li>
+</ul>
+
+<h2 id="before-you-begin">Before you begin</h2>
+
+<ul>
+<li>Create a Kubernetes cluster that includes a <a href="../user-guide-windows-nodes">master and a worker node running Windows Server</a></li>
+<li>It is important to note that creating and deploying services and workloads on Kubernetes behaves in much the same way for Linux and Windows containers. <a href="/docs/reference/kubectl/overview/">Kubectl commands</a> to interface with the cluster are identical. The example in the section below is provided simply to jumpstart your experience with Windows containers.</li>
+</ul>
+
+<h2 id="getting-started-deploying-a-windows-container">Getting Started: Deploying a Windows container</h2>
+
+<p>To deploy a Windows container on Kubernetes, you must first create an example application. The example YAML file below creates a simple webserver application. Create a service spec named <code>win-webserver.yaml</code> with the contents below:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Service<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#080;font-style:italic"># the port that this service should serve on</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>port:<span style="color:#bbb"> </span><span style="color:#666">80</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>targetPort:<span style="color:#bbb"> </span><span style="color:#666">80</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>type:<span style="color:#bbb"> </span>NodePort<span style="color:#bbb">
+</span><span style="color:#bbb"></span>---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">2</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>app:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">     </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>windowswebserver<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>mcr.microsoft.com/windows/servercore:ltsc2019<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>command:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>powershell.exe<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>-command<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;&lt;#code used from https://gist.github.com/wagnerandrade/5424431#&gt; ; $$listener = New-Object System.Net.HttpListener ; $$listener.Prefixes.Add(&#39;http://*:80/&#39;) ; $$listener.Start() ; $$callerCounts = @{} ; Write-Host(&#39;Listening at http://*:80/&#39;) ; while ($$listener.IsListening) { ;$$context = $$listener.GetContext() ;$$requestUrl = $$context.Request.Url ;$$clientIP = $$context.Request.RemoteEndPoint.Address ;$$response = $$context.Response ;Write-Host &#39;&#39; ;Write-Host(&#39;&gt; {0}&#39; -f $$requestUrl) ;  ;$$count = 1 ;$$k=$$callerCounts.Get_Item($$clientIP) ;if ($$k -ne $$null) { $$count += $$k } ;$$callerCounts.Set_Item($$clientIP, $$count) ;$$ip=(Get-NetAdapter | Get-NetIpAddress); $$header=&#39;&lt;html&gt;&lt;body&gt;&lt;H1&gt;Windows Container Web Server&lt;/H1&gt;&#39; ;$$callerCountsString=&#39;&#39; ;$$callerCounts.Keys | % { $$callerCountsString+=&#39;&lt;p&gt;IP {0} callerCount {1} &#39; -f $$ip[1].IPAddress,$$callerCounts.Item($$_) } ;$$footer=&#39;&lt;/body&gt;&lt;/html&gt;&#39; ;$$content=&#39;{0}{1}{2}&#39; -f $$header,$$callerCountsString,$$footer ;Write-Output $$content ;$$buffer = [System.Text.Encoding]::UTF8.GetBytes($$content) ;$$response.ContentLength64 = $$buffer.Length ;$$response.OutputStream.Write($$buffer, 0, $$buffer.Length) ;$$response.Close() ;$$responseStatus = $$response.StatusCode ;Write-Host(&#39;&lt; {0}&#39; -f $$responseStatus)  } ; &#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">     </span>nodeSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>beta.kubernetes.io/os:<span style="color:#bbb"> </span>windows</code></pre></div>
+<blockquote class="note">
+  <div><strong>Note:</strong> Port mapping is also supported, but for simplicity in this example the container port 80 is exposed directly to the service.</div>
+</blockquote>
+
+<ol>
+<li><p>Check that all nodes are healthy:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get nodes</code></pre></div></li>
+
+<li><p>Deploy the service and watch for pod updates:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl apply -f win-webserver.yaml
+kubectl get pods -o wide -w</code></pre></div>
+<p>When the service is deployed correctly both Pods are marked as Ready. To exit the watch command, press Ctrl+C.</p></li>
+
+<li><p>Check that the deployment succeeded. To verify:</p>
+
+<ul>
+<li>Two containers per pod on the Windows node, use <code>docker ps</code></li>
+<li>Two pods listed from the Linux master, use <code>kubectl get pods</code></li>
+<li>Node-to-pod communication across the network, <code>curl</code> port 80 of your pod IPs from the Linux master to check for a web server response</li>
+<li>Pod-to-pod communication, ping between pods (and across hosts, if you have more than one Windows node) using docker exec or kubectl exec</li>
+<li>Service-to-pod communication, <code>curl</code> the virtual service IP (seen under <code>kubectl get services</code>) from the Linux master and from individual pods</li>
+<li>Service discovery, <code>curl</code> the service name with the Kubernetes <a href="/docs/concepts/services-networking/dns-pod-service/#services">default DNS suffix</a></li>
+<li>Inbound connectivity, <code>curl</code> the NodePort from the Linux master or machines outside of the cluster</li>
+<li>Outbound connectivity, <code>curl</code> external IPs from inside the pod using kubectl exec</li>
+</ul></li>
+</ol>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Windows container hosts are not able to access the IP of services scheduled on them due to current platform limitations of the Windows networking stack. Only Windows pods are able to access service IPs.</div>
+</blockquote>
+
+<h2 id="observability">Observability</h2>
+
+<h3 id="capturing-logs-from-workloads">Capturing logs from workloads</h3>
+
+<p>Logs are an important element of observability; they enable users to gain insights into the operational aspect of workloads and are a key ingredient to troubleshooting issues. Because Windows containers and workloads inside Windows containers behave differently from Linux containers, users had a hard time collecting logs, limiting operational visibility. Windows workloads for example are usually configured to log to ETW (Event Tracing for Windows) or push entries to the application event log. <a href="https://github.com/microsoft/windows-container-tools/tree/master/LogMonitor" target="_blank">LogMonitor</a>, an open source tool by Microsoft, is the recommended way to monitor configured log sources inside a Windows container. LogMonitor supports monitoring event logs, ETW providers, and custom application logs, piping them to STDOUT for consumption by <code>kubectl logs &lt;pod&gt;</code>.</p>
+
+<p>Follow the instructions in the LogMonitor GitHub page to copy its binaries and configuration files to all your containers and add the necessary entrypoints for LogMonitor to push your logs to STDOUT.</p>
+
+<h2 id="using-configurable-container-usernames">Using configurable Container usernames</h2>
+
+<p>Starting with Kubernetes v1.16, Windows containers can be configured to run their entrypoints and processes with different usernames than the image defaults. The way this is achieved is a bit different from the way it is done for Linux containers. Learn more about it <a href="/docs/tasks/configure-pod-container/configure-runasusername/">here</a>.</p>
+
+<h2 id="managing-workload-identity-with-group-managed-service-accounts">Managing Workload Identity with Group Managed Service Accounts</h2>
+
+<p>Starting with Kubernetes v1.14, Windows container workloads can be configured to use Group Managed Service Accounts (GMSA). Group Managed Service Accounts are a specific type of Active Directory account that provides automatic password management, simplified service principal name (SPN) management, and the ability to delegate the management to other administrators across multiple servers. Containers configured with a GMSA can access external Active Directory Domain resources while carrying the identity configured with the GMSA. Learn more about configuring and using GMSA for Windows containers <a href="/docs/tasks/configure-pod-container/configure-gmsa/">here</a>.</p>
+
+<h2 id="taints-and-tolerations">Taints and Tolerations</h2>
+
+<p>Users today need to use some combination of taints and node selectors in order to keep Linux and Windows workloads on their respective OS-specific nodes. This likely imposes a burden only on Windows users. The recommended approach is outlined below, with one of its main goals being that this approach should not break compatibility for existing Linux workloads.</p>
+
+<h3 id="ensuring-os-specific-workloads-land-on-the-appropriate-container-host">Ensuring OS-specific workloads land on the appropriate container host</h3>
+
+<p>Users can ensure Windows containers can be scheduled on the appropriate host using Taints and Tolerations. All Kubernetes nodes today have the following default labels:</p>
+
+<ul>
+<li>kubernetes.io/os = [windows|linux]</li>
+<li>kubernetes.io/arch = [amd64|arm64|&hellip;]</li>
+</ul>
+
+<p>If a Pod specification does not specify a nodeSelector like <code>&quot;kubernetes.io/os&quot;: windows</code>, it is possible the Pod can be scheduled on any host, Windows or Linux. This can be problematic since a Windows container can only run on Windows and a Linux container can only run on Linux. The best practice is to use a nodeSelector.</p>
+
+<p>However, we understand that in many cases users have a pre-existing large number of deployments for Linux containers, as well as an ecosystem of off-the-shelf configurations, such as community Helm charts, and programmatic Pod generation cases, such as with Operators. In those situations, you may be hesitant to make the configuration change to add nodeSelectors. The alternative is to use Taints. Because the kubelet can set Taints during registration, it could easily be modified to automatically add a taint when running on Windows only.</p>
+
+<p>For example:  <code>--register-with-taints='os=windows:NoSchedule'</code></p>
+
+<p>By adding a taint to all Windows nodes, nothing will be scheduled on them (that includes existing Linux Pods). In order for a Windows Pod to be scheduled on a Windows node, it would need both the nodeSelector to choose Windows, and the appropriate matching toleration.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">nodeSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kubernetes.io/os:<span style="color:#bbb"> </span>windows<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>node.kubernetes.io/windows-build:<span style="color:#bbb"> </span><span style="color:#b44">&#39;10.0.17763&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span><span style="color:#b44">&#34;os&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>operator:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Equal&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;windows&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>effect:<span style="color:#bbb"> </span><span style="color:#b44">&#34;NoSchedule&#34;</span></code></pre></div>
+<h3 id="handling-multiple-windows-versions-in-the-same-cluster">Handling multiple Windows versions in the same cluster</h3>
+
+<p>The Windows Server version used by each pod must match that of the node. If you want to use multiple Windows
+Server versions in the same cluster, then you should set additional node labels and nodeSelectors.</p>
+
+<p>Kubernetes 1.17 automatically adds a new label <code>node.kubernetes.io/windows-build</code> to simplify this. If you&rsquo;re running an older version, then it&rsquo;s recommended to add this label manually to Windows nodes.</p>
+
+<p>This label reflects the Windows major, minor, and build number that need to match for compatibility. Here are values used today for each Windows Server version.</p>
+
+<table>
+<thead>
+<tr>
+<th>Product Name</th>
+<th>Build Number(s)</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Windows Server 2019</td>
+<td>10.0.17763</td>
+</tr>
+
+<tr>
+<td>Windows Server version 1809</td>
+<td>10.0.17763</td>
+</tr>
+
+<tr>
+<td>Windows Server version 1903</td>
+<td>10.0.18362</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="simplifying-with-runtimeclass">Simplifying with RuntimeClass</h3>
+
+<p>[RuntimeClass] can be used to simplify the process of using taints and tolerations. A cluster administrator can create a <code>RuntimeClass</code> object which is used to encapsulate these taints and tolerations.</p>
+
+<ol>
+<li><p>Save this file to <code>runtimeClasses.yml</code>. It includes the appropriate <code>nodeSelector</code> for the Windows OS, architecture, and version.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>node.k8s.io/v1beta1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>RuntimeClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>name:<span style="color:#bbb"> </span>windows<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>handler:<span style="color:#bbb"> </span><span style="color:#b44">&#39;docker&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>scheduling:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>nodeSelector:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kubernetes.io/os:<span style="color:#bbb"> </span><span style="color:#b44">&#39;windows&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>kubernetes.io/arch:<span style="color:#bbb"> </span><span style="color:#b44">&#39;amd64&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>node.kubernetes.io/windows-build:<span style="color:#bbb"> </span><span style="color:#b44">&#39;10.0.17763&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>effect:<span style="color:#bbb"> </span>NoSchedule<span style="color:#bbb">
+</span><span style="color:#bbb"></span>key:<span style="color:#bbb"> </span>os<span style="color:#bbb">
+</span><span style="color:#bbb"></span>operator:<span style="color:#bbb"> </span>Equal<span style="color:#bbb">
+</span><span style="color:#bbb"></span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;windows&#34;</span></code></pre></div></li>
+
+<li><p>Run <code>kubectl create -f runtimeClasses.yml</code> using as a cluster administrator</p></li>
+
+<li><p>Add <code>runtimeClassName: windows-2019</code> as appropriate to Pod specs</p></li>
+</ol>
+
+<p>For example:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>runtimeClassName:<span style="color:#bbb"> </span>windows<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>iis<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2019<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>limits:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>cpu:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>memory:<span style="color:#bbb"> </span>800Mi<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>requests:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>cpu:<span style="color:#bbb"> </span>.<span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>memory:<span style="color:#bbb"> </span>300Mi<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>containerPort:<span style="color:#bbb"> </span><span style="color:#666">80</span><span style="color:#bbb">
+</span><span style="color:#bbb"> </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>app:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Service<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>iis<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>type:<span style="color:#bbb"> </span>LoadBalancer<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>protocol:<span style="color:#bbb"> </span>TCP<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>port:<span style="color:#bbb"> </span><span style="color:#666">80</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Was this page helpful? </p>
+  <button class="button feedback--yes">Yes</button>
+  <button class="button feedback--no">No</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/production-environment/windows/user-guide-windows-containers.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/docs\/setup\/production-environment\/windows\/user-guide-windows-containers\/",
+    "title" : "Guide for scheduling Windows containers in Kubernetes",
+    "permalink" : "https:\/\/kubernetes.io\/docs\/setup\/production-environment\/windows\/user-guide-windows-containers\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Create an Issue</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/setup/production-environment/windows/user-guide-windows-containers.md" class="button issue">Edit This Page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Page last modified on March 15, 2020 at 6:02 PM PST by
+    <a href="https://github.com/kubernetes/website/commit/957444d1b3b69dfc964ed81dbfcac4728f92317f/">Update user-guide-windows-containers.md (#19209)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/production-environment/windows/user-guide-windows-containers.md">Page History</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/docs/home/">Home</a>
+            
+            <a href="/blog/">Blog</a>
+            
+            <a href="/training/">Training</a>
+            
+            <a href="/partners/">Partners</a>
+            
+            <a href="/community/">Community</a>
+            
+            <a href="/case-studies/">Case Studies</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribute</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

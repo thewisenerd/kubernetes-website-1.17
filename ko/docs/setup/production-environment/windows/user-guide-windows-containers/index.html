@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html id="docs" lang="ko" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>쿠버네티스에서 윈도우 컨테이너 스케줄링을 위한 가이드 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-containers/">
+<meta property="og:title" content="쿠버네티스에서 윈도우 컨테이너 스케줄링을 위한 가이드">
+<meta name="twitter:title" content="쿠버네티스에서 윈도우 컨테이너 스케줄링을 위한 가이드">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ko/" class="logo" title="운영 수준의 컨테이너 오케스트레이션 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ko/docs/" class="active">문서</a></li>
+            
+            
+            
+            <li><a href="/ko/training/">교육</a></li>
+            
+            
+            
+            
+            
+            <li><a href="/ko/case-studies/">사례 연구</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    한국어 Korean <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/setup/production-environment/windows/user-guide-windows-containers/">English</a></li>
+                
+                    <li><a href="/zh/docs/setup/production-environment/windows/user-guide-windows-containers/">中文 Chinese</a></li>
+                
+                    <li><a href="/ja/docs/setup/production-environment/windows/user-guide-windows-containers/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-containers/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-containers/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-containers/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-containers/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-containers/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ko/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>쿠버네티스 기초 학습</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/home/">문서</a></h3>
+           <p>개념, 튜토리얼 및 참조 문서와 함께 쿠버네티스 사용하는 방법을 익힐 수 있다. 또한, <a href="/editdocs/" data-auto-burger-exclude>문서에 기여하는 것도 도움을 줄 수 있다</a>!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">코어 쿠버네티스 코드 베이스를 살펴보는데 관심이 있으십니까?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHub에서 보기</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">커뮤니티 둘러보기</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>시작하기</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ko/docs/home/">홈</a></li>
+		
+		
+		<li><a href="/ko/docs/setup/" class="YAH">시작하기</a></li>
+		
+		
+		<li><a href="/ko/docs/concepts/">개념</a></li>
+		
+		
+		<li><a href="/ko/docs/tasks/">태스크</a></li>
+		
+		
+		<li><a href="/ko/docs/tutorials/">튜토리얼</a></li>
+		
+		
+		<li><a href="/ko/docs/reference/">레퍼런스</a></li>
+		
+		
+		<li><a href="/ko/docs/contribute/">기여</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="검색하기" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  문서는 더 이상 적극적으로 관리되지 않음. 현재 보고있는 문서는 정적 스냅샷임. 최신 문서를 위해서는, 다음을 참고. 
+	 <a href="https://kubernetes.io/docs/home/">최신 버전.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="시작하기" href="/ko/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="릴리스 노트와 버전 차이 지원(skew)">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes version and version skew support policy <small>(EN)</small>" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="학습 환경">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Minikube로 쿠버네티스 설치" href="/ko/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="운영 환경">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="컨테이너 런타임" href="/ko/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="kubeadm으로 클러스터 구성하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Troubleshooting kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating a single control-plane cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm으로 컨트롤 플레인 사용자 정의하기" href="/ko/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="고가용성 토폴로지 선택" href="/ko/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating Highly Available clusters with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up a High Availability etcd cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring each kubelet in your cluster using kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring your kubernetes cluster to self-host the control plane <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with KRIB <small>(EN)</small>" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kops로 쿠버네티스 설치하기" href="/ko/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kubespray <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="턴키 클라우드 솔루션">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Alibaba Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on AWS EC2 <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Azure <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on CenturyLink Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Google Compute Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Tencent Kubernetes Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="온-프레미스 VM">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloudstack <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes on DC/OS <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="oVirt <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="쿠버네티스에서 윈도우">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Intro to Windows support in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스에서 윈도우 노드 추가 가이드" href="/ko/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스에서 윈도우 컨테이너 스케줄링을 위한 가이드" href="/ko/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="모범 사례">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="여러 영역에서 구동" href="/ko/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="대형 클러스터 구축" href="/ko/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="노드 구성 검증하기" href="/ko/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI 인증서 및 요구 조건" href="/ko/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/setup/production-environment/windows/user-guide-windows-containers.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>쿠버네티스에서 윈도우 컨테이너 스케줄링을 위한 가이드</h1>
+
+
+
+<p>많은 조직에서 실행하는 서비스와 애플리케이션의 상당 부분이 윈도우 애플리케이션으로 구성된다. 이 가이드는 쿠버네티스에서 윈도우 컨테이너를 구성하고 배포하는 단계를 안내한다.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%eb%aa%a9%ed%91%9c">목표</a></li>
+
+
+
+
+<li><a href="#%ec%8b%9c%ec%9e%91%ed%95%98%ea%b8%b0-%ec%a0%84%ec%97%90">시작하기 전에</a></li>
+
+
+
+
+<li><a href="#%ec%8b%9c%ec%9e%91%ed%95%98%ea%b8%b0-%ec%9c%88%eb%8f%84%ec%9a%b0-%ec%bb%a8%ed%85%8c%ec%9d%b4%eb%84%88-%eb%b0%b0%ed%8f%ac%ed%95%98%ea%b8%b0">시작하기: 윈도우 컨테이너 배포하기</a></li>
+
+
+
+
+<li><a href="#%ea%b0%80%ec%8b%9c%ec%84%b1">가시성</a></li>
+
+
+
+
+<li><a href="#%ec%84%a4%ec%a0%95-%ea%b0%80%eb%8a%a5%ed%95%9c-%ec%bb%a8%ed%85%8c%ec%9d%b4%eb%84%88-username-%ec%82%ac%ec%9a%a9%ed%95%98%ea%b8%b0">설정 가능한 컨테이너 username 사용하기</a></li>
+
+
+
+
+<li><a href="#%ea%b7%b8%eb%a3%b9-%eb%a7%a4%eb%8b%88%ec%a7%80%eb%93%9c-%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%96%b4%ec%b9%b4%ec%9a%b4%ed%8a%b8%eb%a5%bc-%ec%9d%b4%ec%9a%a9%ed%95%98%ec%97%ac-%ec%9b%8c%ed%81%ac%eb%a1%9c%eb%93%9c-%ec%8b%a0%ec%9b%90-%ea%b4%80%eb%a6%ac%ed%95%98%ea%b8%b0">그룹 매니지드 서비스 어카운트를 이용하여 워크로드 신원 관리하기</a></li>
+
+
+
+
+<li><a href="#%ed%85%8c%ec%9d%b8%ed%8a%b8-taint-%ec%99%80-%ed%86%a8%eb%9f%ac%eb%a0%88%ec%9d%b4%ec%85%98-toleration">테인트(Taint)와 톨러레이션(Toleration)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<h2 id="목표">목표</h2>
+
+<ul>
+<li>윈도우 노드에서 윈도우 컨테이너를 실행하는 예시 디플로이먼트를 구성한다.</li>
+<li>(선택) 그룹 매니지드 서비스 어카운트(GMSA)를 이용한 사용자 파드를 위한 액티브 디렉터리 신원(Active Directory Identity)을 구성한다.</li>
+</ul>
+
+<h2 id="시작하기-전에">시작하기 전에</h2>
+
+<ul>
+<li><a href="../user-guide-windows-nodes">윈도우 서버에서 운영하는 마스터와 워커 노드</a>를 포함한 쿠버네티스 클러스터를 생성한다.</li>
+<li>쿠버네티스에서 서비스와 워크로드를 생성하고 배포하는 것은 리눅스나 윈도우 컨테이너 모두 비슷한 방식이라는 것이 중요하다. <a href="/docs/reference/kubectl/overview/">Kubectl 커맨드</a>로 클러스터에 접속하는 것은 동일하다. 아래 단원의 예시는 윈도우 컨테이너를 경험하기 위해 제공한다.</li>
+</ul>
+
+<h2 id="시작하기-윈도우-컨테이너-배포하기">시작하기: 윈도우 컨테이너 배포하기</h2>
+
+<p>쿠버네티스에서 윈도우 컨테이너를 배포하려면, 먼저 예시 애플리케이션을 생성해야 한다. 아래 예시 YAML 파일은 간단한 웹서버 애플리케이션을 생성한다. 아래 내용으로 채운 서비스 스펙을 <code>win-webserver.yaml</code>로 생성하자.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Service<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#080;font-style:italic"># 이 서비스에서 제공하는 포트</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>port:<span style="color:#bbb"> </span><span style="color:#666">80</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>targetPort:<span style="color:#bbb"> </span><span style="color:#666">80</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>type:<span style="color:#bbb"> </span>NodePort<span style="color:#bbb">
+</span><span style="color:#bbb"></span>---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">2</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>app:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>win-webserver<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">     </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>windowswebserver<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>mcr.microsoft.com/windows/servercore:ltsc2019<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>command:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>powershell.exe<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>-command<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;&lt;#code used from https://gist.github.com/wagnerandrade/5424431#&gt; ; $$listener = New-Object System.Net.HttpListener ; $$listener.Prefixes.Add(&#39;http://*:80/&#39;) ; $$listener.Start() ; $$callerCounts = @{} ; Write-Host(&#39;Listening at http://*:80/&#39;) ; while ($$listener.IsListening) { ;$$context = $$listener.GetContext() ;$$requestUrl = $$context.Request.Url ;$$clientIP = $$context.Request.RemoteEndPoint.Address ;$$response = $$context.Response ;Write-Host &#39;&#39; ;Write-Host(&#39;&gt; {0}&#39; -f $$requestUrl) ;  ;$$count = 1 ;$$k=$$callerCounts.Get_Item($$clientIP) ;if ($$k -ne $$null) { $$count += $$k } ;$$callerCounts.Set_Item($$clientIP, $$count) ;$$ip=(Get-NetAdapter | Get-NetIpAddress); $$header=&#39;&lt;html&gt;&lt;body&gt;&lt;H1&gt;Windows Container Web Server&lt;/H1&gt;&#39; ;$$callerCountsString=&#39;&#39; ;$$callerCounts.Keys | % { $$callerCountsString+=&#39;&lt;p&gt;IP {0} callerCount {1} &#39; -f $$ip[1].IPAddress,$$callerCounts.Item($$_) } ;$$footer=&#39;&lt;/body&gt;&lt;/html&gt;&#39; ;$$content=&#39;{0}{1}{2}&#39; -f $$header,$$callerCountsString,$$footer ;Write-Output $$content ;$$buffer = [System.Text.Encoding]::UTF8.GetBytes($$content) ;$$response.ContentLength64 = $$buffer.Length ;$$response.OutputStream.Write($$buffer, 0, $$buffer.Length) ;$$response.Close() ;$$responseStatus = $$response.StatusCode ;Write-Host(&#39;&lt; {0}&#39; -f $$responseStatus)  } ; &#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">     </span>nodeSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>beta.kubernetes.io/os:<span style="color:#bbb"> </span>windows</code></pre></div>
+<blockquote class="note">
+  <div><strong>참고:</strong> 포트 매핑도 지원하지만, 간략한 예시를 위해 컨테이너 포트 80을 직접 서비스로 노출한다.</div>
+</blockquote>
+
+<ol>
+<li><p>모든 노드가 건강한지 확인한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get nodes</code></pre></div></li>
+
+<li><p>서비스를 배포하고 파드 갱신을 지켜보자.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl apply -f win-webserver.yaml
+kubectl get pods -o wide -w</code></pre></div>
+<p>이 서비스가 정확히 배포되면 모든 파드는 Ready로 표기된다. 지켜보기를 중단하려면, Ctrl+C 를 누르자.</p></li>
+
+<li><p>이 디플로이먼트가 성공적인지 확인한다. 다음을 검토하자.</p>
+
+<ul>
+<li>윈도우 노드에 파드당 두 컨테이너, <code>docker ps</code>를 사용한다.</li>
+<li>리눅스 마스터에서 나열된 두 파드, <code>kubectl get pods</code>를 사용한다.</li>
+<li>네트워크를 통한 노드에서 파드 간에 통신, 리눅스 마스터에서 <code>curl</code>을 파드 IP 주소의 80 포트로 실행하여 웹 서버 응답을 확인한다.</li>
+<li>파드와 파드 간에 통신, <code>docker exec</code> 나 <code>kubectl exec</code>를 이용해 파드 간에 핑(ping)한다(윈도우 노드를 여럿가지고 있다면 호스트를 달리하며).</li>
+<li>서비스와 파드 간에 통신, 리눅스 마스터와 독립 파드에서 <code>curl</code>을 가상 서비스 IP 주소(<code>kubectl get services</code>로 보여지는)로 실행한다.</li>
+<li>서비스 검색(discovery), 쿠버네티스 <a href="/ko/docs/concepts/services-networking/dns-pod-service/#서비스">기본 DNS 접미사</a>와 서비스 이름으로 <code>curl</code>을 실행한다.</li>
+<li>인바운드 연결, 클러스터 외부 장비나 리눅스 마스터에서 NodePort로 <code>curl</code>을 실행한다.</li>
+<li>아웃바운드 연결, <code>kubectl exec</code>를 이용해서 파드에서 외부 IP 주소로 <code>curl</code>을 실행한다.</li>
+</ul></li>
+</ol>
+
+<blockquote class="note">
+  <div><strong>참고:</strong> 윈도우 컨테이너 호스트는 현재 윈도우 네트워킹 스택의 플랫폼 제한으로 인해, 그 안에서 스케줄링하는 서비스의 IP 주소로 접근할 수 없다. 윈도우 파드만 서비스 IP 주소로 접근할 수 있다.</div>
+</blockquote>
+
+<h2 id="가시성">가시성</h2>
+
+<h3 id="워크로드에서-로그-캡쳐하기">워크로드에서 로그 캡쳐하기</h3>
+
+<p>로그는 가시성의 중요한 요소이다. 로그는 사용자가 워크로드의 운영측면을 파악할 수 있도록 하며 문제 해결의 핵심 요소이다. 윈도우 컨테이너와 워크로드 내의 윈도우 컨테이너가 리눅스 컨테이너와는 다르게 동작하기 때문에, 사용자가 로그를 수집하는 데 어려움을 겪었기에 운영 가시성이 제한되었다. 예를 들어 윈도우 워크로드는 일반적으로 ETW(Event Tracing for Windows)에 로그인하거나 애플리케이션 이벤트 로그에 항목을 푸시하도록 구성한다. Microsoft의 오픈 소스 도구인 <a href="https://github.com/microsoft/windows-container-tools/tree/master/LogMonitor" target="_blank">LogMonitor</a>는 윈도우 컨테이너 안에 구성된 로그 소스를 모니터링하는 권장하는 방법이다. LogMonitor는 이벤트 로그, ETW 공급자 그리고 사용자 정의 애플리케이션 로그 모니터링을 지원하고 <code>kubectl logs &lt;pod&gt;</code> 에 의한 사용을 위해 STDOUT으로 파이프한다.</p>
+
+<p>LogMonitor Github 페이지의 지침에 따라 모든 컨테이너 바이너리와 설정 파일을 복사하고, LogMonitor에 필요한 입력 지점을 추가해서 로그를 STDOUT으로 푸시한다.</p>
+
+<h2 id="설정-가능한-컨테이너-username-사용하기">설정 가능한 컨테이너 username 사용하기</h2>
+
+<p>쿠버네티스 v1.16 부터, 윈도우 컨테이너는 이미지 기본 값과는 다른 username으로 엔트리포인트와 프로세스를 실행하도록 설정할 수 있다. 이 방식은 리눅스 컨테이너에서 지원되는 방식과는 조금 차이가 있다. <a href="/docs/tasks/configure-pod-container/configure-runasusername/">여기</a>에서 이에 대해 추가적으로 배울 수 있다.</p>
+
+<h2 id="그룹-매니지드-서비스-어카운트를-이용하여-워크로드-신원-관리하기">그룹 매니지드 서비스 어카운트를 이용하여 워크로드 신원 관리하기</h2>
+
+<p>쿠버네티스 v1.14부터 윈도우 컨테이너 워크로드는 그룹 매니지드 서비스 어카운트(GMSA, Group Managed Service Account)를 이용하여 구성할 수 있다. 그룹 매니지드 서비스 어카운트는 액티브 디렉터리 어카운트의 특정한 종류로 자동 암호 관리 기능, 단순화된 서비스 주체 이름(SPN, simplified service principal name), 여러 서버의 다른 관리자에게 관리를 위임하는 기능을 제공한다. GMSA로 구성한 컨테이너는 GMSA로 구성된 신원을 들고 있는 동안 외부 액티브 디렉터리 도메인 리소스를 접근할 수 있다. 윈도우 컨테이너를 위한 GMSA를 이용하고 구성하는 방법은 <a href="/docs/tasks/configure-pod-container/configure-gmsa/">여기</a>에서 알아보자.</p>
+
+<h2 id="테인트-taint-와-톨러레이션-toleration">테인트(Taint)와 톨러레이션(Toleration)</h2>
+
+<p>오늘날 사용자는 리눅스와 윈도우 워크로드를 특정 OS 노드별로 보존하기 위해 테인트와 노드 셀렉터(nodeSelector)의 조합을 이용해야 한다. 이것은 윈도우 사용자에게만 부담을 줄 것으로 보인다. 아래는 권장되는 방식의 개요인데, 이것의 주요 목표 중에 하나는 이 방식이 기존 리눅스 워크로드와 호환되어야 한다는 것이다.</p>
+
+<h3 id="특정-os-워크로드를-적절한-컨테이너-호스트에서-처리하도록-보장하기">특정 OS 워크로드를 적절한 컨테이너 호스트에서 처리하도록 보장하기</h3>
+
+<p>사용자는 윈도우 컨테이너가 테인트와 톨러레이션을 이용해서 적절한 호스트에서 스케줄링되기를 보장할 수 있다. 오늘날 모든 쿠버네티스 노드는 다음 기본 레이블을 가지고 있다.</p>
+
+<ul>
+<li>kubernetes.io/os = [windows|linux]</li>
+<li>kubernetes.io/arch = [amd64|arm64|&hellip;]</li>
+</ul>
+
+<p>파드 사양에 노드 셀렉터를 <code>&quot;kubernetes.io/os&quot;: windows</code>와 같이 지정하지 않았다면, 그 파드는 리눅스나 윈도우, 아무 호스트에나 스케줄링될 수 있다. 윈도우 컨테이너는 윈도우에서만 운영될 수 있고 리눅스 컨테이너는 리눅스에서만 운영될 수 있기 때문에 이는 문제를 일으킬 수 있다. 가장 좋은 방법은 노드 셀렉터를 사용하는 것이다.</p>
+
+<p>그러나 많은 경우 사용자는 이미 존재하는 대량의 리눅스 컨테이너용 디플로이먼트를 가지고 있을 뿐만 아니라, 헬름(Helm) 차트 커뮤니티 같은 상용 구성의 에코시스템이나, 오퍼레이터(Operator) 같은 프로그래밍 방식의 파드 생성 사례가 있음을 알고 있다. 이런 상황에서는 노드 셀렉터를 추가하는 구성 변경을 망설일 수 있다. 이에 대한 대안은 테인트를 사용하는 것이다. Kubelet은 등록하는 동안 테인트를 설정할 수 있기 때문에, 윈도우에서만 운영할 때에 자동으로 테인트를 추가하기 쉽다.</p>
+
+<p>예를 들면,  <code>--register-with-taints='os=windows:NoSchedule'</code></p>
+
+<p>모든 윈도우 노드에 테인트를 추가하여 아무 것도 거기에 스케줄링하지 않게 될 것이다(존재하는 리눅스 파드를 포함하여). 윈도우 파드가 윈도우 노드에 스케줄링되려면, 윈도우를 선택하기 위한 노드 셀렉터 및 적합하게 일치하는 톨러레이션이 모두 필요하다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">nodeSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kubernetes.io/os:<span style="color:#bbb"> </span>windows<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>node.kubernetes.io/windows-build:<span style="color:#bbb"> </span><span style="color:#b44">&#39;10.0.17763&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span><span style="color:#b44">&#34;os&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>operator:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Equal&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;windows&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>effect:<span style="color:#bbb"> </span><span style="color:#b44">&#34;NoSchedule&#34;</span></code></pre></div>
+<h3 id="동일-클러스터에서-여러-윈도우-버전을-조작하는-방법">동일 클러스터에서 여러 윈도우 버전을 조작하는 방법</h3>
+
+<p>파드에서 사용하는 윈도우 서버 버전은 노드 버전과 일치해야 한다. 만약 동일한 클러스터에서 여러 윈도우
+서버 버전을 사용하려면, 추가로 노드 레이블과 nodeSelectors를 설정해야만 한다.</p>
+
+<p>쿠버네티스 1.17은 이것을 단순화하기 위해 새로운 레이블인 <code>node.kubernetes.io/windows-build</code> 를 자동으로 추가 한다. 만약 이전 버전을
+실행 중인 경우 이 레이블을 윈도우 노드에 수동으로 추가하는 것을 권장한다.</p>
+
+<p>이 레이블은 호환성을 일치해야 하는 윈도우 메이저, 마이너 및 빌드 번호를 나타낸다. 여기에 현재
+사용하는 각 윈도우 서버 버전이 있다.</p>
+
+<table>
+<thead>
+<tr>
+<th>제품 이름</th>
+<th>빌드 번호</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>윈도우 서버 2019</td>
+<td>10.0.17763</td>
+</tr>
+
+<tr>
+<td>윈도우 서버 버전 1809</td>
+<td>10.0.17763</td>
+</tr>
+
+<tr>
+<td>윈도우 서버 버전 1903</td>
+<td>10.0.18362</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="runtimeclass로-단순화">RuntimeClass로 단순화</h3>
+
+<p>[RuntimeClass] 를 사용해서 테인트(taint)와 톨러레이션(toleration)을 사용하는 프로세스를 간소화 할 수 있다. 클러스터 관리자는
+이 테인트와 톨러레이션을 캡슐화하는데 사용되는 <code>RuntimeClass</code> 오브젝트를 생성할 수 있다.</p>
+
+<ol>
+<li><p>이 파일을 <code>runtimeClasses.yml</code> 로 저장한다. 여기에는 윈도우 OS, 아키텍처 및 버전에 적합한 <code>nodeSelector</code> 가 포함되었다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>node.k8s.io/v1beta1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>RuntimeClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>name:<span style="color:#bbb"> </span>windows<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>handler:<span style="color:#bbb"> </span><span style="color:#b44">&#39;docker&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>scheduling:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>nodeSelector:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kubernetes.io/os:<span style="color:#bbb"> </span><span style="color:#b44">&#39;windows&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>kubernetes.io/arch:<span style="color:#bbb"> </span><span style="color:#b44">&#39;amd64&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>node.kubernetes.io/windows-build:<span style="color:#bbb"> </span><span style="color:#b44">&#39;10.0.17763&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>effect:<span style="color:#bbb"> </span>NoSchedule<span style="color:#bbb">
+</span><span style="color:#bbb"></span>key:<span style="color:#bbb"> </span>os<span style="color:#bbb">
+</span><span style="color:#bbb"></span>operator:<span style="color:#bbb"> </span>Equal<span style="color:#bbb">
+</span><span style="color:#bbb"></span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;windows&#34;</span></code></pre></div></li>
+
+<li><p>클러스터 관리자로 <code>kubectl create -f runtimeClasses.yml</code> 를 실행해서 사용한다.</p></li>
+
+<li><p>파드 사양에 적합한 <code>runtimeClassName: windows-2019</code> 를 추가한다.</p></li>
+</ol>
+
+<p>예시:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>runtimeClassName:<span style="color:#bbb"> </span>windows<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>iis<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2019<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>limits:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>cpu:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>memory:<span style="color:#bbb"> </span>800Mi<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>requests:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>cpu:<span style="color:#bbb"> </span>.<span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>memory:<span style="color:#bbb"> </span>300Mi<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>containerPort:<span style="color:#bbb"> </span><span style="color:#666">80</span><span style="color:#bbb">
+</span><span style="color:#bbb"> </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>app:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Service<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>iis<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>type:<span style="color:#bbb"> </span>LoadBalancer<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>protocol:<span style="color:#bbb"> </span>TCP<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>port:<span style="color:#bbb"> </span><span style="color:#666">80</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>iis<span style="color:#666">-2019</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>피드백</h2>
+  <p class="feedback--prompt">이 페이지가 도움이 되었나요? </p>
+  <button class="button feedback--yes">네</button>
+  <button class="button feedback--no">아니요</button>
+  <p class="feedback--response feedback--response__hidden">
+    피드백 감사합니다. 쿠버네티스 사용 방법에 대해서 구체적이고 답변 가능한 질문이 있다면, 다음 링크에서 질문하십시오.
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    원한다면 GitHub 리포지터리에 이슈를 열어서
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      문제 리포트</a>
+    또는
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      개선 제안이 가능합니다.</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/production-environment/windows/user-guide-windows-containers.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ko\/docs\/setup\/production-environment\/windows\/user-guide-windows-containers\/",
+    "title" : "쿠버네티스에서 윈도우 컨테이너 스케줄링을 위한 가이드",
+    "permalink" : "https:\/\/kubernetes.io\/ko\/docs\/setup\/production-environment\/windows\/user-guide-windows-containers\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">이슈 생성하기</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/setup/production-environment/windows/user-guide-windows-containers.md" class="button issue">페이지 편집하기</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    최종 수정일시 March 26, 2020 at 10:58 PM PST , 다음 변경에 의해서:
+    <a href="https://github.com/kubernetes/website/commit/c38acbc4f65bf9ec02ba1eeff8bd339dfd5d0752/">Seventh Korean l10n Work For Release 1.17 (#19858)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/production-environment/windows/user-guide-windows-containers.md">페이지 변경 이력</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ko/docs/home/">홈</a>
+            
+            
+            
+            <a href="/ko/training/">교육</a>
+            
+            
+            
+            
+            
+            <a href="/ko/case-studies/">사례 연구</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">기여하기</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

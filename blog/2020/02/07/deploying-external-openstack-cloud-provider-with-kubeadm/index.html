@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html id="blog" lang="en" class="gr__kubernetes_io fontawesome-i2svg-active fontawesome-i2svg-complete">
+	<head>
+		
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Deploying External OpenStack Cloud Provider with Kubeadm - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="This document describes how to install a single control-plane Kubernetes cluster v1.15 with kubeadm on CentOS, and then deploy an external OpenStack cloud provider and Cinder CSI plugin to use Cinder volumes as persistent volumes in Kubernetes.
+Preparation in OpenStack This cluster runs on OpenStack VMs, so let&rsquo;s create a few things in OpenStack first.
+ A project/tenant for this Kubernetes cluster A user in this project for Kubernetes, to query node information and attach volumes etc A private network and subnet A router for this private network and connect it to a public network for floating IPs A security group for all Kubernetes VMs A VM as a control-plane node and a few VMs as worker nodes  The security group will have the following rules to open ports for Kubernetes.">
+<meta property="og:description" content="This document describes how to install a single control-plane Kubernetes cluster v1.15 with kubeadm on CentOS, and then deploy an external OpenStack cloud provider and Cinder CSI plugin to use Cinder volumes as persistent volumes in Kubernetes.
+Preparation in OpenStack This cluster runs on OpenStack VMs, so let&rsquo;s create a few things in OpenStack first.
+ A project/tenant for this Kubernetes cluster A user in this project for Kubernetes, to query node information and attach volumes etc A private network and subnet A router for this private network and connect it to a public network for floating IPs A security group for all Kubernetes VMs A VM as a control-plane node and a few VMs as worker nodes  The security group will have the following rules to open ports for Kubernetes.">
+<meta name="twitter:description" content="This document describes how to install a single control-plane Kubernetes cluster v1.15 with kubeadm on CentOS, and then deploy an external OpenStack cloud provider and Cinder CSI plugin to use Cinder volumes as persistent volumes in Kubernetes.
+Preparation in OpenStack This cluster runs on OpenStack VMs, so let&rsquo;s create a few things in OpenStack first.
+ A project/tenant for this Kubernetes cluster A user in this project for Kubernetes, to query node information and attach volumes etc A private network and subnet A router for this private network and connect it to a public network for floating IPs A security group for all Kubernetes VMs A VM as a control-plane node and a few VMs as worker nodes  The security group will have the following rules to open ports for Kubernetes.">
+<meta property="og:url" content="https://kubernetes.io/blog/2020/02/07/deploying-external-openstack-cloud-provider-with-kubeadm/">
+<meta property="og:title" content="Deploying External OpenStack Cloud Provider with Kubeadm">
+<meta name="twitter:title" content="Deploying External OpenStack Cloud Provider with Kubeadm">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+		<link rel='stylesheet' type='text/css' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'>
+		<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+		<link rel="stylesheet" type="text/css" href="/css/blog.css">
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/" class="logo" title="Production-Grade Container Orchestration - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/docs/">Documentation</a></li>
+            
+            <li><a href="/blog/" class="active">Blog</a></li>
+            
+            <li><a href="/training/">Training</a></li>
+            
+            <li><a href="/partners/">Partners</a></li>
+            
+            <li><a href="/community/">Community</a></li>
+            
+            <li><a href="/case-studies/">Case Studies</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    English <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/zh/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/">日本語 Japanese</a></li>
+                
+                    <li><a href="/fr/">Français</a></li>
+                
+                    <li><a href="/de/">Deutsch</a></li>
+                
+                    <li><a href="/es/">Español</a></li>
+                
+                    <li><a href="/pt/">Português</a></li>
+                
+                    <li><a href="/id/">Bahasa Indonesia</a></li>
+                
+                    <li><a href="/vi/">Tiếng Việt</a></li>
+                
+                    <li><a href="/ru/">Русский</a></li>
+                
+                    <li><a href="/pl/">Polski</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/blog/2020/02/07/deploying-external-openstack-cloud-provider-with-kubeadm/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/blog/2020/02/07/deploying-external-openstack-cloud-provider-with-kubeadm/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/blog/2020/02/07/deploying-external-openstack-cloud-provider-with-kubeadm/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/blog/2020/02/07/deploying-external-openstack-cloud-provider-with-kubeadm/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/blog/2020/02/07/deploying-external-openstack-cloud-provider-with-kubeadm/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Learn Kubernetes Basics</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/docs/home/">Documentation</a></h3>
+           <p>Learn how to use Kubernetes with conceptual, tutorial, and reference documentation. You can even <a href="/editdocs/" data-auto-burger-exclude>help contribute to the docs</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/blog/">Blog</a></h3>
+           <p>Read the latest news for Kubernetes and the containers space in general, and get technical how-tos hot off the presses.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Interested in hacking on the core Kubernetes code base?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>View On GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explore the community</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		<section id="hero" class="light-text no-sub">
+			<h1>Deploying External OpenStack Cloud Provider with Kubeadm</h1>
+		</section>
+		<main>
+			<div class="container-fluid" style="padding-top: 2em">
+				<div class="row">
+					<div class="col-xs-12 col-md-9 text blog-content">
+						
+	<h4 class="date-header"><time datetime="2020-02-07">Friday, February 07, 2020</time></h4>
+<h3 class="post-title entry-title"><a href="https://kubernetes.io/blog/2020/02/07/deploying-external-openstack-cloud-provider-with-kubeadm/">Deploying External OpenStack Cloud Provider with Kubeadm</a></h3>
+
+
+<p>This document describes how to install a single control-plane Kubernetes cluster v1.15 with kubeadm on CentOS, and then deploy an external OpenStack cloud provider and Cinder CSI plugin to use Cinder volumes as persistent volumes in Kubernetes.</p>
+
+<h3 id="preparation-in-openstack">Preparation in OpenStack</h3>
+
+<p>This cluster runs on OpenStack VMs, so let&rsquo;s create a few things in OpenStack first.</p>
+
+<ul>
+<li>A project/tenant for this Kubernetes cluster</li>
+<li>A user in this project for Kubernetes, to query node information and attach volumes etc</li>
+<li>A private network and subnet</li>
+<li>A router for this private network and connect it to a public network for floating IPs</li>
+<li>A security group for all Kubernetes VMs</li>
+<li>A VM as a control-plane node and a few VMs as worker nodes</li>
+</ul>
+
+<p>The security group will have the following rules to open ports for Kubernetes.</p>
+
+<p><strong>Control-Plane Node</strong></p>
+
+<table>
+<thead>
+<tr>
+<th>Protocol</th>
+<th>Port Number</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>TCP</td>
+<td>6443</td>
+<td>Kubernetes API Server</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>2379-2380</td>
+<td>etcd server client API</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>10250</td>
+<td>Kubelet API</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>10251</td>
+<td>kube-scheduler</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>10252</td>
+<td>kube-controller-manager</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>10255</td>
+<td>Read-only Kubelet API</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Worker Nodes</strong></p>
+
+<table>
+<thead>
+<tr>
+<th>Protocol</th>
+<th>Port Number</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>TCP</td>
+<td>10250</td>
+<td>Kubelet API</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>10255</td>
+<td>Read-only Kubelet API</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>30000-32767</td>
+<td>NodePort Services</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>CNI ports on both control-plane and worker nodes</strong></p>
+
+<table>
+<thead>
+<tr>
+<th>Protocol</th>
+<th>Port Number</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>TCP</td>
+<td>179</td>
+<td>Calico BGP network</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>9099</td>
+<td>Calico felix (health check)</td>
+</tr>
+
+<tr>
+<td>UDP</td>
+<td>8285</td>
+<td>Flannel</td>
+</tr>
+
+<tr>
+<td>UDP</td>
+<td>8472</td>
+<td>Flannel</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>6781-6784</td>
+<td>Weave Net</td>
+</tr>
+
+<tr>
+<td>UDP</td>
+<td>6783-6784</td>
+<td>Weave Net</td>
+</tr>
+</tbody>
+</table>
+
+<p>CNI specific ports are only required to be opened when that particular CNI plugin is used. In this guide, we will use Weave Net. Only the Weave Net ports (TCP 6781-6784 and UDP 6783-6784), will need to be opened in the security group.</p>
+
+<p>The control-plane node needs at least 2 cores and 4GB RAM. After the VM is launched, verify its hostname and make sure it is the same as the node name in Nova.
+If the hostname is not resolvable, add it to <code>/etc/hosts</code>.</p>
+
+<p>For example, if the VM is called master1, and it has an internal IP 192.168.1.4. Add that to <code>/etc/hosts</code> and set hostname to master1.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#a2f">echo</span> <span style="color:#b44">&#34;192.168.1.4 master1&#34;</span> &gt;&gt; /etc/hosts
+
+hostnamectl set-hostname master1</code></pre></div>
+<h3 id="install-docker-and-kubernetes">Install Docker and Kubernetes</h3>
+
+<p>Next, we&rsquo;ll follow the official documents to install docker and Kubernetes using kubeadm.</p>
+
+<p>Install Docker following the steps from the <a href="/docs/setup/production-environment/container-runtimes/">container runtime</a> documentation.</p>
+
+<p>Note that it is a <a href="/docs/setup/production-environment/container-runtimes/#cgroup-drivers">best practice to use systemd as the cgroup driver</a> for Kubernetes.
+If you use an internal container registry, add them to the docker config.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#080;font-style:italic"># Install Docker CE</span>
+<span style="color:#080;font-style:italic">## Set up the repository</span>
+<span style="color:#080;font-style:italic">### Install required packages.</span>
+
+yum install yum-utils device-mapper-persistent-data lvm2
+
+<span style="color:#080;font-style:italic">### Add Docker repository.</span>
+
+yum-config-manager <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --add-repo <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  https://download.docker.com/linux/centos/docker-ce.repo
+
+<span style="color:#080;font-style:italic">## Install Docker CE.</span>
+
+yum update <span style="color:#666">&amp;&amp;</span> yum install docker-ce-18.06.2.ce
+
+<span style="color:#080;font-style:italic">## Create /etc/docker directory.</span>
+
+mkdir /etc/docker
+
+<span style="color:#080;font-style:italic"># Configure the Docker daemon</span>
+
+cat &gt; /etc/docker/daemon.json <span style="color:#b44">&lt;&lt;EOF
+</span><span style="color:#b44">{
+</span><span style="color:#b44">  &#34;exec-opts&#34;: [&#34;native.cgroupdriver=systemd&#34;],
+</span><span style="color:#b44">  &#34;log-driver&#34;: &#34;json-file&#34;,
+</span><span style="color:#b44">  &#34;log-opts&#34;: {
+</span><span style="color:#b44">    &#34;max-size&#34;: &#34;100m&#34;
+</span><span style="color:#b44">  },
+</span><span style="color:#b44">  &#34;storage-driver&#34;: &#34;overlay2&#34;,
+</span><span style="color:#b44">  &#34;storage-opts&#34;: [
+</span><span style="color:#b44">    &#34;overlay2.override_kernel_check=true&#34;
+</span><span style="color:#b44">  ]
+</span><span style="color:#b44">}
+</span><span style="color:#b44">EOF</span>
+
+mkdir -p /etc/systemd/system/docker.service.d
+
+<span style="color:#080;font-style:italic"># Restart Docker</span>
+systemctl daemon-reload
+systemctl restart docker
+systemctl <span style="color:#a2f">enable</span> docker</code></pre></div>
+<p>Install kubeadm following the steps from the <a href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/">Installing Kubeadm</a> documentation.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">cat <span style="color:#b44">&lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
+</span><span style="color:#b44">[kubernetes]
+</span><span style="color:#b44">name=Kubernetes
+</span><span style="color:#b44">baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+</span><span style="color:#b44">enabled=1
+</span><span style="color:#b44">gpgcheck=1
+</span><span style="color:#b44">repo_gpgcheck=1
+</span><span style="color:#b44">gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+</span><span style="color:#b44">EOF</span>
+
+<span style="color:#080;font-style:italic"># Set SELinux in permissive mode (effectively disabling it)</span>
+<span style="color:#080;font-style:italic"># Caveat: In a production environment you may not want to disable SELinux, please refer to Kubernetes documents about SELinux</span>
+setenforce <span style="color:#666">0</span>
+sed -i <span style="color:#b44">&#39;s/^SELINUX=enforcing$/SELINUX=permissive/&#39;</span> /etc/selinux/config
+
+yum install -y kubelet kubeadm kubectl --disableexcludes<span style="color:#666">=</span>kubernetes
+
+systemctl <span style="color:#a2f">enable</span> --now kubelet
+
+cat <span style="color:#b44">&lt;&lt;EOF &gt;  /etc/sysctl.d/k8s.conf
+</span><span style="color:#b44">net.bridge.bridge-nf-call-ip6tables = 1
+</span><span style="color:#b44">net.bridge.bridge-nf-call-iptables = 1
+</span><span style="color:#b44">EOF</span>
+sysctl --system
+
+<span style="color:#080;font-style:italic"># check if br_netfilter module is loaded</span>
+lsmod | grep br_netfilter
+
+<span style="color:#080;font-style:italic"># if not, load it explicitly with</span> 
+modprobe br_netfilter</code></pre></div>
+<p>The official document about how to create a single control-plane cluster can be found from the <a href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/">Creating a single control-plane cluster with kubeadm</a> documentation.</p>
+
+<p>We&rsquo;ll largely follow that document but also add additional things for the cloud provider.
+To make things more clear, we&rsquo;ll use a <code>kubeadm-config.yml</code> for the control-plane node.
+In this config we specify to use an external OpenStack cloud provider, and where to find its config.
+We also enable storage API in API server&rsquo;s runtime config so we can use OpenStack volumes as persistent volumes in Kubernetes.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>kubeadm.k8s.io/v1beta1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>InitConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>nodeRegistration:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kubeletExtraArgs:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>cloud-provider:<span style="color:#bbb"> </span><span style="color:#b44">&#34;external&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>kubeadm.k8s.io/v1beta2<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ClusterConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kubernetesVersion:<span style="color:#bbb"> </span><span style="color:#b44">&#34;v1.15.1&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiServer:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>extraArgs:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>enable-admission-plugins:<span style="color:#bbb"> </span>NodeRestriction<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>runtime-config:<span style="color:#bbb"> </span><span style="color:#b44">&#34;storage.k8s.io/v1=true&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>controllerManager:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>extraArgs:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>external-cloud-volume-plugin:<span style="color:#bbb"> </span>openstack<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>extraVolumes:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span><span style="color:#b44">&#34;cloud-config&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>hostPath:<span style="color:#bbb"> </span><span style="color:#b44">&#34;/etc/kubernetes/cloud-config&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>mountPath:<span style="color:#bbb"> </span><span style="color:#b44">&#34;/etc/kubernetes/cloud-config&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>pathType:<span style="color:#bbb"> </span>File<span style="color:#bbb">
+</span><span style="color:#bbb"></span>networking:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>serviceSubnet:<span style="color:#bbb"> </span><span style="color:#b44">&#34;10.96.0.0/12&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>podSubnet:<span style="color:#bbb"> </span><span style="color:#b44">&#34;10.224.0.0/16&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>dnsDomain:<span style="color:#bbb"> </span><span style="color:#b44">&#34;cluster.local&#34;</span></code></pre></div>
+<p>Now we&rsquo;ll create the cloud config, <code>/etc/kubernetes/cloud-config</code>, for OpenStack.
+Note that the tenant here is the one we created for all Kubernetes VMs in the beginning.
+All VMs should be launched in this project/tenant.
+In addition you need to create a user in this tenant for Kubernetes to do queries.
+The ca-file is the CA root certificate for OpenStack&rsquo;s API endpoint, for example <code>https://openstack.cloud:5000/v3</code>
+At the time of writing the cloud provider doesn&rsquo;t allow insecure connections (skip CA check).</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ini" data-lang="ini"><span style="color:#a2f;font-weight:bold">[Global]</span>
+<span style="color:#b44">region</span><span style="color:#666">=</span><span style="color:#b44">RegionOne</span>
+<span style="color:#b44">username</span><span style="color:#666">=</span><span style="color:#b44">username</span>
+<span style="color:#b44">password</span><span style="color:#666">=</span><span style="color:#b44">password</span>
+<span style="color:#b44">auth-url</span><span style="color:#666">=</span><span style="color:#b44">https://openstack.cloud:5000/v3</span>
+<span style="color:#b44">tenant-id</span><span style="color:#666">=</span><span style="color:#b44">14ba698c0aec4fd6b7dc8c310f664009</span>
+<span style="color:#b44">domain-id</span><span style="color:#666">=</span><span style="color:#b44">default</span>
+<span style="color:#b44">ca-file</span><span style="color:#666">=</span><span style="color:#b44">/etc/kubernetes/ca.pem</span>
+
+<span style="color:#a2f;font-weight:bold">[LoadBalancer]</span>
+<span style="color:#b44">subnet-id</span><span style="color:#666">=</span><span style="color:#b44">b4a9a292-ea48-4125-9fb2-8be2628cb7a1</span>
+<span style="color:#b44">floating-network-id</span><span style="color:#666">=</span><span style="color:#b44">bc8a590a-5d65-4525-98f3-f7ef29c727d5</span>
+
+<span style="color:#a2f;font-weight:bold">[BlockStorage]</span>
+<span style="color:#b44">bs-version</span><span style="color:#666">=</span><span style="color:#b44">v2</span>
+
+<span style="color:#a2f;font-weight:bold">[Networking]</span>
+<span style="color:#b44">public-network-name</span><span style="color:#666">=</span><span style="color:#b44">public</span>
+<span style="color:#b44">ipv6-support-disabled</span><span style="color:#666">=</span><span style="color:#b44">false</span></code></pre></div>
+<p>Next run kubeadm to initiate the control-plane node</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubeadm init --config<span style="color:#666">=</span>kubeadm-config.yml</code></pre></div>
+<p>With the initialization completed, copy admin config to .kube</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  mkdir -p <span style="color:#b8860b">$HOME</span>/.kube
+  sudo cp -i /etc/kubernetes/admin.conf <span style="color:#b8860b">$HOME</span>/.kube/config
+  sudo chown <span style="color:#a2f;font-weight:bold">$(</span>id -u<span style="color:#a2f;font-weight:bold">)</span>:<span style="color:#a2f;font-weight:bold">$(</span>id -g<span style="color:#a2f;font-weight:bold">)</span> <span style="color:#b8860b">$HOME</span>/.kube/config</code></pre></div>
+<p>At this stage, the control-plane node is created but not ready. All the nodes have the taint <code>node.cloudprovider.kubernetes.io/uninitialized=true:NoSchedule</code> and are waiting to be initialized by the cloud-controller-manager.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"># kubectl describe no master1
+Name:               master1
+Roles:              master
+......
+Taints:             node-role.kubernetes.io/master:NoSchedule
+                    node.cloudprovider.kubernetes.io/uninitialized=true:NoSchedule
+                    node.kubernetes.io/not-ready:NoSchedule
+......</code></pre></div>
+<p>Now deploy the OpenStack cloud controller manager into the cluster, following <a href="https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/using-controller-manager-with-kubeadm.md" target="_blank">using controller manager with kubeadm</a>.</p>
+
+<p>Create a secret with the cloud-config for the openstack cloud provider.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create secret -n kube-system generic cloud-config --from-literal<span style="color:#666">=</span>cloud.conf<span style="color:#666">=</span><span style="color:#b44">&#34;</span><span style="color:#a2f;font-weight:bold">$(</span>cat /etc/kubernetes/cloud-config<span style="color:#a2f;font-weight:bold">)</span><span style="color:#b44">&#34;</span> --dry-run -o yaml &gt; cloud-config-secret.yaml
+kubectl apply -f cloud-config-secret.yaml </code></pre></div>
+<p>Get the CA certificate for OpenStack API endpoints and put that into <code>/etc/kubernetes/ca.pem</code>.</p>
+
+<p>Create RBAC resources.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f https://github.com/kubernetes/cloud-provider-openstack/raw/release-1.15/cluster/addons/rbac/cloud-controller-manager-roles.yaml
+kubectl apply -f https://github.com/kubernetes/cloud-provider-openstack/raw/release-1.15/cluster/addons/rbac/cloud-controller-manager-role-bindings.yaml</code></pre></div>
+<p>We&rsquo;ll run the OpenStack cloud controller manager as a DaemonSet rather than a pod.
+The manager will only run on the control-plane node, so if there are multiple control-plane nodes, multiple pods will be run for high availability.
+Create <code>openstack-cloud-controller-manager-ds.yaml</code> containing the following manifests, then apply it.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ServiceAccount<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>cloud-controller-manager<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb"></span>---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>DaemonSet<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>openstack-cloud-controller-manager<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>k8s-app:<span style="color:#bbb"> </span>openstack-cloud-controller-manager<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>k8s-app:<span style="color:#bbb"> </span>openstack-cloud-controller-manager<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>updateStrategy:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>type:<span style="color:#bbb"> </span>RollingUpdate<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>k8s-app:<span style="color:#bbb"> </span>openstack-cloud-controller-manager<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>nodeSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>node-role.kubernetes.io/master:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>securityContext:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>runAsUser:<span style="color:#bbb"> </span><span style="color:#666">1001</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>node.cloudprovider.kubernetes.io/uninitialized<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;true&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>effect:<span style="color:#bbb"> </span>NoSchedule<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>node-role.kubernetes.io/master<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>effect:<span style="color:#bbb"> </span>NoSchedule<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>effect:<span style="color:#bbb"> </span>NoSchedule<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>key:<span style="color:#bbb"> </span>node.kubernetes.io/not-ready<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>serviceAccountName:<span style="color:#bbb"> </span>cloud-controller-manager<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>openstack-cloud-controller-manager<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>image:<span style="color:#bbb"> </span>docker.io/k8scloudprovider/openstack-cloud-controller-manager:v1<span style="color:#666">.15.0</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>/bin/openstack-cloud-controller-manager<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>--v=<span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>--cloud-config=$(CLOUD_CONFIG)<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>--cloud-provider=openstack<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>--use-service-account-credentials=<span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>--address=<span style="color:#666">127.0.0.1</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span>/etc/kubernetes/pki<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>k8s-certs<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span>/etc/ssl/certs<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>ca-certs<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span>/etc/config<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>cloud-config-volume<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span>/usr/libexec/kubernetes/kubelet-plugins/volume/exec<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>flexvolume-dir<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span>/etc/kubernetes<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>ca-cert<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>requests:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>cpu:<span style="color:#bbb"> </span>200m<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>CLOUD_CONFIG<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>value:<span style="color:#bbb"> </span>/etc/config/cloud.conf<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>hostNetwork:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>path:<span style="color:#bbb"> </span>/usr/libexec/kubernetes/kubelet-plugins/volume/exec<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>type:<span style="color:#bbb"> </span>DirectoryOrCreate<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>flexvolume-dir<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>path:<span style="color:#bbb"> </span>/etc/kubernetes/pki<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>type:<span style="color:#bbb"> </span>DirectoryOrCreate<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>k8s-certs<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>path:<span style="color:#bbb"> </span>/etc/ssl/certs<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>type:<span style="color:#bbb"> </span>DirectoryOrCreate<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>ca-certs<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>cloud-config-volume<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>secret:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>secretName:<span style="color:#bbb"> </span>cloud-config<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>ca-cert<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>secret:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>secretName:<span style="color:#bbb"> </span>openstack-ca-cert</code></pre></div>
+<p>When the controller manager is running, it will query OpenStack to get information about the nodes and remove the taint. In the node info you&rsquo;ll see the VM&rsquo;s UUID in OpenStack.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"># kubectl describe no master1
+Name:               master1
+Roles:              master
+......
+Taints:             node-role.kubernetes.io/master:NoSchedule
+                    node.kubernetes.io/not-ready:NoSchedule
+......
+sage:docker: network plugin is not ready: cni config uninitialized
+......
+PodCIDR:                     10.224.0.0/24
+ProviderID:                  openstack:///548e3c46-2477-4ce2-968b-3de1314560a5</code></pre></div>
+<p>Now install your favourite CNI and the control-plane node will become ready.</p>
+
+<p>For example, to install Weave Net, run this command:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f <span style="color:#b44">&#34;https://cloud.weave.works/k8s/net?k8s-version=</span><span style="color:#a2f;font-weight:bold">$(</span>kubectl version | base64 | tr -d <span style="color:#b44">&#39;\n&#39;</span><span style="color:#a2f;font-weight:bold">)</span><span style="color:#b44">&#34;</span></code></pre></div>
+<p>Next we&rsquo;ll set up worker nodes.</p>
+
+<p>Firstly, install docker and kubeadm in the same way as how they were installed in the control-plane node.
+To join them to the cluster we need a token and ca cert hash from the output of control-plane node installation.
+If it is expired or lost we can recreate it using these commands.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#080;font-style:italic"># check if token is expired</span>
+kubeadm token list
+
+<span style="color:#080;font-style:italic"># re-create token and show join command</span>
+kubeadm token create --print-join-command</code></pre></div>
+<p>Create <code>kubeadm-config.yml</code> for worker nodes with the above token and ca cert hash.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>kubeadm.k8s.io/v1beta2<span style="color:#bbb">
+</span><span style="color:#bbb"></span>discovery:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>bootstrapToken:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>apiServerEndpoint:<span style="color:#bbb"> </span><span style="color:#666">192.168.1.7</span>:<span style="color:#666">6443</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>token:<span style="color:#bbb"> </span>0c0z4p.dnafh6vnmouus569<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>caCertHashes:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;sha256:fcb3e956a6880c05fc9d09714424b827f57a6fdc8afc44497180905946527adf&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>JoinConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>nodeRegistration:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kubeletExtraArgs:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>cloud-provider:<span style="color:#bbb"> </span><span style="color:#b44">&#34;external&#34;</span></code></pre></div>
+<p>apiServerEndpoint is the control-plane node, token and caCertHashes can be taken from the join command printed in the output of &lsquo;kubeadm token create&rsquo; command.</p>
+
+<p>Run kubeadm and the worker nodes will be joined to the cluster.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubeadm join  --config kubeadm-config.yml </code></pre></div>
+<p>At this stage we&rsquo;ll have a working Kubernetes cluster with an external OpenStack cloud provider.
+The provider tells Kubernetes about the mapping between Kubernetes nodes and OpenStack VMs.
+If Kubernetes wants to attach a persistent volume to a pod, it can find out which OpenStack VM the pod is running on from the mapping, and attach the underlying OpenStack volume to the VM accordingly.</p>
+
+<h3 id="deploy-cinder-csi">Deploy Cinder CSI</h3>
+
+<p>The integration with Cinder is provided by an external Cinder CSI plugin, as described in the <a href="https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/using-cinder-csi-plugin.md" target="_blank">Cinder CSI</a> documentation.</p>
+
+<p>We&rsquo;ll perform the following steps to install the Cinder CSI plugin.
+Firstly, create a secret with CA certs for OpenStack&rsquo;s API endpoints. It is the same cert file as what we use in cloud provider above.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create secret -n kube-system generic openstack-ca-cert --from-literal<span style="color:#666">=</span>ca.pem<span style="color:#666">=</span><span style="color:#b44">&#34;</span><span style="color:#a2f;font-weight:bold">$(</span>cat /etc/kubernetes/ca.pem<span style="color:#a2f;font-weight:bold">)</span><span style="color:#b44">&#34;</span> --dry-run -o yaml &gt; openstack-ca-cert.yaml
+kubectl apply -f openstack-ca-cert.yaml</code></pre></div>
+<p>Then create RBAC resources.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/release-1.15/manifests/cinder-csi-plugin/cinder-csi-controllerplugin-rbac.yaml
+kubectl apply -f https://github.com/kubernetes/cloud-provider-openstack/raw/release-1.15/manifests/cinder-csi-plugin/cinder-csi-nodeplugin-rbac.yaml</code></pre></div>
+<p>The Cinder CSI plugin includes a controller plugin and a node plugin.
+The controller communicates with Kubernetes APIs and Cinder APIs to create/attach/detach/delete Cinder volumes. The node plugin in-turn runs on each worker node to bind a storage device (attached volume) to a pod, and unbind it during deletion.
+Create <code>cinder-csi-controllerplugin.yaml</code> and apply it to create csi controller.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">kind:<span style="color:#bbb"> </span>Service<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>csi-cinder-controller-service<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>csi-cinder-controllerplugin<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>csi-cinder-controllerplugin<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>dummy<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>port:<span style="color:#bbb"> </span><span style="color:#666">12345</span><span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StatefulSet<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>csi-cinder-controllerplugin<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>serviceName:<span style="color:#bbb"> </span><span style="color:#b44">&#34;csi-cinder-controller-service&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>app:<span style="color:#bbb"> </span>csi-cinder-controllerplugin<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>csi-cinder-controllerplugin<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>serviceAccount:<span style="color:#bbb"> </span>csi-cinder-controller-sa<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>csi-attacher<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>image:<span style="color:#bbb"> </span>quay.io/k8scsi/csi-attacher:v1<span style="color:#666">.0.1</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--v=5&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--csi-address=$(ADDRESS)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>ADDRESS<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>value:<span style="color:#bbb"> </span>/var/lib/csi/sockets/pluginproxy/csi.sock<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>imagePullPolicy:<span style="color:#bbb"> </span><span style="color:#b44">&#34;IfNotPresent&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>socket-dir<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/var/lib/csi/sockets/pluginproxy/<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>csi-provisioner<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>image:<span style="color:#bbb"> </span>quay.io/k8scsi/csi-provisioner:v1<span style="color:#666">.0.1</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--provisioner=csi-cinderplugin&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--csi-address=$(ADDRESS)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>ADDRESS<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>value:<span style="color:#bbb"> </span>/var/lib/csi/sockets/pluginproxy/csi.sock<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>imagePullPolicy:<span style="color:#bbb"> </span><span style="color:#b44">&#34;IfNotPresent&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>socket-dir<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/var/lib/csi/sockets/pluginproxy/<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>csi-snapshotter<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>image:<span style="color:#bbb"> </span>quay.io/k8scsi/csi-snapshotter:v1<span style="color:#666">.0.1</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--connection-timeout=15s&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--csi-address=$(ADDRESS)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>ADDRESS<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>value:<span style="color:#bbb"> </span>/var/lib/csi/sockets/pluginproxy/csi.sock<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>imagePullPolicy:<span style="color:#bbb"> </span>Always<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span>/var/lib/csi/sockets/pluginproxy/<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>socket-dir<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>cinder-csi-plugin<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>image:<span style="color:#bbb"> </span>docker.io/k8scloudprovider/cinder-csi-plugin:v1<span style="color:#666">.15.0</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>args<span style="color:#bbb"> </span>:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>/bin/cinder-csi-plugin<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--v=5&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--nodeid=$(NODE_ID)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--endpoint=$(CSI_ENDPOINT)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--cloud-config=$(CLOUD_CONFIG)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--cluster=$(CLUSTER_NAME)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>NODE_ID<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>valueFrom:<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>fieldRef:<span style="color:#bbb">
+</span><span style="color:#bbb">                  </span>fieldPath:<span style="color:#bbb"> </span>spec.nodeName<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>CSI_ENDPOINT<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>value:<span style="color:#bbb"> </span>unix://csi/csi.sock<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>CLOUD_CONFIG<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>value:<span style="color:#bbb"> </span>/etc/config/cloud.conf<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>CLUSTER_NAME<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>value:<span style="color:#bbb"> </span>kubernetes<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>imagePullPolicy:<span style="color:#bbb"> </span><span style="color:#b44">&#34;IfNotPresent&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>socket-dir<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/csi<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>secret-cinderplugin<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/etc/config<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span>/etc/kubernetes<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>ca-cert<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>socket-dir<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>path:<span style="color:#bbb"> </span>/var/lib/csi/sockets/pluginproxy/<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>type:<span style="color:#bbb"> </span>DirectoryOrCreate<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>secret-cinderplugin<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>secret:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>secretName:<span style="color:#bbb"> </span>cloud-config<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>ca-cert<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>secret:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>secretName:<span style="color:#bbb"> </span>openstack-ca-cert</code></pre></div>
+<p>Create <code>cinder-csi-nodeplugin.yaml</code> and apply it to create csi node.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">kind:<span style="color:#bbb"> </span>DaemonSet<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>csi-cinder-nodeplugin<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>app:<span style="color:#bbb"> </span>csi-cinder-nodeplugin<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>csi-cinder-nodeplugin<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>serviceAccount:<span style="color:#bbb"> </span>csi-cinder-node-sa<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>hostNetwork:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>node-driver-registrar<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>image:<span style="color:#bbb"> </span>quay.io/k8scsi/csi-node-driver-registrar:v1<span style="color:#666">.1.0</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--v=5&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--csi-address=$(ADDRESS)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>lifecycle:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>preStop:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>exec:<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>command:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;/bin/sh&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;-c&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;rm -rf /registration/cinder.csi.openstack.org /registration/cinder.csi.openstack.org-reg.sock&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>ADDRESS<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>value:<span style="color:#bbb"> </span>/csi/csi.sock<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>DRIVER_REG_SOCK_PATH<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>value:<span style="color:#bbb"> </span>/var/lib/kubelet/plugins/cinder.csi.openstack.org/csi.sock<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>KUBE_NODE_NAME<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>valueFrom:<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>fieldRef:<span style="color:#bbb">
+</span><span style="color:#bbb">                  </span>fieldPath:<span style="color:#bbb"> </span>spec.nodeName<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>imagePullPolicy:<span style="color:#bbb"> </span><span style="color:#b44">&#34;IfNotPresent&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>socket-dir<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/csi<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>registration-dir<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/registration<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>cinder-csi-plugin<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>securityContext:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>privileged:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>capabilities:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>add:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;SYS_ADMIN&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>allowPrivilegeEscalation:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>image:<span style="color:#bbb"> </span>docker.io/k8scloudprovider/cinder-csi-plugin:v1<span style="color:#666">.15.0</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>args<span style="color:#bbb"> </span>:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>/bin/cinder-csi-plugin<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--nodeid=$(NODE_ID)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--endpoint=$(CSI_ENDPOINT)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;--cloud-config=$(CLOUD_CONFIG)&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>NODE_ID<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>valueFrom:<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>fieldRef:<span style="color:#bbb">
+</span><span style="color:#bbb">                  </span>fieldPath:<span style="color:#bbb"> </span>spec.nodeName<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>CSI_ENDPOINT<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>value:<span style="color:#bbb"> </span>unix://csi/csi.sock<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>CLOUD_CONFIG<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>value:<span style="color:#bbb"> </span>/etc/config/cloud.conf<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>imagePullPolicy:<span style="color:#bbb"> </span><span style="color:#b44">&#34;IfNotPresent&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>socket-dir<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/csi<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>pods-mount-dir<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/var/lib/kubelet/pods<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPropagation:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Bidirectional&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>kubelet-dir<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/var/lib/kubelet<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPropagation:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Bidirectional&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>pods-cloud-data<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/var/lib/cloud/data<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>pods-probe-dir<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/dev<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPropagation:<span style="color:#bbb"> </span><span style="color:#b44">&#34;HostToContainer&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>secret-cinderplugin<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>mountPath:<span style="color:#bbb"> </span>/etc/config<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span>/etc/kubernetes<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>name:<span style="color:#bbb"> </span>ca-cert<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>socket-dir<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>path:<span style="color:#bbb"> </span>/var/lib/kubelet/plugins/cinder.csi.openstack.org<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>type:<span style="color:#bbb"> </span>DirectoryOrCreate<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>registration-dir<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>path:<span style="color:#bbb"> </span>/var/lib/kubelet/plugins_registry/<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>type:<span style="color:#bbb"> </span>Directory<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>kubelet-dir<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>path:<span style="color:#bbb"> </span>/var/lib/kubelet<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>type:<span style="color:#bbb"> </span>Directory<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>pods-mount-dir<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>path:<span style="color:#bbb"> </span>/var/lib/kubelet/pods<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>type:<span style="color:#bbb"> </span>Directory<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>pods-cloud-data<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>path:<span style="color:#bbb"> </span>/var/lib/cloud/data<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>type:<span style="color:#bbb"> </span>Directory<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>pods-probe-dir<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>path:<span style="color:#bbb"> </span>/dev<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>type:<span style="color:#bbb"> </span>Directory<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>secret-cinderplugin<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>secret:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>secretName:<span style="color:#bbb"> </span>cloud-config<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>ca-cert<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>secret:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>secretName:<span style="color:#bbb"> </span>openstack-ca-cert</code></pre></div>
+<p>When they are both running, create a storage class for Cinder.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>csi-sc-cinderplugin<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>csi-cinderplugin</code></pre></div>
+<p>Then we can create a PVC with this class.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolumeClaim<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>myvol<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>requests:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>storage:<span style="color:#bbb"> </span>1Gi<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageClassName:<span style="color:#bbb"> </span>csi-sc-cinderplugin</code></pre></div>
+<p>When the PVC is created, a Cinder volume is created correspondingly.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"># kubectl get pvc
+NAME    STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS          AGE
+myvol   Bound    pvc-14b8bc68-6c4c-4dc6-ad79-4cb29a81faad   1Gi        RWO            csi-sc-cinderplugin   3s</code></pre></div>
+<p>In OpenStack the volume name will match the Kubernetes persistent volume generated name. In this example it would be: <em>pvc-14b8bc68-6c4c-4dc6-ad79-4cb29a81faad</em></p>
+
+<p>Now we can create a pod with the PVC.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>web<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>web<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>web<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>containerPort:<span style="color:#bbb"> </span><span style="color:#666">80</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>hostPort:<span style="color:#bbb"> </span><span style="color:#666">8081</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>protocol:<span style="color:#bbb"> </span>TCP<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span><span style="color:#b44">&#34;/usr/share/nginx/html&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">          </span>name:<span style="color:#bbb"> </span>mypd<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>mypd<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>persistentVolumeClaim:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>claimName:<span style="color:#bbb"> </span>myvol</code></pre></div>
+<p>When the pod is running, the volume will be attached to the pod.
+If we go back to OpenStack, we can see the Cinder volume is mounted to the worker node where the pod is running on.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console"># openstack volume show 6b5f3296-b0eb-40cd-bd4f-2067a0d6287f
++--------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field                          | Value                                                                                                                                                                                                                                                                                                                          |
++--------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| attachments                    | [{u&#39;server_id&#39;: u&#39;1c5e1439-edfa-40ed-91fe-2a0e12bc7eb4&#39;, u&#39;attachment_id&#39;: u&#39;11a15b30-5c24-41d4-86d9-d92823983a32&#39;, u&#39;attached_at&#39;: u&#39;2019-07-24T05:02:34.000000&#39;, u&#39;host_name&#39;: u&#39;compute-6&#39;, u&#39;volume_id&#39;: u&#39;6b5f3296-b0eb-40cd-bd4f-2067a0d6287f&#39;, u&#39;device&#39;: u&#39;/dev/vdb&#39;, u&#39;id&#39;: u&#39;6b5f3296-b0eb-40cd-bd4f-2067a0d6287f&#39;}] |
+| availability_zone              | nova                                                                                                                                                                                                                                                                                                                           |
+| bootable                       | false                                                                                                                                                                                                                                                                                                                          |
+| consistencygroup_id            | None                                                                                                                                                                                                                                                                                                                           |
+| created_at                     | 2019-07-24T05:02:18.000000                                                                                                                                                                                                                                                                                                     |
+| description                    | Created by OpenStack Cinder CSI driver                                                                                                                                                                                                                                                                                         |
+| encrypted                      | False                                                                                                                                                                                                                                                                                                                          |
+| id                             | 6b5f3296-b0eb-40cd-bd4f-2067a0d6287f                                                                                                                                                                                                                                                                                           |
+| migration_status               | None                                                                                                                                                                                                                                                                                                                           |
+| multiattach                    | False                                                                                                                                                                                                                                                                                                                          |
+| name                           | pvc-14b8bc68-6c4c-4dc6-ad79-4cb29a81faad                                                                                                                                                                                                                                                                                       |
+| os-vol-host-attr:host          | rbd:volumes@rbd#rbd                                                                                                                                                                                                                                                                                                            |
+| os-vol-mig-status-attr:migstat | None                                                                                                                                                                                                                                                                                                                           |
+| os-vol-mig-status-attr:name_id | None                                                                                                                                                                                                                                                                                                                           |
+| os-vol-tenant-attr:tenant_id   | 14ba698c0aec4fd6b7dc8c310f664009                                                                                                                                                                                                                                                                                               |
+| properties                     | attached_mode=&#39;rw&#39;, cinder.csi.openstack.org/cluster=&#39;kubernetes&#39;                                                                                                                                                                                                                                                              |
+| replication_status             | None                                                                                                                                                                                                                                                                                                                           |
+| size                           | 1                                                                                                                                                                                                                                                                                                                              |
+| snapshot_id                    | None                                                                                                                                                                                                                                                                                                                           |
+| source_volid                   | None                                                                                                                                                                                                                                                                                                                           |
+| status                         | in-use                                                                                                                                                                                                                                                                                                                         |
+| type                           | rbd                                                                                                                                                                                                                                                                                                                            |
+| updated_at                     | 2019-07-24T05:02:35.000000                                                                                                                                                                                                                                                                                                     |
+| user_id                        | 5f6a7a06f4e3456c890130d56babf591                                                                                                                                                                                                                                                                                               |
++--------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</code></pre></div>
+<h3 id="summary">Summary</h3>
+
+<p>In this walk-through, we deployed a Kubernetes cluster on OpenStack VMs and integrated it with OpenStack using an external OpenStack cloud provider. Then on this Kubernetes cluster we deployed Cinder CSI plugin which can create Cinder volumes and expose them in Kubernetes as persistent volumes.</p>
+
+
+	<div class="PageNavigation">
+	 
+    <div class="pagerButton left">
+        <h4><a class=" button" href="/blog/2020/01/22/kubeinvaders-gamified-chaos-engineering-tool-for-kubernetes/"> &lt;&lt; Prev </a></h4>
+    </div>
+    
+    
+    <div class="pagerButton right">
+        <h4><a class=" button" href="/blog/2020/02/18/contributor-summit-amsterdam-schedule-announced/"> Next &gt;&gt; </a></h4>
+    </div>
+    
+ </div>
+
+
+					</div>
+					<div class="col-xs-12 col-md-3 text">
+						<div class="widget-content">
+							<link rel="alternate" type="application/rss&#43;xml" href="https://kubernetes.io/feed.xml" title="Kubernetes">
+							<a class="widget-link" href="https://kubernetes.io/feed.xml"><div> <i class="fas fa-rss fab-icon"> </i> <div class="widget-link-text">RSS Feed</div></div> </a>
+							<a class="widget-link" href="https://kubernetes.io/docs/contribute/start/#write-a-blog-post"><div> <i class="fa fa-edit fab-icon"></i> <div class="widget-link-text">Submit a Post</div></div></a>
+							<a class="widget-link" href="https://twitter.com/kubernetesio"><div> <i class="fab fa-twitter-square fab-icon"> </i> <div class="widget-link-text"> @Kubernetesio</div></div></a>
+							<a class="widget-link" href="https://github.com/kubernetes/kubernetes"><div> <i class="fab fa-github-square fab-icon"></i> <div class="widget-link-text"> on GitHub </div></div></a>
+							<a class="widget-link" href="http://slack.k8s.io"><div><i class="fab fa-slack fab-icon"> </i> <div class="widget-link-text">#kubernetes-users </div></div></a>
+							<a class="widget-link" href="https://stackoverflow.com/questions/tagged/kubernetes"><div><i class="fab fa-stack-overflow fab-icon"></i> <div class="widget-link-text"> Overflow</div></div></a>
+							<a class="widget-link" href="https://discuss.kubernetes.io"><div> <i class="fab fa-discourse fab-icon"></i><div class="widget-link-text"> Forum </div></div></a>
+							<a class="widget-link" href="https://kubernetes.io/docs/setup"><div><i class="fa fa-download fab-icon"></i> <div class="widget-link-text"> Kubernetes</div></div></a>
+						</div>
+						
+  
+<div class="panel-group" id="blog-archive">
+  
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+      <a data-toggle="collapse" data-parent="#blog-archive" href="#collapse-2020">
+      2020</a>
+      </h4>
+    </div>
+    <div id="collapse-2020" class="panel-collapse collapse show">
+      <div class="panel-body">
+        <ul class="list-group">
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/03/19/join-sig-scalability/">Join SIG Scalability and Learn Kubernetes the Hard Way</a> <span class="date">Mar 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/03/18/kong-ingress-controller-and-istio-service-mesh/">Kong Ingress Controller and Service Mesh: Setting up Ingress to Istio on Kubernetes</a> <span class="date">Mar 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/03/04/contributor-summit-delayed/">Contributor Summit Amsterdam Postponed</a> <span class="date">Mar 4</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/02/28/bring-your-ideas-to-the-world-with-kubectl-plugins/">Bring your ideas to the world with kubectl plugins</a> <span class="date">Feb 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/02/18/contributor-summit-amsterdam-schedule-announced/">Contributor Summit Amsterdam Schedule Announced</a> <span class="date">Feb 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/02/07/deploying-external-openstack-cloud-provider-with-kubeadm/">Deploying External OpenStack Cloud Provider with Kubeadm</a> <span class="date">Feb 7</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/01/22/kubeinvaders-gamified-chaos-engineering-tool-for-kubernetes/">KubeInvaders - Gamified Chaos Engineering Tool for Kubernetes</a> <span class="date">Jan 22</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/01/21/reviewing-2019-in-docs/">Reviewing 2019 in Docs</a> <span class="date">Jan 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/01/21/csi-ephemeral-inline-volumes/">CSI Ephemeral Inline Volumes</a> <span class="date">Jan 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/01/15/kubernetes-on-mips/">Kubernetes on MIPS</a> <span class="date">Jan 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/01/14/kubernetes-bug-bounty-announcement/">Announcing the Kubernetes bug bounty program</a> <span class="date">Jan 14</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/01/10/remembering-brad-childs/">Remembering Brad Childs</a> <span class="date">Jan 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2020/01/08/testing-of-csi-drivers/">Testing of CSI drivers</a> <span class="date">Jan 8</span></li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+      <a data-toggle="collapse" data-parent="#blog-archive" href="#collapse-2019">
+      2019</a>
+      </h4>
+    </div>
+    <div id="collapse-2019" class="panel-collapse collapse">
+      <div class="panel-body">
+        <ul class="list-group">
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/12/09/kubernetes-1-17-release-announcement/">Kubernetes 1.17: Stability</a> <span class="date">Dec 9</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/12/09/kubernetes-1-17-feature-cis-volume-snapshot-beta/">Kubernetes 1.17 Feature: Kubernetes Volume Snapshot Moves to Beta</a> <span class="date">Dec 9</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/12/09/kubernetes-1-17-feature-csi-migration-beta/">Kubernetes 1.17 Feature: Kubernetes In-Tree to CSI Volume Migration Moves to Beta</a> <span class="date">Dec 9</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/12/06/when-youre-in-the-release-team-youre-family-the-kubernetes-1.16-release-interview/">When you&#39;re in the release team, you&#39;re family: the Kubernetes 1.16 release interview</a> <span class="date">Dec 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/12/02/gardener-project-update/">Gardener Project Update</a> <span class="date">Dec 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/11/26/running-kubernetes-locally-on-linux-with-microk8s/">Running Kubernetes locally on Linux with Microk8s</a> <span class="date">Nov 26</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/11/26/develop-a-kubernetes-controller-in-java/">Develop a Kubernetes controller in Java</a> <span class="date">Nov 26</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/11/05/grokkin-the-docs/">Grokkin&#39; the Docs</a> <span class="date">Nov 5</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/10/29/kubernetes-documentation-end-user-survey/">Kubernetes Documentation Survey</a> <span class="date">Oct 29</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/10/10/contributor-summit-san-diego-schedule/">Contributor Summit San Diego Schedule Announced!</a> <span class="date">Oct 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/10/03/2019-steering-committee-election-results/">2019 Steering Committee Election Results</a> <span class="date">Oct 3</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/09/24/san-diego-contributor-summit/">Contributor Summit San Diego Registration Open!</a> <span class="date">Sep 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/09/18/kubernetes-1-16-release-announcement/">Kubernetes 1.16: Custom Resources, Overhauled Metrics, and Volume Extensions</a> <span class="date">Sep 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/08/30/announcing-etcd-3-4/">Announcing etcd 3.4</a> <span class="date">Aug 30</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/08/06/opa-gatekeeper-policy-and-governance-for-kubernetes/">OPA Gatekeeper: Policy and Governance for Kubernetes</a> <span class="date">Aug 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/07/23/get-started-with-kubernetes-using-python/">Get started with Kubernetes (using Python)</a> <span class="date">Jul 23</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/07/18/api-deprecations-in-1-16/">Deprecated APIs Removed In 1.16: Here’s What You Need To Know</a> <span class="date">Jul 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/06/25/recap-of-kubernetes-contributor-summit-barcelona-2019/">Recap of Kubernetes Contributor Summit Barcelona 2019</a> <span class="date">Jun 25</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/06/24/automated-high-availability-in-kubeadm-v1.15-batteries-included-but-swappable/">Automated High Availability in kubeadm v1.15: Batteries Included But Swappable</a> <span class="date">Jun 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/06/21/introducing-volume-cloning-alpha-for-kubernetes/">Introducing Volume Cloning Alpha for Kubernetes</a> <span class="date">Jun 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/06/20/crd-structural-schema/">Future of CRDs: Structural Schemas</a> <span class="date">Jun 20</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/06/19/kubernetes-1-15-release-announcement/">Kubernetes 1.15: Extensibility and Continuous Improvement</a> <span class="date">Jun 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/06/12/join-us-at-the-contributor-summit-in-shanghai/">Join us at the Contributor Summit in Shanghai</a> <span class="date">Jun 12</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/05/23/kyma-extend-and-build-on-kubernetes-with-ease/">Kyma - extend and build on Kubernetes with ease</a> <span class="date">May 23</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/05/17/kubernetes-cloud-native-and-the-future-of-software/">Kubernetes, Cloud Native, and the Future of Software</a> <span class="date">May 17</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/05/14/expanding-our-contributor-workshops/">Expanding our Contributor Workshops</a> <span class="date">May 14</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/05/13/cat-shirts-and-groundhog-day-the-kubernetes-1.14-release-interview/">Cat shirts and Groundhog Day: the Kubernetes 1.14 release interview</a> <span class="date">May 13</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/05/02/kubecon-diversity-lunch-and-hack/">Join us for the 2019 KubeCon Diversity Lunch &amp; Hack</a> <span class="date">May 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/04/26/how-you-can-help-localize-kubernetes-docs/">How You Can Help Localize Kubernetes Docs</a> <span class="date">Apr 26</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/04/24/hardware-accelerated-ssl/tls-termination-in-ingress-controllers-using-kubernetes-device-plugins-and-runtimeclass/">Hardware Accelerated SSL/TLS Termination in Ingress Controllers using Kubernetes Device Plugins and RuntimeClass</a> <span class="date">Apr 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/04/19/introducing-kube-iptables-tailer/">Introducing kube-iptables-tailer: Better Networking Visibility in Kubernetes Clusters</a> <span class="date">Apr 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/04/17/the-future-of-cloud-providers-in-kubernetes/">The Future of Cloud Providers in Kubernetes</a> <span class="date">Apr 17</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/04/16/pod-priority-and-preemption-in-kubernetes/">Pod Priority and Preemption in Kubernetes</a> <span class="date">Apr 16</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/04/15/process-id-limiting-for-stability-improvements-in-kubernetes-1.14/">Process ID Limiting for Stability Improvements in Kubernetes 1.14</a> <span class="date">Apr 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/04/04/kubernetes-1.14-local-persistent-volumes-ga/">Kubernetes 1.14: Local Persistent Volumes GA</a> <span class="date">Apr 4</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/04/01/kubernetes-v1.14-delivers-production-level-support-for-windows-nodes-and-windows-containers/">Kubernetes v1.14 delivers production-level support for Windows nodes and Windows containers</a> <span class="date">Apr 1</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/03/29/kube-proxy-subtleties-debugging-an-intermittent-connection-reset/">kube-proxy Subtleties: Debugging an Intermittent Connection Reset</a> <span class="date">Mar 29</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/03/28/running-kubernetes-locally-on-linux-with-minikube-now-with-kubernetes-1.14-support/">Running Kubernetes locally on Linux with Minikube - now with Kubernetes 1.14 support</a> <span class="date">Mar 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/03/25/kubernetes-1-14-release-announcement/">Kubernetes 1.14: Production-level support for Windows Nodes, Kubectl Updates, Persistent Local Volumes GA</a> <span class="date">Mar 25</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/03/22/kubernetes-end-to-end-testing-for-everyone/">Kubernetes End-to-end Testing for Everyone</a> <span class="date">Mar 22</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/03/21/a-guide-to-kubernetes-admission-controllers/">A Guide to Kubernetes Admission Controllers</a> <span class="date">Mar 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/03/20/a-look-back-and-whats-in-store-for-kubernetes-contributor-summits/">A Look Back and What&#39;s in Store for Kubernetes Contributor Summits</a> <span class="date">Mar 20</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/03/19/kubeedge-k8s-based-edge-intro/">KubeEdge, a Kubernetes Native Edge Computing Framework</a> <span class="date">Mar 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/03/15/kubernetes-setup-using-ansible-and-vagrant/">Kubernetes Setup Using Ansible and Vagrant</a> <span class="date">Mar 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/03/07/raw-block-volume-support-to-beta/">Raw Block Volume support to Beta</a> <span class="date">Mar 7</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/02/28/automate-operations-on-your-cluster-with-operatorhub.io/">Automate Operations on your Cluster with OperatorHub.io</a> <span class="date">Feb 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/02/12/building-a-kubernetes-edge-control-plane-for-envoy-v2/">Building a Kubernetes Edge (Ingress) Control Plane for Envoy v2</a> <span class="date">Feb 12</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/02/11/runc-and-cve-2019-5736/">Runc and CVE-2019-5736</a> <span class="date">Feb 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/02/06/poseidon-firmament-scheduler-flow-network-graph-based-scheduler/">Poseidon-Firmament Scheduler – Flow Network Graph Based Scheduler</a> <span class="date">Feb 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/01/17/update-on-volume-snapshot-alpha-for-kubernetes/">Update on Volume Snapshot Alpha for Kubernetes</a> <span class="date">Jan 17</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/">Container Storage Interface (CSI) for Kubernetes GA</a> <span class="date">Jan 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2019/01/14/apiserver-dry-run-and-kubectl-diff/">APIServer dry-run and kubectl diff</a> <span class="date">Jan 14</span></li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+      <a data-toggle="collapse" data-parent="#blog-archive" href="#collapse-2018">
+      2018</a>
+      </h4>
+    </div>
+    <div id="collapse-2018" class="panel-collapse collapse">
+      <div class="panel-body">
+        <ul class="list-group">
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/12/12/kubernetes-federation-evolution/">Kubernetes Federation Evolution</a> <span class="date">Dec 12</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/12/11/etcd-current-status-and-future-roadmap/">etcd: Current status and future roadmap</a> <span class="date">Dec 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/12/05/new-contributor-workshop-shanghai/">New Contributor Workshop Shanghai</a> <span class="date">Dec 5</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/12/04/production-ready-kubernetes-cluster-creation-with-kubeadm/">Production-Ready Kubernetes Cluster Creation with kubeadm</a> <span class="date">Dec 4</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/12/03/kubernetes-1-13-release-announcement/">Kubernetes 1.13: Simplified Cluster Management with Kubeadm, Container Storage Interface (CSI), and CoreDNS as Default DNS are Now Generally Available</a> <span class="date">Dec 3</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/11/08/kubernetes-docs-updates-international-edition/">Kubernetes Docs Updates, International Edition</a> <span class="date">Nov 8</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/11/07/grpc-load-balancing-on-kubernetes-without-tears/">gRPC Load Balancing on Kubernetes without Tears</a> <span class="date">Nov 7</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/26/tips-for-your-first-kubecon-presentation-part-2/">Tips for Your First Kubecon Presentation - Part 2</a> <span class="date">Oct 26</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/18/tips-for-your-first-kubecon-presentation-part-1/">Tips for Your First Kubecon Presentation - Part 1</a> <span class="date">Oct 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/16/kubernetes-2018-north-american-contributor-summit/">Kubernetes 2018 North American Contributor Summit</a> <span class="date">Oct 16</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/15/2018-steering-committee-election-results/">2018 Steering Committee Election Results</a> <span class="date">Oct 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/11/topology-aware-volume-provisioning-in-kubernetes/">Topology-Aware Volume Provisioning in Kubernetes</a> <span class="date">Oct 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/10/kubernetes-v1.12-introducing-runtimeclass/">Kubernetes v1.12: Introducing RuntimeClass</a> <span class="date">Oct 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/09/introducing-volume-snapshot-alpha-for-kubernetes/">Introducing Volume Snapshot Alpha for Kubernetes</a> <span class="date">Oct 9</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/08/support-for-azure-vmss-cluster-autoscaler-and-user-assigned-identity/">Support for Azure VMSS,  Cluster-Autoscaler and User Assigned Identity</a> <span class="date">Oct 8</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/04/introducing-the-non-code-contributors-guide/">Introducing the Non-Code Contributor’s Guide</a> <span class="date">Oct 4</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/03/kubedirector-the-easy-way-to-run-complex-stateful-applications-on-kubernetes/">KubeDirector: The easy way to run complex stateful applications on Kubernetes</a> <span class="date">Oct 3</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/02/building-a-network-bootable-server-farm-for-kubernetes-with-ltsp/">Building a Network Bootable Server Farm for Kubernetes with LTSP</a> <span class="date">Oct 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/10/01/health-checking-grpc-servers-on-kubernetes/">Health checking gRPC servers on Kubernetes</a> <span class="date">Oct 1</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/09/27/kubernetes-1.12-kubelet-tls-bootstrap-and-azure-virtual-machine-scale-sets-vmss-move-to-general-availability/">Kubernetes 1.12: Kubelet TLS Bootstrap and Azure Virtual Machine Scale Sets (VMSS) Move to General Availability</a> <span class="date">Sep 27</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/09/18/hands-on-with-linkerd-2.0/">Hands On With Linkerd 2.0</a> <span class="date">Sep 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/09/06/2018-steering-committee-election-cycle-kicks-off/">2018 Steering Committee Election Cycle Kicks Off</a> <span class="date">Sep 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/08/29/the-machines-can-do-the-work-a-story-of-kubernetes-testing-ci-and-automating-the-contributor-experience/">The Machines Can Do the Work, a Story of Kubernetes Testing, CI, and Automating the Contributor Experience</a> <span class="date">Aug 29</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/08/10/introducing-kubebuilder-an-sdk-for-building-kubernetes-apis-using-crds/">Introducing Kubebuilder: an SDK for building Kubernetes APIs using CRDs</a> <span class="date">Aug 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/08/03/out-of-the-clouds-onto-the-ground-how-to-make-kubernetes-production-grade-anywhere/">Out of the Clouds onto the Ground: How to Make Kubernetes Production Grade Anywhere</a> <span class="date">Aug 3</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/08/02/dynamically-expand-volume-with-csi-and-kubernetes/">Dynamically Expand Volume with CSI and Kubernetes</a> <span class="date">Aug 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/07/27/kubevirt-extending-kubernetes-with-crds-for-virtualized-workloads/">KubeVirt: Extending Kubernetes with CRDs for Virtualized Workloads</a> <span class="date">Jul 27</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/07/24/feature-highlight-cpu-manager/">Feature Highlight: CPU Manager</a> <span class="date">Jul 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/07/20/the-history-of-kubernetes-the-community-behind-it/">The History of Kubernetes &amp; the Community Behind It</a> <span class="date">Jul 20</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/07/19/kubernetes-wins-2018-oscon-most-impact-award/">Kubernetes Wins the 2018 OSCON Most Impact Award</a> <span class="date">Jul 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/07/18/11-ways-not-to-get-hacked/">11 Ways (Not) to Get Hacked</a> <span class="date">Jul 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/07/16/how-the-sausage-is-made-the-kubernetes-1.11-release-interview-from-the-kubernetes-podcast/">How the sausage is made: the Kubernetes 1.11 release interview, from the Kubernetes Podcast</a> <span class="date">Jul 16</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/07/12/resizing-persistent-volumes-using-kubernetes/">Resizing Persistent Volumes using Kubernetes</a> <span class="date">Jul 12</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/07/11/dynamic-kubelet-configuration/">Dynamic Kubelet Configuration</a> <span class="date">Jul 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/07/10/meet-our-contributors-monthly-streaming-youtube-mentoring-series/">Meet Our Contributors - Monthly Streaming YouTube Mentoring Series</a> <span class="date">Jul 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/07/10/coredns-ga-for-kubernetes-cluster-dns/">CoreDNS GA for Kubernetes Cluster DNS</a> <span class="date">Jul 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/07/09/ipvs-based-in-cluster-load-balancing-deep-dive/">IPVS-Based In-Cluster Load Balancing Deep Dive</a> <span class="date">Jul 9</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/06/28/airflow-on-kubernetes-part-1-a-different-kind-of-operator/">Airflow on Kubernetes (Part 1): A Different Kind of Operator</a> <span class="date">Jun 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/06/27/kubernetes-1.11-release-announcement/">Kubernetes 1.11: In-Cluster Load Balancing and CoreDNS Plugin Graduate to General Availability</a> <span class="date">Jun 27</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/06/07/dynamic-ingress-in-kubernetes/">Dynamic Ingress in Kubernetes</a> <span class="date">Jun 7</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/06/06/4-years-of-k8s/">4 Years of K8s</a> <span class="date">Jun 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/05/30/say-hello-to-discuss-kubernetes/">Say Hello to Discuss Kubernetes</a> <span class="date">May 30</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/05/29/introducing-kustomize-template-free-configuration-customization-for-kubernetes/">Introducing kustomize; Template-free Configuration Customization for Kubernetes</a> <span class="date">May 29</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/05/24/kubernetes-containerd-integration-goes-ga/">Kubernetes Containerd Integration Goes GA</a> <span class="date">May 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/05/22/getting-to-know-kubevirt/">Getting to Know Kubevirt</a> <span class="date">May 22</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/05/17/gardener/">Gardener - The Kubernetes Botanist</a> <span class="date">May 17</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/05/05/hugo-migration/">Docs are Migrating from Jekyll to Hugo</a> <span class="date">May 5</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/05/04/announcing-kubeflow-0.1/">Announcing Kubeflow 0.1</a> <span class="date">May 4</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/05/02/policy-in-kubernetes/">Current State of Policy in Kubernetes</a> <span class="date">May 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/05/01/developing-on-kubernetes/">Developing on Kubernetes</a> <span class="date">May 1</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/04/30/zero-downtime-deployment-kubernetes-jenkins/">Zero-downtime Deployment in Kubernetes with Jenkins</a> <span class="date">Apr 30</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/04/25/open-source-charts-2017/">Kubernetes Community - Top of the Open Source Charts in 2017</a> <span class="date">Apr 25</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/04/24/kubernetes-application-survey-results-2018/">Kubernetes Application Survey 2018 Results</a> <span class="date">Apr 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/04/13/local-persistent-volumes-beta/">Local Persistent Volumes for Kubernetes Goes Beta</a> <span class="date">Apr 13</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/04/11/migrating-the-kubernetes-blog/">Migrating the Kubernetes Blog</a> <span class="date">Apr 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/04/10/container-storage-interface-beta/">Container Storage Interface (CSI) for Kubernetes Goes Beta</a> <span class="date">Apr 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/04/04/fixing-subpath-volume-vulnerability/">Fixing the Subpath Volume Vulnerability in Kubernetes</a> <span class="date">Apr 4</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/03/26/kubernetes-1.10-stabilizing-storage-security-networking/">Kubernetes 1.10: Stabilizing Storage, Security, and Networking </a> <span class="date">Mar 26</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/03/principles-of-container-app-design/">Principles of Container-based Application Design</a> <span class="date">Mar 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/03/expanding-user-support-with-office-hours/">Expanding User Support with Office Hours</a> <span class="date">Mar 14</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/03/how-to-integrate-rollingupdate-strategy/">How to Integrate RollingUpdate Strategy for TPR in Kubernetes</a> <span class="date">Mar 13</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/03/apache-spark-23-with-native-kubernetes/">Apache Spark 2.3 with Native Kubernetes Support</a> <span class="date">Mar 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/03/first-beta-version-of-kubernetes-1-10/">Kubernetes: First Beta Version of Kubernetes 1.10 is Here</a> <span class="date">Mar 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/01/reporting-errors-using-kubernetes-events/">Reporting Errors from Control Plane to Applications Using Kubernetes Events</a> <span class="date">Jan 25</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/01/core-workloads-api-ga/">Core Workloads API GA</a> <span class="date">Jan 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/01/introducing-client-go-version-6/">Introducing client-go version 6</a> <span class="date">Jan 12</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/01/extensible-admission-is-beta/">Extensible Admission is Beta</a> <span class="date">Jan 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/01/introducing-container-storage-interface/"> Introducing Container Storage Interface (CSI) Alpha for Kubernetes </a> <span class="date">Jan 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/01/kubernetes-v19-beta-windows-support/">Kubernetes v1.9 releases beta support for Windows Server Containers</a> <span class="date">Jan 9</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2018/01/five-days-of-kubernetes-19/"> Five Days of Kubernetes 1.9 </a> <span class="date">Jan 8</span></li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+      <a data-toggle="collapse" data-parent="#blog-archive" href="#collapse-2017">
+      2017</a>
+      </h4>
+    </div>
+    <div id="collapse-2017" class="panel-collapse collapse">
+      <div class="panel-body">
+        <ul class="list-group">
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/12/introducing-kubeflow-composable/"> Introducing Kubeflow - A Composable, Portable, Scalable ML Stack Built for Kubernetes </a> <span class="date">Dec 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/12/kubernetes-19-workloads-expanded-ecosystem/"> Kubernetes 1.9: Apps Workloads GA and Expanded Ecosystem </a> <span class="date">Dec 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/12/using-ebpf-in-kubernetes/">Using eBPF in Kubernetes</a> <span class="date">Dec 7</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/12/paddle-paddle-fluid-elastic-learning/"> PaddlePaddle Fluid: Elastic Deep Learning on Kubernetes </a> <span class="date">Dec 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/11/autoscaling-in-kubernetes/"> Autoscaling in Kubernetes </a> <span class="date">Nov 17</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/11/certified-kubernetes-conformance/"> Certified Kubernetes Conformance Program: Launch Celebration Round Up </a> <span class="date">Nov 16</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/11/kubernetes-is-still-hard-for-developers/"> Kubernetes is Still Hard (for Developers) </a> <span class="date">Nov 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/11/securing-software-supply-chain-grafeas/"> Securing Software Supply Chain with Grafeas </a> <span class="date">Nov 3</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/11/containerd-container-runtime-options-kubernetes/">  Containerd Brings More Container Runtime Options for Kubernetes </a> <span class="date">Nov 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/11/kubernetes-easy-way/"> Kubernetes the Easy Way </a> <span class="date">Nov 1</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/10/enforcing-network-policies-in-kubernetes/"> Enforcing Network Policies in Kubernetes </a> <span class="date">Oct 30</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/10/using-rbac-generally-available-18/"> Using RBAC, Generally Available in Kubernetes v1.8 </a> <span class="date">Oct 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/10/it-takes-village-to-raise-kubernetes/"> It Takes a Village to Raise a Kubernetes </a> <span class="date">Oct 26</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/10/kubeadm-v18-released/">  kubeadm v1.8 Released: Introducing Easy Upgrades for Kubernetes Clusters </a> <span class="date">Oct 25</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/10/five-days-of-kubernetes-18/"> Five Days of Kubernetes 1.8 </a> <span class="date">Oct 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/10/software-conformance-certification/"> Introducing Software Certification for Kubernetes </a> <span class="date">Oct 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/10/request-routing-and-policy-management/"> Request Routing and Policy Management with the Istio Service Mesh </a> <span class="date">Oct 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/10/kubernetes-community-steering-committee-election-results/"> Kubernetes Community Steering Committee Election Results </a> <span class="date">Oct 5</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/09/kubernetes-18-security-workloads-and/"> Kubernetes 1.8: Security, Workloads and Feature Depth </a> <span class="date">Sep 29</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/09/kubernetes-statefulsets-daemonsets/"> Kubernetes StatefulSets &amp; DaemonSets Updates </a> <span class="date">Sep 27</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/09/introducing-resource-management-working/"> Introducing the Resource Management Working Group </a> <span class="date">Sep 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/09/windows-networking-at-parity-with-linux/"> Windows Networking at Parity with Linux for Kubernetes </a> <span class="date">Sep 8</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/08/kubernetes-meets-high-performance/"> Kubernetes Meets High-Performance Computing </a> <span class="date">Aug 22</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/08/high-performance-networking-with-ec2/"> High Performance Networking with EC2 Virtual Private Clouds </a> <span class="date">Aug 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/08/kompose-helps-developers-move-docker/"> Kompose Helps Developers Move Docker Compose Files to Kubernetes </a> <span class="date">Aug 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/07/happy-second-birthday-kubernetes/"> Happy Second Birthday: A Kubernetes Retrospective </a> <span class="date">Jul 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/07/how-watson-health-cloud-deploys/"> How Watson Health Cloud Deploys Applications with Kubernetes </a> <span class="date">Jul 14</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/06/kubernetes-1-7-security-hardening-stateful-application-extensibility-updates/"> Kubernetes 1.7: Security Hardening, Stateful Application Updates and Extensibility </a> <span class="date">Jun 30</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/05/draft-kubernetes-container-development/"> Draft: Kubernetes container development made easy </a> <span class="date">May 31</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/05/managing-microservices-with-istio-service-mesh/">  Managing microservices with the Istio service mesh </a> <span class="date">May 31</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/05/kubespray-ansible-collaborative-kubernetes-ops/"> Kubespray Ansible Playbooks foster Collaborative Kubernetes Ops </a> <span class="date">May 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/05/kubernetes-monitoring-guide/"> Kubernetes: a monitoring guide </a> <span class="date">May 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/05/kubernetes-security-process-explained/"> Dancing at the Lip of a Volcano: The Kubernetes Security Process - Explained </a> <span class="date">May 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/04/multi-stage-canary-deployments-with-kubernetes-in-the-cloud-onprem/"> How Bitmovin is Doing Multi-Stage Canary Deployments with Kubernetes in the Cloud and On-Prem </a> <span class="date">Apr 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/04/rbac-support-in-kubernetes/"> RBAC Support in Kubernetes </a> <span class="date">Apr 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/04/configuring-private-dns-zones-upstream-nameservers-kubernetes/"> Configuring Private DNS Zones and Upstream Nameservers in Kubernetes </a> <span class="date">Apr 4</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/03/advanced-scheduling-in-kubernetes/"> Advanced Scheduling in Kubernetes </a> <span class="date">Mar 31</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/03/scalability-updates-in-kubernetes-1-6/"> Scalability updates in Kubernetes 1.6: 5,000 node and 150,000 pod clusters </a> <span class="date">Mar 30</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/03/five-days-of-kubernetes-1-6/"> Five Days of Kubernetes 1.6 </a> <span class="date">Mar 29</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/03/dynamic-provisioning-and-storage-classes-kubernetes/"> Dynamic Provisioning and Storage Classes in Kubernetes </a> <span class="date">Mar 29</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/03/kubernetes-1-6-multi-user-multi-workloads-at-scale/"> Kubernetes 1.6: Multi-user, Multi-workloads at Scale </a> <span class="date">Mar 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/03/k8sport-engaging-the-kubernetes-community/"> The K8sPort: Engaging Kubernetes Community One Activity at a Time </a> <span class="date">Mar 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/02/postgresql-clusters-kubernetes-statefulsets/"> Deploying PostgreSQL Clusters using StatefulSets </a> <span class="date">Feb 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/02/caas-the-foundation-for-next-gen-paas/"> Containers as a Service, the foundation for next generation PaaS </a> <span class="date">Feb 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/02/inside-jd-com-shift-to-kubernetes-from-openstack/"> Inside JD.com&#39;s Shift to Kubernetes from OpenStack </a> <span class="date">Feb 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/02/run-deep-learning-with-paddlepaddle-on-kubernetes/"> Run Deep Learning with PaddlePaddle on Kubernetes </a> <span class="date">Feb 8</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/02/highly-available-kubernetes-clusters/"> Highly Available Kubernetes Clusters </a> <span class="date">Feb 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/01/running-mongodb-on-kubernetes-with-statefulsets/"> Running MongoDB on Kubernetes with StatefulSets </a> <span class="date">Jan 30</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/01/fission-serverless-functions-as-service-for-kubernetes/"> Fission: Serverless Functions as a Service for Kubernetes </a> <span class="date">Jan 30</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/01/how-we-run-kubernetes-in-kubernetes-kubeception/"> How we run Kubernetes in Kubernetes aka Kubeception </a> <span class="date">Jan 20</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/01/scaling-kubernetes-deployments-with-policy-base-networking/"> Scaling Kubernetes deployments with Policy-Based Networking </a> <span class="date">Jan 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/01/stronger-foundation-for-creating-and-managing-kubernetes-clusters/"> A Stronger Foundation for Creating and Managing Kubernetes Clusters </a> <span class="date">Jan 12</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2017/01/kubernetes-ux-survey-infographic/"> Kubernetes UX Survey Infographic </a> <span class="date">Jan 9</span></li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+      <a data-toggle="collapse" data-parent="#blog-archive" href="#collapse-2016">
+      2016</a>
+      </h4>
+    </div>
+    <div id="collapse-2016" class="panel-collapse collapse">
+      <div class="panel-body">
+        <ul class="list-group">
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/12/kubernetes-supports-openapi/"> Kubernetes supports OpenAPI </a> <span class="date">Dec 23</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/12/cluster-federation-in-kubernetes-1-5/"> Cluster Federation in Kubernetes 1.5 </a> <span class="date">Dec 22</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/12/windows-server-support-kubernetes/"> Windows Server Support Comes to Kubernetes </a> <span class="date">Dec 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/12/statefulset-run-scale-stateful-applications-in-kubernetes/"> StatefulSet: Run and Scale Stateful Applications Easily in Kubernetes </a> <span class="date">Dec 20</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/12/container-runtime-interface-cri-in-kubernetes/"> Introducing Container Runtime Interface (CRI) in Kubernetes </a> <span class="date">Dec 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/12/five-days-of-kubernetes-1-5/"> Five Days of Kubernetes 1.5 </a> <span class="date">Dec 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/12/kubernetes-1-5-supporting-production-workloads/"> Kubernetes 1.5: Supporting Production Workloads </a> <span class="date">Dec 13</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/12/from-network-policies-to-security-policies/"> From Network Policies to Security Policies </a> <span class="date">Dec 8</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/11/kompose-tool-go-from-docker-compose-to-kubernetes/"> Kompose: a tool to go from Docker-compose to Kubernetes </a> <span class="date">Nov 22</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/11/kubernetes-containers-logging-monitoring-with-sematext/"> Kubernetes Containers Logging and Monitoring with Sematext </a> <span class="date">Nov 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/11/visualize-kubelet-performance-with-node-dashboard/"> Visualize Kubelet Performance with Node Dashboard </a> <span class="date">Nov 17</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/11/kubernetes-certification-training-and-managed-service-provider-program/"> CNCF Partners With The Linux Foundation To Launch New Kubernetes Certification, Training and Managed Service Provider Program </a> <span class="date">Nov 8</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/11/skytap-modernizing-microservice-architecture-with-kubernetes/"> Modernizing the Skytap Cloud Micro-Service Architecture with Kubernetes </a> <span class="date">Nov 7</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/11/bringing-kubernetes-support-to-azure/"> Bringing Kubernetes Support to Azure Container Service </a> <span class="date">Nov 7</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/10/tail-kubernetes-with-stern/"> Tail Kubernetes with Stern </a> <span class="date">Oct 31</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/10/kubernetes-service-technology-partners-program/"> Introducing Kubernetes Service Partners program and a redesigned Partners page </a> <span class="date">Oct 31</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/10/kubernetes-and-openstack-at-yahoo-japan/">  How We Architected and Run Kubernetes on OpenStack at Scale at Yahoo! JAPAN </a> <span class="date">Oct 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/10/globally-distributed-services-kubernetes-cluster-federation/"> Building Globally Distributed Services using Kubernetes Cluster Federation </a> <span class="date">Oct 14</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/10/helm-charts-making-it-simple-to-package-and-deploy-apps-on-kubernetes/"> Helm Charts: making it simple to package and deploy common applications on Kubernetes </a> <span class="date">Oct 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/10/dynamic-provisioning-and-storage-in-kubernetes/"> Dynamic Provisioning and Storage Classes in Kubernetes </a> <span class="date">Oct 7</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/10/production-kubernetes-dashboard-ui-1-4-improvements_3/"> How we improved Kubernetes Dashboard UI in 1.4 for your production needs​ </a> <span class="date">Oct 3</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/09/how-we-made-kubernetes-easy-to-install/"> How we made Kubernetes insanely easy to install </a> <span class="date">Sep 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/09/how-qbox-saved-50-percent-on-aws-bills/"> How Qbox Saved 50% per Month on AWS Bills Using Kubernetes and Supergiant </a> <span class="date">Sep 27</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/09/kubernetes-1-4-making-it-easy-to-run-on-kuberentes-anywhere/"> Kubernetes 1.4: Making it easy to run on Kubernetes anywhere </a> <span class="date">Sep 26</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/09/high-performance-network-policies-kubernetes/"> High performance network policies in Kubernetes clusters </a> <span class="date">Sep 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/09/creating-postgresql-cluster-using-helm/"> Creating a PostgreSQL Cluster using Helm </a> <span class="date">Sep 9</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/09/deploying-to-multiple-kubernetes-with-kit/"> Deploying to Multiple Kubernetes Clusters with kit </a> <span class="date">Sep 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/09/cloud-native-application-interfaces/"> Cloud Native Application Interfaces </a> <span class="date">Sep 1</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/08/security-best-practices-kubernetes-deployment/"> Security Best Practices for Kubernetes Deployment </a> <span class="date">Aug 31</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/08/stateful-applications-using-kubernetes-datera/"> Scaling Stateful Applications using Kubernetes Pet Sets and FlexVolumes with Datera Elastic Data Fabric </a> <span class="date">Aug 29</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/08/sig-apps-running-apps-in-kubernetes/"> SIG Apps: build apps for and operate them in Kubernetes </a> <span class="date">Aug 16</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/08/kubernetes-namespaces-use-cases-insights/"> Kubernetes Namespaces: use cases and insights </a> <span class="date">Aug 16</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/08/create-couchbase-cluster-using-kubernetes/"> Create a Couchbase cluster using Kubernetes </a> <span class="date">Aug 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/08/challenges-remotely-managed-onpremise-kubernetes-cluster/"> Challenges of a Remotely Managed, On-Premises, Bare-Metal Kubernetes Cluster </a> <span class="date">Aug 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/openstack-kubernetes-communities/"> Why OpenStack&#39;s embrace of Kubernetes is great for both communities </a> <span class="date">Jul 26</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/the-bet-on-kubernetes/"> The Bet on Kubernetes, a Red Hat Perspective </a> <span class="date">Jul 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/oh-the-places-you-will-go/"> Happy Birthday Kubernetes. Oh, the places you’ll go! </a> <span class="date">Jul 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/happy-k8sbday-1/"> A Very Happy Birthday Kubernetes </a> <span class="date">Jul 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/bringing-end-to-end-kubernetes-testing-to-azure-2/"> Bringing End-to-End Kubernetes Testing to Azure (Part 2) </a> <span class="date">Jul 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/automation-platform-at-wercker-with-kubernetes/"> Steering an Automation Platform at Wercker with Kubernetes </a> <span class="date">Jul 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/dashboard-web-interface-for-kubernetes/"> Dashboard - Full Featured Web Interface for Kubernetes </a> <span class="date">Jul 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/cross-cluster-services/"> Cross Cluster Services - Achieving Higher Availability for your Kubernetes Applications </a> <span class="date">Jul 14</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/citrix-netscaler-and-kubernetes/"> Citrix &#43; Kubernetes = A Home Run </a> <span class="date">Jul 14</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/thousand-instances-of-cassandra-using-kubernetes-pet-set/"> Thousand Instances of Cassandra using Kubernetes Pet Set </a> <span class="date">Jul 13</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/stateful-applications-in-containers-kubernetes/"> Stateful Applications in Containers!? Kubernetes 1.3 Says “Yes!” </a> <span class="date">Jul 13</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/kubernetes-in-rancher-further-evolution/"> Kubernetes in Rancher: the further evolution </a> <span class="date">Jul 12</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/autoscaling-in-kubernetes/"> Autoscaling in Kubernetes </a> <span class="date">Jul 12</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/rktnetes-brings-rkt-container-engine-to-kubernetes/"> rktnetes brings rkt container engine to Kubernetes </a> <span class="date">Jul 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/minikube-easily-run-kubernetes-locally/"> Minikube: easily run Kubernetes locally  </a> <span class="date">Jul 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/five-days-of-kubernetes-1-3/"> Five Days of Kubernetes 1.3 </a> <span class="date">Jul 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/update-on-kubernetes-for-windows-server-containers/"> Updates to Performance and Scalability in Kubernetes 1.3 -- 2,000 node 60,000 pod clusters </a> <span class="date">Jul 7</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/07/kubernetes-1-3-bridging-cloud-native-and-enterprise-workloads/"> Kubernetes 1.3: Bridging Cloud Native and Enterprise Workloads </a> <span class="date">Jul 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/06/container-design-patterns/"> Container Design Patterns </a> <span class="date">Jun 21</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/06/illustrated-childrens-guide-to-kubernetes/"> The Illustrated Children&#39;s Guide to Kubernetes </a> <span class="date">Jun 9</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/06/bringing-end-to-end-testing-to-azure/"> Bringing End-to-End Kubernetes Testing to Azure (Part 1) </a> <span class="date">Jun 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/05/hypernetes-security-and-multi-tenancy-in-kubernetes/"> Hypernetes: Bringing Security and Multi-tenancy to Kubernetes </a> <span class="date">May 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/05/coreosfest2016-kubernetes-community/"> CoreOS Fest 2016: CoreOS and Kubernetes Community meet in Berlin (&amp; San Francisco) </a> <span class="date">May 3</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/04/introducing-kubernetes-openstack-sig/"> Introducing the Kubernetes OpenStack Special Interest Group </a> <span class="date">Apr 22</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/04/building-awesome-user-interfaces-for-kubernetes/"> SIG-UI: the place for building awesome user interfaces for Kubernetes </a> <span class="date">Apr 20</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/04/sig-clusterops-promote-operability-and-interoperability-of-k8s-clusters/"> SIG-ClusterOps: Promote operability and interoperability of Kubernetes clusters </a> <span class="date">Apr 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/04/kubernetes-network-policy-apis/"> SIG-Networking: Kubernetes Network Policy APIs Coming in 1.3 </a> <span class="date">Apr 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/04/kubernetes-on-aws_15/"> How to deploy secure, auditable, and reproducible Kubernetes clusters on AWS </a> <span class="date">Apr 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/04/container-survey-results-march-2016/"> Container survey results - March 2016 </a> <span class="date">Apr 8</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/04/adding-support-for-kubernetes-in-rancher/"> Adding Support for Kubernetes in Rancher </a> <span class="date">Apr 8</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/04/configuration-management-with-containers/"> Configuration management with Containers </a> <span class="date">Apr 4</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/04/using-deployment-objects-with/"> Using Deployment objects with Kubernetes 1.2 </a> <span class="date">Apr 1</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/kubernetes-1-2-and-simplifying-advanced-networking-with-ingress/"> Kubernetes 1.2 and simplifying advanced networking with Ingress </a> <span class="date">Mar 31</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/using-spark-and-zeppelin-to-process-big-data-on-kubernetes/"> Using Spark and Zeppelin to process big data on Kubernetes 1.2 </a> <span class="date">Mar 30</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/building-highly-available-applications-using-kubernetes-new-multi-zone-clusters-aka-ubernetes-lite/"> Building highly available applications using Kubernetes new multi-zone clusters (a.k.a. &#39;Ubernetes Lite&#39;) </a> <span class="date">Mar 29</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/appformix-helping-enterprises/"> AppFormix: Helping Enterprises Operationalize Kubernetes </a> <span class="date">Mar 29</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/how-container-metadata-changes-your-point-of-view/"> How container metadata changes your point of view </a> <span class="date">Mar 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/five-days-of-kubernetes-12/"> Five Days of Kubernetes 1.2 </a> <span class="date">Mar 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/1000-nodes-and-beyond-updates-to-kubernetes-performance-and-scalability-in-12/"> 1000 nodes and beyond: updates to Kubernetes performance and scalability in 1.2 </a> <span class="date">Mar 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/scaling-neural-network-image-classification-using-kubernetes-with-tensorflow-serving/"> Scaling neural network image classification using Kubernetes with TensorFlow Serving  </a> <span class="date">Mar 23</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/kubernetes-1-2-even-more-performance-upgrades-plus-easier-application-deployment-and-management/"> Kubernetes 1.2: Even more performance upgrades, plus easier application deployment and management  </a> <span class="date">Mar 17</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/kubernetes-in-enterprise-with-fujitsus/"> Kubernetes in the Enterprise with Fujitsu’s Cloud Load Control </a> <span class="date">Mar 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/elasticbox-introduces-elastickube-to/"> ElasticBox introduces ElasticKube to help manage Kubernetes within the enterprise </a> <span class="date">Mar 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/state-of-container-world-february-2016/"> State of the Container World, February 2016 </a> <span class="date">Mar 1</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/03/kubernetes-community-meeting-notes/"> Kubernetes Community Meeting Notes - 20160225 </a> <span class="date">Mar 1</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/02/kubecon-eu-2016-kubernetes-community-in/"> KubeCon EU 2016: Kubernetes Community in London </a> <span class="date">Feb 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/02/kubernetes-community-meeting-notes_23/"> Kubernetes Community Meeting Notes - 20160218 </a> <span class="date">Feb 23</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/02/kubernetes-community-meeting-notes-20160211/"> Kubernetes Community Meeting Notes - 20160211 </a> <span class="date">Feb 16</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/02/sharethis-kubernetes-in-production/"> ShareThis: Kubernetes In Production </a> <span class="date">Feb 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/02/kubernetes-community-meeting-notes/"> Kubernetes Community Meeting Notes - 20160204 </a> <span class="date">Feb 9</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/02/kubernetes-community-meeting-notes-20160128/"> Kubernetes Community Meeting Notes - 20160128 </a> <span class="date">Feb 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/02/state-of-container-world-january-2016/"> State of the Container World, January 2016 </a> <span class="date">Feb 1</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/01/kubernetes-community-meeting-notes_28/">Kubernetes Community Meeting Notes - 20160121</a> <span class="date">Jan 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/01/kubernetes-community-meeting-notes/"> Kubernetes Community Meeting Notes - 20160114 </a> <span class="date">Jan 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/01/why-kubernetes-doesnt-use-libnetwork/"> Why Kubernetes doesn’t use libnetwork </a> <span class="date">Jan 14</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2016/01/simple-leader-election-with-kubernetes/"> Simple leader election with Kubernetes and Docker </a> <span class="date">Jan 11</span></li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+      <a data-toggle="collapse" data-parent="#blog-archive" href="#collapse-2015">
+      2015</a>
+      </h4>
+    </div>
+    <div id="collapse-2015" class="panel-collapse collapse">
+      <div class="panel-body">
+        <ul class="list-group">
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/12/creating-raspberry-pi-cluster-running/"> Creating a Raspberry Pi cluster running Kubernetes, the installation (Part 2) </a> <span class="date">Dec 22</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/12/managing-kubernetes-pods-services-and-replication-controllers-with-puppet/"> Managing Kubernetes Pods, Services and Replication Controllers with Puppet </a> <span class="date">Dec 17</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/12/how-weave-built-a-multi-deployment-solution-for-scope-using-kubernetes/"> How Weave built a multi-deployment solution for Scope using Kubernetes </a> <span class="date">Dec 12</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/11/creating-a-raspberry-pi-cluster-running-kubernetes-the-shopping-list-part-1/"> Creating a Raspberry Pi cluster running Kubernetes, the shopping list (Part 1) </a> <span class="date">Nov 25</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/11/monitoring-kubernetes-with-sysdig/"> Monitoring Kubernetes with Sysdig </a> <span class="date">Nov 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/11/one-million-requests-per-second-dependable-and-dynamic-distributed-systems-at-scale/"> One million requests per second: Dependable and dynamic distributed systems at scale </a> <span class="date">Nov 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/11/kubernetes-1-1-performance-upgrades-improved-tooling-and-a-growing-community/"> Kubernetes 1.1 Performance upgrades, improved tooling and a growing community  </a> <span class="date">Nov 9</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/11/kubernetes-as-foundation-for-cloud-native-paas/"> Kubernetes as Foundation for Cloud Native PaaS </a> <span class="date">Nov 3</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/10/some-things-you-didnt-know-about-kubectl_28/"> Some things you didn’t know about kubectl </a> <span class="date">Oct 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/09/kubernetes-performance-measurements-and/"> Kubernetes Performance Measurements and Roadmap </a> <span class="date">Sep 10</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/08/using-kubernetes-namespaces-to-manage/"> Using Kubernetes Namespaces to Manage Environments </a> <span class="date">Aug 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/08/weekly-kubernetes-community-hangout/"> Weekly Kubernetes Community Hangout Notes - July 31 2015 </a> <span class="date">Aug 4</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/07/the-growing-kubernetes-ecosystem/"> The Growing Kubernetes Ecosystem </a> <span class="date">Jul 24</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/07/weekly-kubernetes-community-hangout_23/"> Weekly Kubernetes Community Hangout Notes - July 17 2015 </a> <span class="date">Jul 23</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/07/strong-simple-ssl-for-kubernetes/"> Strong, Simple SSL for Kubernetes Services </a> <span class="date">Jul 14</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/07/weekly-kubernetes-community-hangout/"> Weekly Kubernetes Community Hangout Notes - July 10 2015 </a> <span class="date">Jul 13</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/07/announcing-first-kubernetes-enterprise/"> Announcing the First Kubernetes Enterprise Training Course </a> <span class="date">Jul 8</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/07/kubernetes-10-launch-party-at-oscon/"> Kubernetes 1.0 Launch Event at OSCON </a> <span class="date">Jul 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/07/how-did-quake-demo-from-dockercon-work/"> How did the Quake demo from DockerCon Work? </a> <span class="date">Jul 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/"> The Distributed System ToolKit: Patterns for Composite Containers </a> <span class="date">Jun 29</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/06/slides-cluster-management-with/"> Slides: Cluster Management with Kubernetes, talk given at the University of Edinburgh </a> <span class="date">Jun 26</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/06/cluster-level-logging-with-kubernetes/"> Cluster Level Logging with Kubernetes </a> <span class="date">Jun 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/06/weekly-kubernetes-community-hangout/"> Weekly Kubernetes Community Hangout Notes - May 22 2015 </a> <span class="date">Jun 2</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/05/kubernetes-on-openstack/"> Kubernetes on OpenStack </a> <span class="date">May 19</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/05/weekly-kubernetes-community-hangout_18/"> Weekly Kubernetes Community Hangout Notes - May 15 2015 </a> <span class="date">May 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/05/docker-and-kubernetes-and-appc/"> Docker and Kubernetes and AppC  </a> <span class="date">May 18</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/05/kubernetes-release-0170/"> Kubernetes Release: 0.17.0 </a> <span class="date">May 15</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/05/resource-usage-monitoring-kubernetes/">Resource Usage Monitoring in Kubernetes</a> <span class="date">May 12</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/05/weekly-kubernetes-community-hangout/"> Weekly Kubernetes Community Hangout Notes - May 1 2015 </a> <span class="date">May 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/05/kubernetes-release-0160/"> Kubernetes Release: 0.16.0 </a> <span class="date">May 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/05/appc-support-for-kubernetes-through-rkt/"> AppC Support for Kubernetes through RKT </a> <span class="date">May 4</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/04/weekly-kubernetes-community-hangout_29/"> Weekly Kubernetes Community Hangout Notes - April 24 2015 </a> <span class="date">Apr 30</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/04/borg-predecessor-to-kubernetes/"> Borg: The Predecessor to Kubernetes </a> <span class="date">Apr 23</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/04/kubernetes-and-mesosphere-dcos/"> Kubernetes and the Mesosphere DCOS </a> <span class="date">Apr 22</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/04/weekly-kubernetes-community-hangout_17/"> Weekly Kubernetes Community Hangout Notes - April 17 2015 </a> <span class="date">Apr 17</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/04/kubernetes-release-0150/"> Kubernetes Release: 0.15.0 </a> <span class="date">Apr 16</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/04/introducing-kubernetes-v1beta3/"> Introducing Kubernetes API Version v1beta3 </a> <span class="date">Apr 16</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/04/weekly-kubernetes-community-hangout_11/"> Weekly Kubernetes Community Hangout Notes - April 10 2015 </a> <span class="date">Apr 11</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/04/faster-than-speeding-latte/"> Faster than a speeding Latte </a> <span class="date">Apr 6</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/04/weekly-kubernetes-community-hangout/"> Weekly Kubernetes Community Hangout Notes - April 3 2015 </a> <span class="date">Apr 4</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/03/participate-in-kubernetes-user/"> Participate in a Kubernetes User Experience Study </a> <span class="date">Mar 31</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/03/weekly-kubernetes-community-hangout/"> Weekly Kubernetes Community Hangout Notes - March 27 2015 </a> <span class="date">Mar 28</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/03/kubernetes-gathering-videos/"> Kubernetes Gathering Videos </a> <span class="date">Mar 23</span></li>
+          
+          
+          <li class="list-group-item"><a href="https://kubernetes.io/blog/2015/03/welcome-to-kubernetes-blog/">Welcome to the Kubernetes Blog!</a> <span class="date">Mar 20</span></li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+					</div>
+				</div>
+			</div>
+		</main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/docs/home/">Home</a>
+            
+            <a href="/blog/">Blog</a>
+            
+            <a href="/training/">Training</a>
+            
+            <a href="/partners/">Partners</a>
+            
+            <a href="/community/">Community</a>
+            
+            <a href="/case-studies/">Case Studies</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribute</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+	</body>
+</html>

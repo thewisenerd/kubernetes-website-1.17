@@ -1,0 +1,2628 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>在 Kubernetes 集群中使用 sysctl - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/tasks/administer-cluster/sysctl-cluster/">
+<meta property="og:title" content="在 Kubernetes 集群中使用 sysctl">
+<meta name="twitter:title" content="在 Kubernetes 集群中使用 sysctl">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/tasks/administer-cluster/sysctl-cluster/">English</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/tasks/administer-cluster/sysctl-cluster/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/tasks/administer-cluster/sysctl-cluster/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/tasks/administer-cluster/sysctl-cluster/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/tasks/administer-cluster/sysctl-cluster/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/tasks/administer-cluster/sysctl-cluster/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+<h1>任务</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/" class="YAH">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="任务" href="/zh/docs/tasks/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="安装工具">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装工具" href="/zh/docs/tasks/tools/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="安装并设置 kubectl" href="/zh/docs/tasks/tools/install-kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装 Minikube" href="/zh/docs/tasks/tools/install-minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群" href="/zh/docs/tasks/administer-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="用 kubeadm 进行管理">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="用 kubeadm 进行管理" href="/zh/docs/tasks/administer-cluster/kubeadm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 进行证书管理" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="升级 kubeadm 集群" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理内存，CPU 和 API 资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理内存，CPU 和 API 资源" href="/zh/docs/tasks/administer-cluster/manage-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的内存请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的CPU请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间的最小和最大内存约束" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置CPU最小和最大限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置内存和 CPU 配额" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间下pod总数" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-pod-namespace/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Install a Network Policy Provider">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Install a Network Policy Provider" href="/zh/docs/tasks/administer-cluster/network-policy-provider/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Calico 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/calico-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Cilium 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/cilium-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kube-router 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/kube-router-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Romana 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/romana-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Weave Net 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/weave-network-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debug DNS 方案" href="/zh/docs/tasks/administer-cluster/dns-debugging-resolution/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Enabling Service Topology <small>(EN)</small>" href="/docs/tasks/administer-cluster/enabling-service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IP Masquerade Agent 用户指南" href="/zh/docs/tasks/administer-cluster/ip-masq-agent/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 云管理控制器" href="/zh/docs/tasks/administer-cluster/running-cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Safely Drain a Node while Respecting the PodDisruptionBudget <small>(EN)</small>" href="/docs/tasks/administer-cluster/safely-drain-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Kubernetes 运行 etcd 集群" href="/zh/docs/tasks/administer-cluster/configure-upgrade-etcd/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为系统守护进程预留计算资源" href="/zh/docs/tasks/administer-cluster/reserve-compute-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为节点发布扩展资源" href="/zh/docs/tasks/administer-cluster/extended-resource-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 CoreDNS 进行服务发现" href="/zh/docs/tasks/administer-cluster/coredns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 KMS 提供商进行数据加密" href="/zh/docs/tasks/administer-cluster/kms-provider/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kubernetes API 访问集群" href="/zh/docs/tasks/administer-cluster/access-cluster-api/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="关键插件 Pod 的调度保证" href="/zh/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="启用端点切片" href="/zh/docs/tasks/administer-cluster/enabling-endpointslices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间演练" href="/zh/docs/tasks/administer-cluster/namespaces-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 NodeLocal DNSCache" href="/zh/docs/tasks/administer-cluster/nodelocaldns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 sysctl" href="/zh/docs/tasks/administer-cluster/sysctl-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在实时集群上重新配置节点的 Kubelet" href="/zh/docs/tasks/administer-cluster/reconfigure-kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="声明网络策略" href="/zh/docs/tasks/administer-cluster/declare-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="开发云控制器管理器" href="/zh/docs/tasks/administer-cluster/developing-cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的 CPU 管理策略" href="/zh/docs/tasks/administer-cluster/cpu-management-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的拓扑管理策略" href="/zh/docs/tasks/administer-cluster/topology-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="搭建高可用的 Kubernetes Masters" href="/zh/docs/tasks/administer-cluster/highly-available-master/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="改变默认 StorageClass" href="/zh/docs/tasks/administer-cluster/change-default-storage-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="更改 PersistentVolume 的回收策略" href="/zh/docs/tasks/administer-cluster/change-pv-reclaim-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="自定义 DNS 服务" href="/zh/docs/tasks/administer-cluster/dns-custom-nameservers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群上运行的服务" href="/zh/docs/tasks/administer-cluster/access-cluster-services/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过命名空间共享集群" href="/zh/docs/tasks/administer-cluster/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过配置文件设置 Kubelet 参数" href="/zh/docs/tasks/administer-cluster/kubelet-config-file/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 API 对象配额" href="/zh/docs/tasks/administer-cluster/quota-api-object/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置多个调度器" href="/zh/docs/tasks/administer-cluster/configure-multiple-schedulers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置资源不足时的处理方式" href="/zh/docs/tasks/administer-cluster/out-of-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="限制存储消耗" href="/zh/docs/tasks/administer-cluster/limit-storage-consumption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群 DNS 服务自动伸缩" href="/zh/docs/tasks/administer-cluster/dns-horizontal-autoscaling/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群安全" href="/zh/docs/tasks/administer-cluster/securing-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群管理" href="/zh/docs/tasks/administer-cluster/cluster-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="静态加密 Secret 数据" href="/zh/docs/tasks/administer-cluster/encrypt-data/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置 Pods 和容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置 Pods 和容器" href="/zh/docs/tasks/configure-pod-container/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器和 Pod 分配内存资源" href="/zh/docs/tasks/configure-pod-container/assign-memory-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Assign CPU Resources to Containers and Pods" href="/zh/docs/tasks/configure-pod-container/assign-cpu-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure GMSA for Windows Pods and containers <small>(EN)</small>" href="/docs/tasks/configure-pod-container/configure-gmsa/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Windows 的 pod 和容器配置 RunAsUserName" href="/zh/docs/tasks/configure-pod-container/configure-runasusername/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 的服务质量" href="/zh/docs/tasks/configure-pod-container/quality-service-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器分派扩展资源" href="/zh/docs/tasks/configure-pod-container/extended-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用卷进行存储" href="/zh/docs/tasks/configure-pod-container/configure-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用 PersistentVolume 作为存储" href="/zh/docs/tasks/configure-pod-container/configure-persistent-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 使用投射卷作存储" href="/zh/docs/tasks/configure-pod-container/configure-projected-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure a Security Context for a Pod or Container <small>(EN)</small>" href="/docs/tasks/configure-pod-container/security-context/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Pod 配置服务账户" href="/zh/docs/tasks/configure-pod-container/configure-service-account/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="从私有仓库拉取镜像" href="/zh/docs/tasks/configure-pod-container/pull-image-private-registry/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置存活、就绪和启动探测器" href="/zh/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/tasks/configure-pod-container/assign-pods-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 初始化" href="/zh/docs/tasks/configure-pod-container/configure-pod-initialization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器的生命周期事件设置处理函数" href="/zh/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ConfigMap 配置 Pod" href="/zh/docs/tasks/configure-pod-container/configure-pod-configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Pod 中的容器之间共享进程命名空间" href="/zh/docs/tasks/configure-pod-container/share-process-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建静态 Pod" href="/zh/docs/tasks/configure-pod-container/static-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Docker Compose 文件转换为 Kubernetes 资源" href="/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理 Kubernetes 对象" href="/zh/docs/tasks/manage-kubernetes-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Configuration Files <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/declarative-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Kustomize <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/kustomization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Kubernetes Objects Using Imperative Commands <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/imperative-command/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用配置文件对 Kubernetes 对象进行命令式管理" href="/zh/docs/tasks/manage-kubernetes-objects/imperative-config/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="给应用注入数据">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="给应用注入数据" href="/zh/docs/tasks/inject-data-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器设置启动时要执行的命令及其入参" href="/zh/docs/tasks/inject-data-application/define-command-argument-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器设置环境变量" href="/zh/docs/tasks/inject-data-application/define-environment-variable-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 PodPreset 将信息注入 Pods" href="/zh/docs/tasks/inject-data-application/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Secret 安全地分发凭证" href="/zh/docs/tasks/inject-data-application/distribute-credentials-secure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过文件将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过环境变量将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/environment-variable-expose-pod-information/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行应用" href="/zh/docs/tasks/run-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="运行一个有状态的应用程序" href="/zh/docs/tasks/run-application/run-replicated-stateful-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubectl patch 更新 API 对象" href="/zh/docs/tasks/run-application/update-api-object-kubectl-patch/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="删除 StatefulSet" href="/zh/docs/tasks/run-application/delete-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="强制删除 StatefulSet 类型的 Pods" href="/zh/docs/tasks/run-application/force-delete-stateful-set-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="基于Replication Controller执行滚动升级" href="/zh/docs/tasks/run-application/rolling-update-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 水平自动伸缩" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Horizontal Pod Autoscaler演练" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="指定应用程序的中断预算（Disruption Budget）" href="/zh/docs/tasks/run-application/configure-pdb/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用Deployment运行一个无状态应用" href="/zh/docs/tasks/run-application/run-stateless-application-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="弹缩StatefulSet" href="/zh/docs/tasks/run-application/scale-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="运行一个单实例有状态应用" href="/zh/docs/tasks/run-application/run-single-instance-stateful-application/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行 Jobs">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行 Jobs" href="/zh/docs/tasks/job/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 CronJob 运行自动化任务" href="/zh/docs/tasks/job/automated-tasks-with-cron-jobs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用扩展进行并行处理" href="/zh/docs/tasks/job/parallel-processing-expansion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行粗粒度并行处理" href="/zh/docs/tasks/job/coarse-parallel-processing-work-queue/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行精细的并行处理" href="/zh/docs/tasks/job/fine-parallel-processing-work-queue/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="访问集群中的应用程序">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="访问集群中的应用程序" href="/zh/docs/tasks/access-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网页界面 (Dashboard)" href="/zh/docs/tasks/access-application-cluster/web-ui-dashboard/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群" href="/zh/docs/tasks/access-application-cluster/access-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用端口转发来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/port-forward-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用服务来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/service-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建一个外部负载均衡器" href="/zh/docs/tasks/access-application-cluster/create-external-load-balancer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置你的云平台防火墙" href="/zh/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up Ingress on Minikube with the NGINX Ingress Controller <small>(EN)</small>" href="/docs/tasks/access-application-cluster/ingress-minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="列出集群中所有运行容器的镜像" href="/zh/docs/tasks/access-application-cluster/list-all-running-container-images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为集群配置 DNS" href="/zh/docs/tasks/access-application-cluster/configure-dns-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Service 把前端连接到后端" href="/zh/docs/tasks/access-application-cluster/connecting-frontend-backend/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="同 Pod 内的容器使用共享卷通信" href="/zh/docs/tasks/access-application-cluster/communicate-containers-same-pod-shared-volume/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置对多集群的访问" href="/zh/docs/tasks/access-application-cluster/configure-access-multiple-clusters/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="监控、日志和排错">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="监控、日志和排错" href="/zh/docs/tasks/debug-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Auditing" href="/zh/docs/tasks/debug-application-cluster/audit/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Auditing with Falco <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/falco/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Logging Using Stackdriver <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/logging-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StackDriver 中的事件" href="/zh/docs/tasks/debug-application-cluster/events-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 crictl 对 Kubernetes 节点进行调试" href="/zh/docs/tasks/debug-application-cluster/crictl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ElasticSearch 和 Kibana 进行日志管理" href="/zh/docs/tasks/debug-application-cluster/logging-elasticsearch-kibana/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在本地开发和调试服务" href="/zh/docs/tasks/debug-application-cluster/local-debugging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用自测与调试" href="/zh/docs/tasks/debug-application-cluster/debug-application-introspection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="排错" href="/zh/docs/tasks/debug-application-cluster/troubleshooting/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="确定 Pod 失败的原因" href="/zh/docs/tasks/debug-application-cluster/determine-reason-pod-failure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="节点健康监测" href="/zh/docs/tasks/debug-application-cluster/monitor-node-health/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="获取正在运行容器的 Shell" href="/zh/docs/tasks/debug-application-cluster/get-shell-running-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Init 容器" href="/zh/docs/tasks/debug-application-cluster/debug-init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Pods 和 Replication Controllers" href="/zh/docs/tasks/debug-application-cluster/debug-pod-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Service" href="/zh/docs/tasks/debug-application-cluster/debug-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试StatefulSet" href="/zh/docs/tasks/debug-application-cluster/debug-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源指标管道" href="/zh/docs/tasks/debug-application-cluster/resource-metrics-pipeline/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源监控工具" href="/zh/docs/tasks/debug-application-cluster/resource-usage-monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-cluster/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/tasks/access-kubernetes-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="使用自定义资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用自定义资源" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Extend the Kubernetes API with CustomResourceDefinitions <small>(EN)</small>" href="/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用户自定义资源版本" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definition-versioning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置聚合层" href="/zh/docs/tasks/access-kubernetes-api/configure-aggregation-layer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="设置一个扩展的 API server" href="/zh/docs/tasks/access-kubernetes-api/setup-extension-api-server/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HTTP 代理访问 Kubernetes API" href="/zh/docs/tasks/access-kubernetes-api/http-proxy-access-api/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="TLS">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="管理集群中的 TLS 认证" href="/zh/docs/tasks/tls/managing-tls-in-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书轮换" href="/zh/docs/tasks/tls/certificate-rotation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="联邦 - 在多个集群上运行一个应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="联邦 - 在多个集群上运行一个应用" href="/zh/docs/tasks/federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="将 CoreDNS 设置为联邦集群的 DNS 提供者" href="/zh/docs/tasks/federation/set-up-coredns-provider-federation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用联合服务来实现跨集群的服务发现" href="/zh/docs/tasks/federation/federation-service-discovery/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="管理联邦控制平面">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理联邦控制平面" href="/zh/docs/tasks/federation/administer-federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="联邦 ConfigMap" href="/zh/docs/tasks/federation/administer-federation/configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 DaemonSet" href="/zh/docs/tasks/federation/administer-federation/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Deployment" href="/zh/docs/tasks/federation/administer-federation/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Job" href="/zh/docs/tasks/federation/administer-federation/job/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 ReplicaSet" href="/zh/docs/tasks/federation/administer-federation/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Secret" href="/zh/docs/tasks/federation/administer-federation/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦事件" href="/zh/docs/tasks/federation/administer-federation/events/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦命名空间" href="/zh/docs/tasks/federation/administer-federation/namespaces/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在联邦中设置放置策略" href="/zh/docs/tasks/federation/set-up-placement-policies-federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群守护进程">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群守护进程" href="/zh/docs/tasks/manage-daemon/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行回滚" href="/zh/docs/tasks/manage-daemon/rollback-daemon-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行滚动更新" href="/zh/docs/tasks/manage-daemon/update-daemon-set/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安装服务目录">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装服务目录" href="/zh/docs/tasks/service-catalog/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Helm 安装 Service Catalog" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-helm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 SC 安装服务目录" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-sc/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="网络">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="网络" href="/zh/docs/tasks/network/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="验证 IPv4/IPv6 双协议栈" href="/zh/docs/tasks/network/validate-dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用插件扩展 kubectl" href="/zh/docs/tasks/extend-kubectl/kubectl-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理巨页（HugePages）" href="/zh/docs/tasks/manage-hugepages/scheduling-hugepages/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度 GPUs" href="/zh/docs/tasks/manage-gpus/scheduling-gpus/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/administer-cluster/sysctl-cluster.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>在 Kubernetes 集群中使用 sysctl</h1>
+
+
+
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.11</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+该功能目前处于 <em>beta</em> 状态，意味着：</p>
+
+<ul>
+<li>版本名称包含 beta （例如 v2beta3）。</li>
+<li>代码经过了充分测试，启用该功能被认为是安全的。默认情况下被启用。</li>
+<li>对整体功能的支持在未来不会被移除，尽管细节上可能会做更改。</li>
+<li>在后续的 beta 或稳定版本中，对象的模式、语义可能以不兼容的方式发生变化。当这种情况发生时，我们将提供迁移到下一个版本的说明。这可能需要删除、编辑和重建 API 对象，编辑过程可能需要一些思考。这可能导致依赖该功能的应用程序停机一段时间。</li>
+<li>建议仅在非业务关键场景使用该功能，因为在后续版本中可能会发生不兼容的更改。如果您有多个可以独立升级的集群，那么您可能可以放松这个限制。</li>
+<li><strong>请尝试使用我们的 beta 版功能，并给出反馈！在它们退出 beta 测试阶段之后，我们将很难去做更多的更改。</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<!--
+This document describes how to configure and use kernel parameters within a
+Kubernetes cluster using the sysctl interface.
+--->
+
+<p>本文档介绍如何通过 sysctl 接口在 Kubernetes 集群中配置和使用内核参数。</p>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%87%86%e5%a4%87%e5%bc%80%e5%a7%8b">准备开始</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e8%8e%b7%e5%8f%96-sysctl-%e7%9a%84%e5%8f%82%e6%95%b0%e5%88%97%e8%a1%a8">获取 Sysctl 的参数列表</a></li>
+
+
+
+
+<li><a href="#%e5%90%af%e7%94%a8%e9%9d%9e%e5%ae%89%e5%85%a8%e7%9a%84-sysctl-%e5%8f%82%e6%95%b0">启用非安全的 Sysctl 参数</a></li>
+
+
+
+
+<li><a href="#%e8%ae%be%e7%bd%ae-pod-%e7%9a%84-sysctl-%e5%8f%82%e6%95%b0">设置 Pod 的 Sysctl 参数</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#podsecuritypolicy">PodSecurityPolicy</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+
+<h2 id="准备开始">准备开始</h2>
+<p>你必须拥有一个 Kubernetes 的集群，同时你的 Kubernetes 集群必须带有 kubectl 命令行工具。
+如果你还没有集群，你可以通过 <a href="/docs/getting-started-guides/minikube">Minikube</a> 构建一
+个你自己的集群，或者你可以使用下面任意一个 Kubernetes 工具构建：
+<!--
+You need to have a Kubernetes cluster, and the kubectl command-line tool must
+be configured to communicate with your cluster. If you do not already have a
+cluster, you can create one by using
+[Minikube](/docs/getting-started-guides/minikube),
+or you can use one of these Kubernetes playgrounds:
+--></p>
+
+<ul>
+<li><a href="https://www.katacoda.com/courses/kubernetes/playground" target="_blank">Katacoda</a></li>
+<li><a href="http://labs.play-with-k8s.com/" target="_blank">Play with Kubernetes</a></li>
+</ul>
+ 
+
+<p>要获知版本信息，请输入 <code>kubectl version</code>.</p>
+
+
+
+
+<!--
+## Listing all Sysctl Parameters
+--->
+
+<h2 id="获取-sysctl-的参数列表">获取 Sysctl 的参数列表</h2>
+
+<!--
+In Linux, the sysctl interface allows an administrator to modify kernel
+parameters at runtime. Parameters are available via the `/proc/sys/` virtual
+process file system. The parameters cover various subsystems such as:
+--->
+
+<p>在 Linux 中，管理员可以通过 sysctl 接口修改内核运行时的参数。在 <code>/proc/sys/</code> 虚拟文件系统下存放许多内核参数。这些参数涉及了多个内核子系统，如：</p>
+
+<!--
+- kernel (common prefix: `kernel.`)
+- networking (common prefix: `net.`)
+- virtual memory (common prefix: `vm.`)
+- MDADM (common prefix: `dev.`)
+- More subsystems are described in [Kernel docs](https://www.kernel.org/doc/Documentation/sysctl/README).
+--->
+
+<ul>
+<li>内核子系统 (通常前缀为: <code>kernel.</code>)</li>
+<li>网络子系统 (通常前缀为: <code>net.</code>)</li>
+<li>虚拟内存子系统 (通常前缀为: <code>vm.</code>)</li>
+<li>MDADM 子系统 (通常前缀为: <code>dev.</code>)</li>
+<li>更多子系统请参见 <a href="https://www.kernel.org/doc/Documentation/sysctl/README" target="_blank">内核文档</a>。</li>
+</ul>
+
+<!--
+To get a list of all parameters, you can run
+--->
+
+<p>若要获取完整的参数列表，请执行以下命令</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ sudo sysctl -a</code></pre></div>
+<!--
+## Enabling Unsafe Sysctls
+--->
+
+<h2 id="启用非安全的-sysctl-参数">启用非安全的 Sysctl 参数</h2>
+
+<!--
+Sysctls are grouped into _safe_  and _unsafe_ sysctls. In addition to proper
+namespacing a _safe_ sysctl must be properly _isolated_ between pods on the same
+node. This means that setting a _safe_ sysctl for one pod
+--->
+
+<p>sysctl 参数分为 <em>安全</em> 和 _非安全的_。<em>安全</em> sysctl 参数除了需要设置恰当的命名空间外，在同一 node 上的不同 Pod 之间也必须是 _相互隔离的_。这意味着在 Pod 上设置 <em>安全</em> sysctl 参数</p>
+
+<!--
+- must not have any influence on any other pod on the node
+- must not allow to harm the node's health
+- must not allow to gain CPU or memory resources outside of the resource limits
+  of a pod.
+--->
+
+<ul>
+<li>必须不能影响到节点上的其他 Pod</li>
+<li>必须不能损害节点的健康</li>
+<li>必须不允许使用超出 Pod 的资源限制的 CPU 或内存资源。</li>
+</ul>
+
+<!--
+By far, most of the _namespaced_ sysctls are not necessarily considered _safe_.
+The following sysctls are supported in the _safe_ set:
+--->
+
+<p>至今为止，大多数 <em>有命名空间的</em> sysctl 参数不一定被认为是 <em>安全</em> 的。以下几种 sysctl 参数是 _安全的_：</p>
+
+<ul>
+<li><code>kernel.shm_rmid_forced</code>,</li>
+<li><code>net.ipv4.ip_local_port_range</code>,</li>
+<li><code>net.ipv4.tcp_syncookies</code>.</li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+The example `net.ipv4.tcp_syncookies` is not namespaced on Linux kernel version 4.4 or lower.
+--->
+
+<p><strong>注意</strong>: 示例中的 <code>net.ipv4.tcp_syncookies</code> 在Linux 内核 4.4 或更低的版本中是无命名空间的。</div>
+</blockquote>
+
+<!--
+This list will be extended in future Kubernetes versions when the kubelet
+supports better isolation mechanisms.
+--->
+
+<p>在未来的 Kubernetes 版本中，若kubelet 支持更好的隔离机制，则上述列表中将会列出更多 <em>安全的</em> sysctl 参数。</p>
+
+<!--
+All _safe_ sysctls are enabled by default.
+--->
+
+<p>所有 <em>安全的</em> sysctl 参数都默认启用。</p>
+
+<!--
+All _unsafe_ sysctls are disabled by default and must be allowed manually by the
+cluster admin on a per-node basis. Pods with disabled unsafe sysctls will be
+scheduled, but will fail to launch.
+--->
+
+<p>所有 <em>非安全的</em> sysctl 参数都默认禁用，且必须由集群管理员在每个节点上手动开启。那些设置了不安全 sysctl 参数的 Pod 仍会被调度，但无法正常启动。</p>
+
+<!--
+With the warning above in mind, the cluster admin can allow certain _unsafe_
+sysctls for very special situations like e.g. high-performance or real-time
+application tuning. _Unsafe_ sysctls are enabled on a node-by-node basis with a
+flag of the kubelet, e.g.:
+--->
+
+<p>参考上述警告，集群管理员只有在一些非常特殊的情况下（如：高可用或实时应用调整），才可以启用特定的 <em>非安全的</em> sysctl 参数。如需启用 <em>非安全的</em> sysctl 参数，请您在每个节点上分别设置 kubelet 命令行参数，例如：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ kubelet --allowed-unsafe-sysctls <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  <span style="color:#b44">&#39;kernel.msg*,net.core.somaxconn&#39;</span> ...</code></pre></div>
+<!--
+For minikube, this can be done via the `extra-config` flag:
+--->
+
+<p>如果您使用 minikube，可以通过 <code>extra-config</code> 参数来配置：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ minikube start --extra-config<span style="color:#666">=</span><span style="color:#b44">&#34;kubelet.AllowedUnsafeSysctls=kernel.msg*,net.core.somaxconn&#34;</span>...</code></pre></div>
+<!--
+Only _namespaced_ sysctls can be enabled this way.
+--->
+
+<p>只有 <em>有命名空间的</em> sysctl 参数可以通过该方式启用。</p>
+
+<!--
+## Setting Sysctls for a Pod
+--->
+
+<h2 id="设置-pod-的-sysctl-参数">设置 Pod 的 Sysctl 参数</h2>
+
+<!--
+A number of sysctls are _namespaced_ in today's Linux kernels. This means that
+they can be set independently for each pod on a node. Only namespaced sysctls
+are configurable via the pod securityContext within Kubernetes.
+--->
+
+<p>目前，在 Linux 内核中，有许多的 sysctl 参数都是 <em>有命名空间的</em> 。 这就意味着可以为节点上的每个 Pod 分别去设置它们的 sysctl 参数。 在 Kubernetes 中，只有那些有命名空间的 sysctl 参数可以通过 Pod 的 securityContext 对其进行配置。</p>
+
+<!--
+The following sysctls are known to be namespaced. This list could change
+in future versions of the Linux kernel.
+--->
+
+<p>以下列出有命名空间的 sysctl 参数，在未来的 Linux 内核版本中，此列表可能会发生变化。</p>
+
+<ul>
+<li><code>kernel.shm*</code>,</li>
+<li><code>kernel.msg*</code>,</li>
+<li><code>kernel.sem</code>,</li>
+<li><code>fs.mqueue.*</code>,</li>
+<li><code>net.*</code>（内核中网络配置项相关参数），如果它可以在容器命名空间里被更改。然而，也有一些特例
+(例如，<code>net.netfilter.nf_conntrack_max</code> 和
+<code>net.netfilter.nf_conntrack_expect_max</code>
+可以在容器命名空间里被更改，但它们是非命名空间的)。</li>
+</ul>
+
+<!--
+Sysctls with no namespace are called _node-level_ sysctls. If you need to set
+them, you must manually configure them on each node's operating system, or by
+using a DaemonSet with privileged containers.
+--->
+
+<p>没有命名空间的 sysctl 参数称为 <em>节点级别的</em> sysctl 参数。 如果需要对其进行设置，则必须在每个节点的操作系统上手动地去配置它们，或者通过在 DaemonSet 中运行特权模式容器来配置。</p>
+
+<!--
+Use the pod securityContext to configure namespaced sysctls. The securityContext
+applies to all containers in the same pod.
+--->
+
+<p>可使用 pod 的 securityContext 来配置有命名空间的 sysctl 参数，securityContext 应用于同一个 pod 中的所有容器。</p>
+
+<!--
+This example uses the pod securityContext to set a safe sysctl
+`kernel.shm_rmid_forced` and two unsafe sysctls `net.core.somaxconn` and
+`kernel.msgmax` There is no distinction between _safe_ and _unsafe_ sysctls in
+the specification.
+--->
+
+<p>此示例中，使用 Pod SecurityContext 来对一个安全的 sysctl 参数 <code>kernel.shm_rmid_forced</code> 以及两个非安全的 sysctl 参数 <code>net.core.somaxconn</code>和 <code>kernel.msgmax</code> 进行设置。在 Pod 规格中对 <em>安全的</em> 和 <em>非安全的</em> sysctl 参数不做区分。</p>
+
+<blockquote class="warning">
+  <div><strong>警告：</strong> <!--
+Only modify sysctl parameters after you understand their effects, to avoid
+destabilizing your operating system.
+--->
+
+<p>为了避免破坏操作系统的稳定性，请您在了解变更后果之后再修改 sysctl 参数。</div>
+</blockquote>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>sysctl-example<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>securityContext:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>sysctls:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>kernel.shm_rmid_forced<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;0&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>net.core.somaxconn<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;1024&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>kernel.msgmax<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;65536&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>...</code></pre></div>
+
+
+
+<blockquote class="warning">
+  <div><strong>警告：</strong> <!--
+Due to their nature of being _unsafe_, the use of _unsafe_ sysctls
+is at-your-own-risk and can lead to severe problems like wrong behavior of
+containers, resource shortage or complete breakage of a node.
+--->
+
+<p><strong>警告</strong>：由于 <em>非安全的</em> sysctl 参数其本身具有不稳定性，在使用 <em>非安全的</em> sysctl 参数时可能会导致一些严重问题，如容器的错误行为、机器资源不足或节点被完全破坏，用户需自行承担风险。</div>
+</blockquote>
+
+<!--
+It is good practice to consider nodes with special sysctl settings as
+_tainted_ within a cluster, and only schedule pods onto them which need those
+sysctl settings. It is suggested to use the Kubernetes [_taints and toleration_
+feature](/docs/reference/generated/kubectl/kubectl-commands/#taint) to implement this.
+--->
+
+<p>最佳实践方案是将集群中具有特殊 sysctl 设置的节点视为 _受感染的_，并且只调度需要使用到特殊 sysctl 设置的 Pod 到这些节点上。 建议使用 Kubernetes 的 <a href="/docs/reference/generated/kubectl/kubectl-commands/#taint"> <em>taints 和  toleration</em> 特性</a> 来实现它。</p>
+
+<!--
+A pod with the _unsafe_ sysctls will fail to launch on any node which has not
+enabled those two _unsafe_ sysctls explicitly. As with _node-level_ sysctls it
+is recommended to use
+[_taints and toleration_ feature](/docs/reference/generated/kubectl/kubectl-commands/#taint) or
+[taints on nodes](/docs/concepts/configuration/taint-and-toleration/)
+to schedule those pods onto the right nodes.
+--->
+
+<p>设置了 <em>非安全的</em> sysctl 参数的 pod，在禁用了以下两种 <em>非安全的</em> sysctl 参数配置的节点上启动都会失败。与 <em>节点级别的</em> sysctl 一样，建议开启
+<a href="/docs/reference/generated/kubectl/kubectl-commands/#taint"><em>taints 和 toleration</em>  特性</a> 或
+<a href="/docs/concepts/configuration/taint-and-toleration/">taints on nodes</a>
+以便将 Pod 调度到正确的节点之上。</p>
+
+<h2 id="podsecuritypolicy">PodSecurityPolicy</h2>
+
+<!--
+You can further control which sysctls can be set in pods by specifying lists of
+sysctls or sysctl patterns in the `forbiddenSysctls` and/or
+`allowedUnsafeSysctls` fields of the PodSecurityPolicy. A sysctl pattern ends
+with a `*` character, such as `kernel.*`. A `*` character on its own matches
+all sysctls.
+--->
+
+<p>您可以通过在 PodSecurityPolicy 的 <code>forbiddenSysctls</code> 和/或 <code>allowedUnsafeSysctls</code> 字段中，指定 sysctl 或填写 sysctl 匹配模式来进一步为 Pod 设置 sysctl 参数。sysctl 参数匹配模式以 <code>*</code> 字符结尾，如 <code>kernel.*</code>。 单独的 <code>*</code>  字符匹配所有 sysctl 参数。</p>
+
+<!--
+By default, all safe sysctls are allowed.
+--->
+
+<p>所有 <em>安全的</em> sysctl 参数都默认启用。</p>
+
+<!--
+Both `forbiddenSysctls` and `allowedUnsafeSysctls` are lists of plain sysctl names
+or sysctl patterns (which end with `*`). The string `*` matches all sysctls.
+--->
+
+<p><code>forbiddenSysctls</code> 和 <code>allowedUnsafeSysctls</code> 的值都是字符串列表类型，可以添加 sysctl 参数名称，也可以添加 sysctl 参数匹配模式（以<code>*</code>结尾）。 只填写 <code>*</code> 则匹配所有的 sysctl 参数。</p>
+
+<!--
+The `forbiddenSysctls` field excludes specific sysctls. You can forbid a
+combination of safe and unsafe sysctls in the list. To forbid setting any
+sysctls, use `*` on its own.
+--->
+
+<p><code>forbiddenSysctls</code> 字段用于禁用特定的 sysctl 参数。 您可以在列表中禁用安全和非安全的 sysctl 参数的组合。 要禁用所有的 sysctl 参数，请设置为 <code>*</code>。</p>
+
+<!--
+If you specify any unsafe sysctl in the `allowedUnsafeSysctls` field and it is
+not present in the `forbiddenSysctls` field, that sysctl can be used in Pods
+using this PodSecurityPolicy. To allow all unsafe sysctls in the
+PodSecurityPolicy to be set, use `*` on its own.
+--->
+
+<p>如果要在 <code>allowedUnsafeSysctls</code> 字段中指定一个非安全的 sysctl 参数，并且它在<code>forbiddenSysctls</code> 字段中未被禁用，则可以在 Pod 中通过 PodSecurityPolicy 启用该 sysctl 参数。 若要在 PodSecurityPolicy 中开启所有非安全的 sysctl 参数，请设 <code>allowedUnsafeSysctls</code> 字段值为 <code>*</code>。</p>
+
+<!--
+Do not configure these two fields such that there is overlap, meaning that a
+given sysctl is both allowed and forbidden.
+--->
+
+<p><code>allowedUnsafeSysctls</code> 与 <code>forbiddenSysctls</code> 两字段的配置不能重叠，否则这就意味着存在某个 sysctl 参数既被启用又被禁用。</p>
+
+<blockquote class="warning">
+  <div><strong>警告：</strong> <!--
+If you whitelist unsafe sysctls via the `allowedUnsafeSysctls` field
+in a PodSecurityPolicy, any pod using such a sysctl will fail to start
+if the sysctl is not whitelisted via the `--allowed-unsafe-sysctls` kubelet
+flag as well on that node.
+--->
+
+<p><strong>警告</strong>：如果您通过 PodSecurityPolicy 中的 <code>allowedUnsafeSysctls</code> 字段将非安全的 sysctl 参数列入白名单，但该 sysctl 参数未通过 kubelet 命令行参数 <code>--allowed-unsafe-sysctls</code> 在节点上将其列入白名单，则设置了这个 sysctl 参数的 Pod 将会启动失败。</div>
+</blockquote>
+
+<!--
+This example allows unsafe sysctls prefixed with `kernel.msg` to be set and
+disallows setting of the `kernel.shm_rmid_forced` sysctl.
+--->
+
+<p>以下示例设置启用了以 <code>kernel.msg</code> 为前缀的非安全的 sysctl 参数，以及禁用了 sysctl 参数 <code>kernel.shm_rmid_forced</code>。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>policy/v1beta1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PodSecurityPolicy<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>sysctl-psp<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>allowedUnsafeSysctls:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>kernel.msg*<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>forbiddenSysctls:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>kernel.shm_rmid_forced<span style="color:#bbb">
+</span><span style="color:#bbb"> </span>...</code></pre></div>
+
+
+<!--
+
+---
+title: Using sysctls in a Kubernetes Cluster
+reviewers:
+- sttts
+content_template: templates/task
+---
+
+--->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/tasks/administer-cluster/sysctl-cluster.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/tasks\/administer-cluster\/sysctl-cluster\/",
+    "title" : "在 Kubernetes 集群中使用 sysctl",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/tasks\/administer-cluster\/sysctl-cluster\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/administer-cluster/sysctl-cluster.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 July 06, 2019 at 4:10 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/14b33db63c14f0db62f985639c794e666a54e8fb/">Fix several issues in &#34;Using sysctls in a Kubernetes Cluster&#34; (#15248)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/tasks/administer-cluster/sysctl-cluster.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

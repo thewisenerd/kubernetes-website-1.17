@@ -1,0 +1,2322 @@
+<!DOCTYPE html>
+<html id="docs" lang="en" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Customizing DNS Service - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="CoreDNS configuration equivalent to kube-dns CoreDNS supports the features of kube-dns and more. A ConfigMap created for kube-dns to support StubDomainsand upstreamNameservers translates to the forward plugin in CoreDNS. Similarly, the Federations plugin in kube-dns translates to the federation plugin in CoreDNS.
+Example This example ConfigMap for kubedns specifies federations, stubdomains and upstreamnameservers:
+apiVersion:v1data:federations:| {&#34;foo&#34; : &#34;foo.feddomain.com&#34;}stubDomains:| {&#34;abc.com&#34; : [&#34;1.2.3.4&#34;], &#34;my.cluster.local&#34; : [&#34;2.3.4.5&#34;]}upstreamNameservers:| [&#34;8.8.8.8&#34;, &#34;8.8.4.4&#34;]kind:ConfigMap The equivalent configuration in CoreDNS creates a Corefile:">
+<meta property="og:description" content="CoreDNS configuration equivalent to kube-dns CoreDNS supports the features of kube-dns and more. A ConfigMap created for kube-dns to support StubDomainsand upstreamNameservers translates to the forward plugin in CoreDNS. Similarly, the Federations plugin in kube-dns translates to the federation plugin in CoreDNS.
+Example This example ConfigMap for kubedns specifies federations, stubdomains and upstreamnameservers:
+apiVersion:v1data:federations:| {&#34;foo&#34; : &#34;foo.feddomain.com&#34;}stubDomains:| {&#34;abc.com&#34; : [&#34;1.2.3.4&#34;], &#34;my.cluster.local&#34; : [&#34;2.3.4.5&#34;]}upstreamNameservers:| [&#34;8.8.8.8&#34;, &#34;8.8.4.4&#34;]kind:ConfigMap The equivalent configuration in CoreDNS creates a Corefile:">
+<meta name="twitter:description" content="CoreDNS configuration equivalent to kube-dns CoreDNS supports the features of kube-dns and more. A ConfigMap created for kube-dns to support StubDomainsand upstreamNameservers translates to the forward plugin in CoreDNS. Similarly, the Federations plugin in kube-dns translates to the federation plugin in CoreDNS.
+Example This example ConfigMap for kubedns specifies federations, stubdomains and upstreamnameservers:
+apiVersion:v1data:federations:| {&#34;foo&#34; : &#34;foo.feddomain.com&#34;}stubDomains:| {&#34;abc.com&#34; : [&#34;1.2.3.4&#34;], &#34;my.cluster.local&#34; : [&#34;2.3.4.5&#34;]}upstreamNameservers:| [&#34;8.8.8.8&#34;, &#34;8.8.4.4&#34;]kind:ConfigMap The equivalent configuration in CoreDNS creates a Corefile:">
+<meta property="og:url" content="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/">
+<meta property="og:title" content="Customizing DNS Service">
+<meta name="twitter:title" content="Customizing DNS Service">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/" class="logo" title="Production-Grade Container Orchestration - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/blog/">Blog</a></li>
+            
+            <li><a href="/training/">Training</a></li>
+            
+            <li><a href="/partners/">Partners</a></li>
+            
+            <li><a href="/community/">Community</a></li>
+            
+            <li><a href="/case-studies/">Case Studies</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    English <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/zh/docs/tasks/administer-cluster/dns-custom-nameservers/">中文 Chinese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Learn Kubernetes Basics</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/docs/home/">Documentation</a></h3>
+           <p>Learn how to use Kubernetes with conceptual, tutorial, and reference documentation. You can even <a href="/editdocs/" data-auto-burger-exclude>help contribute to the docs</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/blog/">Blog</a></h3>
+           <p>Read the latest news for Kubernetes and the containers space in general, and get technical how-tos hot off the presses.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Interested in hacking on the core Kubernetes code base?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>View On GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explore the community</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+<h1>Tasks</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/docs/home/">HOME</a></li>
+		
+		
+		<li><a href="/docs/setup/">GETTING STARTED</a></li>
+		
+		
+		<li><a href="/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/docs/tasks/" class="YAH">TASKS</a></li>
+		
+		
+		<li><a href="/docs/tutorials/">TUTORIALS</a></li>
+		
+		
+		<li><a href="/docs/reference/">REFERENCE</a></li>
+		
+		
+		<li><a href="/docs/contribute/">CONTRIBUTE</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Search" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation is no longer actively maintained. The version you are currently viewing is a static snapshot. For up-to-date documentation, see the 
+	 <a href="https://kubernetes.io/docs/home/">latest version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Tasks" href="/docs/tasks/"></a>
+
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Install Tools">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Install and Set Up kubectl" href="/docs/tasks/tools/install-kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Install Minikube" href="/docs/tasks/tools/install-minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Administer a Cluster">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Administration with kubeadm">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Certificate Management with kubeadm" href="/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Upgrading kubeadm clusters" href="/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Manage Memory, CPU, and API Resources">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Configure Default Memory Requests and Limits for a Namespace" href="/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Default CPU Requests and Limits for a Namespace" href="/docs/tasks/administer-cluster/manage-resources/cpu-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Minimum and Maximum Memory Constraints for a Namespace" href="/docs/tasks/administer-cluster/manage-resources/memory-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Minimum and Maximum CPU Constraints for a Namespace" href="/docs/tasks/administer-cluster/manage-resources/cpu-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Memory and CPU Quotas for a Namespace" href="/docs/tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure a Pod Quota for a Namespace" href="/docs/tasks/administer-cluster/manage-resources/quota-pod-namespace/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Install a Network Policy Provider">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Use Calico for NetworkPolicy" href="/docs/tasks/administer-cluster/network-policy-provider/calico-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Use Cilium for NetworkPolicy" href="/docs/tasks/administer-cluster/network-policy-provider/cilium-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Use Kube-router for NetworkPolicy" href="/docs/tasks/administer-cluster/network-policy-provider/kube-router-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Romana for NetworkPolicy" href="/docs/tasks/administer-cluster/network-policy-provider/romana-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Weave Net for NetworkPolicy" href="/docs/tasks/administer-cluster/network-policy-provider/weave-network-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Access Clusters Using the Kubernetes API" href="/docs/tasks/administer-cluster/access-cluster-api/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Access Services Running on Clusters" href="/docs/tasks/administer-cluster/access-cluster-services/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Advertise Extended Resources for a Node" href="/docs/tasks/administer-cluster/extended-resource-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Autoscale the DNS Service in a Cluster" href="/docs/tasks/administer-cluster/dns-horizontal-autoscaling/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Change the default StorageClass" href="/docs/tasks/administer-cluster/change-default-storage-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Change the Reclaim Policy of a PersistentVolume" href="/docs/tasks/administer-cluster/change-pv-reclaim-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Cluster Management" href="/docs/tasks/administer-cluster/cluster-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Multiple Schedulers" href="/docs/tasks/administer-cluster/configure-multiple-schedulers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Out of Resource Handling" href="/docs/tasks/administer-cluster/out-of-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Quotas for API Objects" href="/docs/tasks/administer-cluster/quota-api-object/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Control CPU Management Policies on the Node" href="/docs/tasks/administer-cluster/cpu-management-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Control Topology Management Policies on a node" href="/docs/tasks/administer-cluster/topology-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Customizing DNS Service" href="/docs/tasks/administer-cluster/dns-custom-nameservers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debugging DNS Resolution" href="/docs/tasks/administer-cluster/dns-debugging-resolution/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Declare Network Policy" href="/docs/tasks/administer-cluster/declare-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Developing Cloud Controller Manager" href="/docs/tasks/administer-cluster/developing-cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Enabling EndpointSlices" href="/docs/tasks/administer-cluster/enabling-endpointslices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Enabling Service Topology" href="/docs/tasks/administer-cluster/enabling-service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Encrypting Secret Data at Rest" href="/docs/tasks/administer-cluster/encrypt-data/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guaranteed Scheduling For Critical Add-On Pods" href="/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IP Masquerade Agent User Guide" href="/docs/tasks/administer-cluster/ip-masq-agent/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes Cloud Controller Manager" href="/docs/tasks/administer-cluster/running-cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Limit Storage Consumption" href="/docs/tasks/administer-cluster/limit-storage-consumption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Namespaces Walkthrough" href="/docs/tasks/administer-cluster/namespaces-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Operating etcd clusters for Kubernetes" href="/docs/tasks/administer-cluster/configure-upgrade-etcd/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Reconfigure a Node&#39;s Kubelet in a Live Cluster" href="/docs/tasks/administer-cluster/reconfigure-kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Reserve Compute Resources for System Daemons" href="/docs/tasks/administer-cluster/reserve-compute-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Safely Drain a Node while Respecting the PodDisruptionBudget" href="/docs/tasks/administer-cluster/safely-drain-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Securing a Cluster" href="/docs/tasks/administer-cluster/securing-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Set Kubelet parameters via a config file" href="/docs/tasks/administer-cluster/kubelet-config-file/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Set up High-Availability Kubernetes Masters" href="/docs/tasks/administer-cluster/highly-available-master/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Share a Cluster with Namespaces" href="/docs/tasks/administer-cluster/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using a KMS provider for data encryption" href="/docs/tasks/administer-cluster/kms-provider/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using CoreDNS for Service Discovery" href="/docs/tasks/administer-cluster/coredns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using NodeLocal DNSCache in Kubernetes clusters" href="/docs/tasks/administer-cluster/nodelocaldns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using sysctls in a Kubernetes Cluster" href="/docs/tasks/administer-cluster/sysctl-cluster/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Configure Pods and Containers">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Assign Memory Resources to Containers and Pods" href="/docs/tasks/configure-pod-container/assign-memory-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Assign CPU Resources to Containers and Pods" href="/docs/tasks/configure-pod-container/assign-cpu-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure GMSA for Windows Pods and containers" href="/docs/tasks/configure-pod-container/configure-gmsa/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure RunAsUserName for Windows pods and containers" href="/docs/tasks/configure-pod-container/configure-runasusername/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Quality of Service for Pods" href="/docs/tasks/configure-pod-container/quality-service-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Assign Extended Resources to a Container" href="/docs/tasks/configure-pod-container/extended-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure a Pod to Use a Volume for Storage" href="/docs/tasks/configure-pod-container/configure-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure a Pod to Use a PersistentVolume for Storage" href="/docs/tasks/configure-pod-container/configure-persistent-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure a Pod to Use a Projected Volume for Storage" href="/docs/tasks/configure-pod-container/configure-projected-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure a Security Context for a Pod or Container" href="/docs/tasks/configure-pod-container/security-context/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Service Accounts for Pods" href="/docs/tasks/configure-pod-container/configure-service-account/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pull an Image from a Private Registry" href="/docs/tasks/configure-pod-container/pull-image-private-registry/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Liveness, Readiness and Startup Probes" href="/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Assign Pods to Nodes" href="/docs/tasks/configure-pod-container/assign-pods-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Pod Initialization" href="/docs/tasks/configure-pod-container/configure-pod-initialization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Attach Handlers to Container Lifecycle Events" href="/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure a Pod to Use a ConfigMap" href="/docs/tasks/configure-pod-container/configure-pod-configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Share Process Namespace between Containers in a Pod" href="/docs/tasks/configure-pod-container/share-process-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Create static Pods" href="/docs/tasks/configure-pod-container/static-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Translate a Docker Compose File to Kubernetes Resources" href="/docs/tasks/configure-pod-container/translate-compose-kubernetes/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Manage Kubernetes Objects">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Declarative Management of Kubernetes Objects Using Configuration Files" href="/docs/tasks/manage-kubernetes-objects/declarative-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Declarative Management of Kubernetes Objects Using Kustomize" href="/docs/tasks/manage-kubernetes-objects/kustomization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Managing Kubernetes Objects Using Imperative Commands" href="/docs/tasks/manage-kubernetes-objects/imperative-command/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Imperative Management of Kubernetes Objects Using Configuration Files" href="/docs/tasks/manage-kubernetes-objects/imperative-config/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Inject Data Into Applications">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Define a Command and Arguments for a Container" href="/docs/tasks/inject-data-application/define-command-argument-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Define Environment Variables for a Container" href="/docs/tasks/inject-data-application/define-environment-variable-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Expose Pod Information to Containers Through Environment Variables" href="/docs/tasks/inject-data-application/environment-variable-expose-pod-information/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Expose Pod Information to Containers Through Files" href="/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Distribute Credentials Securely Using Secrets" href="/docs/tasks/inject-data-application/distribute-credentials-secure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Inject Information into Pods Using a PodPreset" href="/docs/tasks/inject-data-application/podpreset/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Run Applications">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Run a Stateless Application Using a Deployment" href="/docs/tasks/run-application/run-stateless-application-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Run a Single-Instance Stateful Application" href="/docs/tasks/run-application/run-single-instance-stateful-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Run a Replicated Stateful Application" href="/docs/tasks/run-application/run-replicated-stateful-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Update API Objects in Place Using kubectl patch" href="/docs/tasks/run-application/update-api-object-kubectl-patch/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Scale a StatefulSet" href="/docs/tasks/run-application/scale-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Delete a StatefulSet" href="/docs/tasks/run-application/delete-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Force Delete StatefulSet Pods" href="/docs/tasks/run-application/force-delete-stateful-set-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Perform Rolling Update Using a Replication Controller" href="/docs/tasks/run-application/rolling-update-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Horizontal Pod Autoscaler" href="/docs/tasks/run-application/horizontal-pod-autoscale/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Horizontal Pod Autoscaler Walkthrough" href="/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Specifying a Disruption Budget for your Application" href="/docs/tasks/run-application/configure-pdb/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Run Jobs">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running Automated Tasks with a CronJob" href="/docs/tasks/job/automated-tasks-with-cron-jobs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Parallel Processing using Expansions" href="/docs/tasks/job/parallel-processing-expansion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Coarse Parallel Processing Using a Work Queue" href="/docs/tasks/job/coarse-parallel-processing-work-queue/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Fine Parallel Processing Using a Work Queue" href="/docs/tasks/job/fine-parallel-processing-work-queue/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Access Applications in a Cluster">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Web UI (Dashboard)" href="/docs/tasks/access-application-cluster/web-ui-dashboard/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Accessing Clusters" href="/docs/tasks/access-application-cluster/access-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Access to Multiple Clusters" href="/docs/tasks/access-application-cluster/configure-access-multiple-clusters/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Use Port Forwarding to Access Applications in a Cluster" href="/docs/tasks/access-application-cluster/port-forward-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Use a Service to Access an Application in a Cluster" href="/docs/tasks/access-application-cluster/service-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Connect a Front End to a Back End Using a Service" href="/docs/tasks/access-application-cluster/connecting-frontend-backend/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Create an External Load Balancer" href="/docs/tasks/access-application-cluster/create-external-load-balancer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure Your Cloud Provider&#39;s Firewalls" href="/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="List All Container Images Running in a Cluster" href="/docs/tasks/access-application-cluster/list-all-running-container-images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Set up Ingress on Minikube with the NGINX Ingress Controller" href="/docs/tasks/access-application-cluster/ingress-minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Communicate Between Containers in the Same Pod Using a Shared Volume" href="/docs/tasks/access-application-cluster/communicate-containers-same-pod-shared-volume/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configure DNS for a Cluster" href="/docs/tasks/access-application-cluster/configure-dns-cluster/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Monitoring, Logging, and Debugging">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Application Introspection and Debugging" href="/docs/tasks/debug-application-cluster/debug-application-introspection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Auditing" href="/docs/tasks/debug-application-cluster/audit/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Auditing with Falco" href="/docs/tasks/debug-application-cluster/falco/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debug a StatefulSet" href="/docs/tasks/debug-application-cluster/debug-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debug Init Containers" href="/docs/tasks/debug-application-cluster/debug-init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debug Pods and ReplicationControllers" href="/docs/tasks/debug-application-cluster/debug-pod-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debug Services" href="/docs/tasks/debug-application-cluster/debug-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debugging Kubernetes nodes with crictl" href="/docs/tasks/debug-application-cluster/crictl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Determine the Reason for Pod Failure" href="/docs/tasks/debug-application-cluster/determine-reason-pod-failure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Developing and debugging services locally" href="/docs/tasks/debug-application-cluster/local-debugging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Events in Stackdriver" href="/docs/tasks/debug-application-cluster/events-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Get a Shell to a Running Container" href="/docs/tasks/debug-application-cluster/get-shell-running-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Logging Using Elasticsearch and Kibana" href="/docs/tasks/debug-application-cluster/logging-elasticsearch-kibana/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Logging Using Stackdriver" href="/docs/tasks/debug-application-cluster/logging-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Monitor Node Health" href="/docs/tasks/debug-application-cluster/monitor-node-health/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Resource metrics pipeline" href="/docs/tasks/debug-application-cluster/resource-metrics-pipeline/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Tools for Monitoring Resources" href="/docs/tasks/debug-application-cluster/resource-usage-monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Troubleshoot Applications" href="/docs/tasks/debug-application-cluster/debug-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Troubleshoot Clusters" href="/docs/tasks/debug-application-cluster/debug-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Troubleshooting" href="/docs/tasks/debug-application-cluster/troubleshooting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Extend Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Configure the Aggregation Layer" href="/docs/tasks/access-kubernetes-api/configure-aggregation-layer/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Use Custom Resources">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Extend the Kubernetes API with CustomResourceDefinitions" href="/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Versions in CustomResourceDefinitions" href="/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definition-versioning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Setup an Extension API Server" href="/docs/tasks/access-kubernetes-api/setup-extension-api-server/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Use an HTTP Proxy to Access the Kubernetes API" href="/docs/tasks/access-kubernetes-api/http-proxy-access-api/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="TLS">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Certificate Rotation" href="/docs/tasks/tls/certificate-rotation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Manage TLS Certificates in a Cluster" href="/docs/tasks/tls/managing-tls-in-a-cluster/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Manage Cluster Daemons">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Perform a Rolling Update on a DaemonSet" href="/docs/tasks/manage-daemon/update-daemon-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Perform a Rollback on a DaemonSet" href="/docs/tasks/manage-daemon/rollback-daemon-set/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Install Service Catalog">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Install Service Catalog using Helm" href="/docs/tasks/service-catalog/install-service-catalog-using-helm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Install Service Catalog using SC" href="/docs/tasks/service-catalog/install-service-catalog-using-sc/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Network">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Validate IPv4/IPv6 dual-stack" href="/docs/tasks/network/validate-dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Extend kubectl with plugins" href="/docs/tasks/extend-kubectl/kubectl-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Manage HugePages" href="/docs/tasks/manage-hugepages/scheduling-hugepages/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Schedule GPUs" href="/docs/tasks/manage-gpus/scheduling-gpus/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/tasks/administer-cluster/dns-custom-nameservers.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Customizing DNS Service</h1>
+
+
+
+
+<p>This page explains how to configure your DNS Pod and customize the
+DNS resolution process. In Kubernetes version 1.11 and later, CoreDNS is at GA
+and is installed by default with kubeadm. See <a href="#coredns-configmap-options">CoreDNS ConfigMap options</a>
+and <a href="/docs/tasks/administer-cluster/coredns/">Using CoreDNS for Service Discovery</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#before-you-begin">Before you begin</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#introduction">Introduction</a></li>
+
+
+
+
+<li><a href="#coredns">CoreDNS</a></li>
+
+
+
+
+<li><a href="#kube-dns">Kube-dns</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#coredns-configuration-equivalent-to-kube-dns">CoreDNS configuration equivalent to kube-dns</a></li>
+
+
+
+
+<li><a href="#migration-to-coredns">Migration to CoreDNS</a></li>
+
+
+
+
+<li><a href="#what-s-next">What’s next</a></li>
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+
+<h2 id="before-you-begin">Before you begin</h2>
+<ul>
+<li><p>You need to have a Kubernetes cluster, and the kubectl command-line tool must
+be configured to communicate with your cluster. If you do not already have a
+cluster, you can create one by using
+<a href="/docs/setup/learning-environment/minikube/">Minikube</a>,
+or you can use one of these Kubernetes playgrounds:</p></li>
+</ul>
+
+<ul>
+<li><a href="https://www.katacoda.com/courses/kubernetes/playground" target="_blank">Katacoda</a></li>
+<li><a href="http://labs.play-with-k8s.com/" target="_blank">Play with Kubernetes</a></li>
+</ul>
+ 
+
+<p>To check the version, enter <code>kubectl version</code>.</p>
+
+<ul>
+<li>Kubernetes version 1.6 or later. To work with CoreDNS, version 1.9 or later.</li>
+<li>The appropriate add-on: kube-dns or CoreDNS. To install with kubeadm,
+see <a href="/docs/reference/setup-tools/kubeadm/kubeadm-alpha/#cmd-phase-addon">the kubeadm reference documentation</a>.</li>
+</ul>
+
+
+
+
+<h2 id="introduction">Introduction</h2>
+
+<p>DNS is a built-in Kubernetes service launched automatically
+using the addon manager
+<a href="http://releases.k8s.io/v1.17.17/cluster/addons/README.md" target="_blank">cluster add-on</a>.</p>
+
+<p>As of Kubernetes v1.12, CoreDNS is the recommended DNS Server, replacing kube-dns. However, kube-dns may still be installed by
+default with certain Kubernetes installer tools. Refer to the documentation provided by your installer to know which DNS server is installed by default.</p>
+
+<p>The CoreDNS Deployment is exposed as a Kubernetes Service with a static IP.
+Both the CoreDNS and kube-dns Service are named <code>kube-dns</code> in the <code>metadata.name</code> field. This is done so that there is greater interoperability with workloads that relied on the legacy <code>kube-dns</code> Service name to resolve addresses internal to the cluster. It abstracts away the implementation detail of which DNS provider is running behind that common endpoint.
+The kubelet passes DNS to each container with the <code>--cluster-dns=&lt;dns-service-ip&gt;</code> flag.</p>
+
+<p>DNS names also need domains. You configure the local domain in the kubelet
+with the flag <code>--cluster-domain=&lt;default-local-domain&gt;</code>.</p>
+
+<p>The DNS server supports forward lookups (A records), port lookups (SRV records), reverse IP address lookups (PTR records),
+and more. For more information see <a href="/docs/concepts/services-networking/dns-pod-service/">DNS for Services and Pods</a>.</p>
+
+<p>If a Pod&rsquo;s <code>dnsPolicy</code> is set to &ldquo;<code>default</code>&rdquo;, it inherits the name resolution
+configuration from the node that the Pod runs on. The Pod&rsquo;s DNS resolution
+should behave the same as the node.
+But see <a href="/docs/tasks/administer-cluster/dns-debugging-resolution/#known-issues">Known issues</a>.</p>
+
+<p>If you don&rsquo;t want this, or if you want a different DNS config for pods, you can
+use the kubelet&rsquo;s <code>--resolv-conf</code> flag.  Set this flag to &ldquo;&rdquo; to prevent Pods from
+inheriting DNS. Set it to a valid file path to specify a file other than
+<code>/etc/resolv.conf</code> for DNS inheritance.</p>
+
+<h2 id="coredns">CoreDNS</h2>
+
+<p>CoreDNS is a general-purpose authoritative DNS server that can serve as cluster DNS, complying with the <a href="https://github.com/kubernetes/dns/blob/master/docs/specification.md" target="_blank">dns specifications</a>.</p>
+
+<h3 id="coredns-configmap-options">CoreDNS ConfigMap options</h3>
+
+<p>CoreDNS is a DNS server that is modular and pluggable, and each plugin adds new functionality to CoreDNS.
+This can be configured by maintaining a <a href="https://coredns.io/2017/07/23/corefile-explained/" target="_blank">Corefile</a>, which is the CoreDNS
+configuration file. A cluster administrator can modify the ConfigMap for the CoreDNS Corefile to change how service discovery works.</p>
+
+<p>In Kubernetes, CoreDNS is installed with the following default Corefile configuration.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>coredns<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>Corefile:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    .:53 {</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>errors<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>health<span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>lameduck<span style="color:#bbb"> </span>5s<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>}<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>ready<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>kubernetes<span style="color:#bbb"> </span>cluster.local<span style="color:#bbb"> </span>in-addr.arpa<span style="color:#bbb"> </span>ip6.arpa<span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>pods<span style="color:#bbb"> </span>insecure<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>fallthrough<span style="color:#bbb"> </span>in-addr.arpa<span style="color:#bbb"> </span>ip6.arpa<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>ttl<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>}<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>prometheus<span style="color:#bbb"> </span>:<span style="color:#666">9153</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>forward<span style="color:#bbb"> </span>.<span style="color:#bbb"> </span>/etc/resolv.conf<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>cache<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>loop<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>reload<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>loadbalance<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>}</code></pre></div>
+<p>The Corefile configuration includes the following <a href="https://coredns.io/plugins/" target="_blank">plugins</a> of CoreDNS:</p>
+
+<ul>
+<li><a href="https://coredns.io/plugins/errors/" target="_blank">errors</a>: Errors are logged to stdout.</li>
+<li><a href="https://coredns.io/plugins/health/" target="_blank">health</a>: Health of CoreDNS is reported to <a href="http://localhost:8080/health" target="_blank">http://localhost:8080/health</a>. In this extended syntax <code>lameduck</code> will make the process unhealthy then wait for 5 seconds before the process is shut down.</li>
+<li><a href="https://coredns.io/plugins/ready/" target="_blank">ready</a>: An HTTP endpoint on port 8181 will return 200 OK, when all plugins that are able to signal readiness have done so.</li>
+<li><a href="https://coredns.io/plugins/kubernetes/" target="_blank">kubernetes</a>: CoreDNS will reply to DNS queries based on IP of the services and pods of Kubernetes. You can find more details <a href="https://coredns.io/plugins/kubernetes/" target="_blank">here</a>. <code>ttl</code> allows you to set a custom TTL for responses. The default is 5 seconds. The minimum TTL allowed is 0 seconds, and the maximum is capped at 3600 seconds. Setting TTL to 0 will prevent records from being cached.</li>
+</ul>
+
+<blockquote>
+<p>The <code>pods insecure</code> option is provided for backward compatibility with kube-dns. You can use the <code>pods verified</code> option, which returns an A record only if there exists a pod in same namespace with matching IP. The <code>pods disabled</code> option can be used if you don&rsquo;t use pod records.</p>
+</blockquote>
+
+<ul>
+<li><a href="https://coredns.io/plugins/metrics/" target="_blank">prometheus</a>: Metrics of CoreDNS are available at <a href="http://localhost:9153/metrics" target="_blank">http://localhost:9153/metrics</a> in <a href="https://prometheus.io/" target="_blank">Prometheus</a> format.</li>
+<li><a href="https://coredns.io/plugins/forward/" target="_blank">forward</a>: Any queries that are not within the cluster domain of Kubernetes will be forwarded to predefined resolvers (/etc/resolv.conf).</li>
+<li><a href="https://coredns.io/plugins/cache/" target="_blank">cache</a>: This enables a frontend cache.</li>
+<li><a href="https://coredns.io/plugins/loop/" target="_blank">loop</a>: Detects simple forwarding loops and halts the CoreDNS process if a loop is found.</li>
+<li><a href="https://coredns.io/plugins/reload" target="_blank">reload</a>: Allows automatic reload of a changed Corefile. After you edit the ConfigMap configuration, allow two minutes for your changes to take effect.</li>
+<li><a href="https://coredns.io/plugins/loadbalance" target="_blank">loadbalance</a>: This is a round-robin DNS loadbalancer that randomizes the order of A, AAAA, and MX records in the answer.</li>
+</ul>
+
+<p>You can modify the default CoreDNS behavior by modifying the ConfigMap.</p>
+
+<h3 id="configuration-of-stub-domain-and-upstream-nameserver-using-coredns">Configuration of Stub-domain and upstream nameserver using CoreDNS</h3>
+
+<p>CoreDNS has the ability to configure stubdomains and upstream nameservers using the <a href="https://coredns.io/plugins/forward/" target="_blank">forward plugin</a>.</p>
+
+<h4 id="example">Example</h4>
+
+<p>If a cluster operator has a <a href="https://www.consul.io/" target="_blank">Consul</a> domain server located at 10.150.0.1, and all Consul names have the suffix .consul.local. To configure it in CoreDNS, the cluster administrator creates the following stanza in the CoreDNS ConfigMap.</p>
+
+<pre><code>consul.local:53 {
+        errors
+        cache 30
+        forward . 10.150.0.1
+    }
+</code></pre>
+
+<p>To explicitly force all non-cluster DNS lookups to go through a specific nameserver at 172.16.0.1, point the <code>forward</code> to the nameserver instead of <code>/etc/resolv.conf</code></p>
+
+<pre><code>forward .  172.16.0.1
+</code></pre>
+
+<p>The final ConfigMap along with the default <code>Corefile</code> configuration looks like:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>coredns<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>Corefile:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    .:53 {</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>errors<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>health<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>kubernetes<span style="color:#bbb"> </span>cluster.local<span style="color:#bbb"> </span>in-addr.arpa<span style="color:#bbb"> </span>ip6.arpa<span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">           </span>pods<span style="color:#bbb"> </span>insecure<span style="color:#bbb">
+</span><span style="color:#bbb">           </span>fallthrough<span style="color:#bbb"> </span>in-addr.arpa<span style="color:#bbb"> </span>ip6.arpa<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>}<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>prometheus<span style="color:#bbb"> </span>:<span style="color:#666">9153</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>forward<span style="color:#bbb"> </span>.<span style="color:#bbb"> </span><span style="color:#666">172.16.0.1</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>cache<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>loop<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>reload<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>loadbalance<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>}<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>consul.local:<span style="color:#666">53</span><span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>errors<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>cache<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>forward<span style="color:#bbb"> </span>.<span style="color:#bbb"> </span><span style="color:#666">10.150.0.1</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>}</code></pre></div>
+<p>In Kubernetes version 1.10 and later, kubeadm supports automatic translation of the CoreDNS ConfigMap from the kube-dns ConfigMap.
+<strong><em>Note: While kube-dns accepts an FQDN for stubdomain and nameserver (eg: ns.foo.com), CoreDNS does not support this feature.
+During translation, all FQDN nameservers will be omitted from the CoreDNS config.</em></strong></p>
+
+<h2 id="kube-dns">Kube-dns</h2>
+
+<p>Kube-dns is now available as an optional DNS server since CoreDNS is now the default.
+The running DNS Pod holds 3 containers:</p>
+
+<ul>
+<li>&ldquo;<code>kubedns</code>&ldquo;: watches the Kubernetes master for changes
+in Services and Endpoints, and maintains in-memory lookup structures to serve
+DNS requests.</li>
+<li>&ldquo;<code>dnsmasq</code>&ldquo;: adds DNS caching to improve performance.</li>
+<li>&ldquo;<code>sidecar</code>&ldquo;: provides a single health check endpoint
+to perform healthchecks for <code>dnsmasq</code> and <code>kubedns</code>.</li>
+</ul>
+
+<h3 id="configure-stub-domain-and-upstream-dns-servers">Configure stub-domain and upstream DNS servers</h3>
+
+<p>Cluster administrators can specify custom stub domains and upstream nameservers
+by providing a ConfigMap for kube-dns (<code>kube-system:kube-dns</code>).</p>
+
+<p>For example, the following ConfigMap sets up a DNS configuration with a single stub domain and two
+upstream nameservers:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>kube-dns<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>stubDomains:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    {&#34;acme.local&#34;: [&#34;1.2.3.4&#34;]}</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>upstreamNameservers:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    [&#34;8.8.8.8&#34;, &#34;8.8.4.4&#34;]</span></code></pre></div>
+<p>DNS requests with the “.acme.local” suffix
+are forwarded to a DNS listening at 1.2.3.4. Google Public DNS
+serves the upstream queries.</p>
+
+<p>The table below describes how queries with certain domain names map to
+their destination DNS servers:</p>
+
+<table>
+<thead>
+<tr>
+<th>Domain name</th>
+<th>Server answering the query</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>kubernetes.default.svc.cluster.local</td>
+<td>kube-dns</td>
+</tr>
+
+<tr>
+<td>foo.acme.local</td>
+<td>custom DNS (1.2.3.4)</td>
+</tr>
+
+<tr>
+<td>widget.com</td>
+<td>upstream DNS (one of 8.8.8.8, 8.8.4.4)</td>
+</tr>
+</tbody>
+</table>
+
+<p>See <a href="#configmap-options">ConfigMap options</a> for
+details about the configuration option format.</p>
+
+
+
+
+<h4 id="effects-on-pods">Effects on Pods</h4>
+
+<p>Custom upstream nameservers and stub domains do not affect Pods with a
+<code>dnsPolicy</code> set to &ldquo;<code>Default</code>&rdquo; or &ldquo;<code>None</code>&rdquo;.</p>
+
+<p>If a Pod&rsquo;s <code>dnsPolicy</code> is set to &ldquo;<code>ClusterFirst</code>&rdquo;, its name resolution is
+handled differently, depending on whether stub-domain and upstream DNS servers
+are configured.</p>
+
+<p><strong>Without custom configurations</strong>: Any query that does not match the configured
+cluster domain suffix, such as &ldquo;www.kubernetes.io&rdquo;, is forwarded to the upstream
+nameserver inherited from the node.</p>
+
+<p><strong>With custom configurations</strong>: If stub domains and upstream DNS servers are
+configured,
+DNS queries are routed according to the following flow:</p>
+
+<ol>
+<li><p>The query is first sent to the DNS caching layer in kube-dns.</p></li>
+
+<li><p>From the caching layer, the suffix of the request is examined and then
+forwarded to the appropriate DNS, based on the following cases:</p>
+
+<ul>
+<li><p><em>Names with the cluster suffix</em>, for example &ldquo;.cluster.local&rdquo;:
+The request is sent to kube-dns.</p></li>
+
+<li><p><em>Names with the stub domain suffix</em>, for example &ldquo;.acme.local&rdquo;:
+The request is sent to the configured custom DNS resolver, listening for example at 1.2.3.4.</p></li>
+
+<li><p><em>Names without a matching suffix</em>, for example &ldquo;widget.com&rdquo;:
+The request is forwarded to the upstream DNS,
+for example Google public DNS servers at 8.8.8.8 and 8.8.4.4.</p></li>
+</ul></li>
+</ol>
+
+<p><img src="/docs/tasks/administer-cluster/dns-custom-nameservers/dns.png" alt="DNS lookup flow" /></p>
+
+<h3 id="configmap-options">ConfigMap options</h3>
+
+<p>Options for the kube-dns <code>kube-system:kube-dns</code> ConfigMap:</p>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Format</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>stubDomains</code> (optional)</td>
+<td>A JSON map using a DNS suffix key such as “acme.local”, and a value consisting of a JSON array of DNS IPs.</td>
+<td>The target nameserver can itself be a Kubernetes Service. For instance, you can run your own copy of dnsmasq to export custom DNS names into the ClusterDNS namespace.</td>
+</tr>
+
+<tr>
+<td><code>upstreamNameservers</code> (optional)</td>
+<td>A JSON array of DNS IPs.</td>
+<td>If specified, the values replace the nameservers taken by default from the node’s <code>/etc/resolv.conf</code>. Limits: a maximum of three upstream nameservers can be specified.</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="examples">Examples</h4>
+
+<h5 id="example-stub-domain">Example: Stub domain</h5>
+
+<p>In this example, the user has a Consul DNS service discovery system they want to
+integrate with kube-dns. The consul domain server is located at 10.150.0.1, and
+all consul names have the suffix <code>.consul.local</code>.  To configure Kubernetes, the
+cluster administrator creates the following ConfigMap:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>kube-dns<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>stubDomains:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    {&#34;consul.local&#34;: [&#34;10.150.0.1&#34;]}</span></code></pre></div>
+<p>Note that the cluster administrator does not want to override the node’s
+upstream nameservers, so they did not specify the optional
+<code>upstreamNameservers</code> field.</p>
+
+<h5 id="example-upstream-nameserver">Example: Upstream nameserver</h5>
+
+<p>In this example the cluster administrator wants to explicitly force all
+non-cluster DNS lookups to go through their own nameserver at 172.16.0.1.
+In this case, they create a ConfigMap with the
+<code>upstreamNameservers</code> field specifying the desired nameserver:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>kube-dns<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>upstreamNameservers:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    [&#34;172.16.0.1&#34;]</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="coredns-configuration-equivalent-to-kube-dns">CoreDNS configuration equivalent to kube-dns</h2>
+
+<p>CoreDNS supports the features of kube-dns and more.
+A ConfigMap created for kube-dns to support <code>StubDomains</code>and <code>upstreamNameservers</code> translates to the <code>forward</code> plugin in CoreDNS.
+Similarly, the <code>Federations</code> plugin in kube-dns translates to the <code>federation</code> plugin in CoreDNS.</p>
+
+<h3 id="example">Example</h3>
+
+<p>This example ConfigMap for kubedns specifies federations, stubdomains and upstreamnameservers:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>federations:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    {&#34;foo&#34; : &#34;foo.feddomain.com&#34;}</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>stubDomains:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    {&#34;abc.com&#34; : [&#34;1.2.3.4&#34;], &#34;my.cluster.local&#34; : [&#34;2.3.4.5&#34;]}</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>upstreamNameservers:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    [&#34;8.8.8.8&#34;, &#34;8.8.4.4&#34;]</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap</code></pre></div>
+<p>The equivalent configuration in CoreDNS creates a Corefile:</p>
+
+<ul>
+<li><p>For federations:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">federation<span style="color:#bbb"> </span>cluster.local<span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">       </span>foo<span style="color:#bbb"> </span>foo.feddomain.com<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>}</code></pre></div></li>
+
+<li><p>For stubDomains:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">abc.com:<span style="color:#666">53</span><span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>errors<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>cache<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>forward<span style="color:#bbb"> </span>.<span style="color:#bbb"> </span><span style="color:#666">1.2.3.4</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>}<span style="color:#bbb">
+</span><span style="color:#bbb"></span>my.cluster.local:<span style="color:#666">53</span><span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>errors<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>cache<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>forward<span style="color:#bbb"> </span>.<span style="color:#bbb"> </span><span style="color:#666">2.3.4.5</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>}</code></pre></div></li>
+</ul>
+
+<p>The complete Corefile with the default plugins:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">.:<span style="color:#666">53</span><span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>errors<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>health<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>kubernetes<span style="color:#bbb"> </span>cluster.local<span style="color:#bbb"> </span>in-addr.arpa<span style="color:#bbb"> </span>ip6.arpa<span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">           </span>pods<span style="color:#bbb"> </span>insecure<span style="color:#bbb">
+</span><span style="color:#bbb">           </span>fallthrough<span style="color:#bbb"> </span>in-addr.arpa<span style="color:#bbb"> </span>ip6.arpa<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>}<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>federation<span style="color:#bbb"> </span>cluster.local<span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">           </span>foo<span style="color:#bbb"> </span>foo.feddomain.com<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>}<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>prometheus<span style="color:#bbb"> </span>:<span style="color:#666">9153</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>forward<span style="color:#bbb"> </span>.<span style="color:#bbb">  </span><span style="color:#666">8.8.8.8</span><span style="color:#bbb"> </span><span style="color:#666">8.8.4.4</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>cache<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>}<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>abc.com:<span style="color:#666">53</span><span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>errors<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>cache<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>forward<span style="color:#bbb"> </span>.<span style="color:#bbb"> </span><span style="color:#666">1.2.3.4</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>}<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>my.cluster.local:<span style="color:#666">53</span><span style="color:#bbb"> </span>{<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>errors<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>cache<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>forward<span style="color:#bbb"> </span>.<span style="color:#bbb"> </span><span style="color:#666">2.3.4.5</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>}</code></pre></div>
+<h2 id="migration-to-coredns">Migration to CoreDNS</h2>
+
+<p>To migrate from kube-dns to CoreDNS, <a href="https://coredns.io/2018/05/21/migration-from-kube-dns-to-coredns/" target="_blank">a detailed blog</a> is available to help users adapt CoreDNS in place of kube-dns.
+A cluster administrator can also migrate using <a href="https://github.com/coredns/deployment/blob/master/kubernetes/deploy.sh" target="_blank">the deploy script</a>.</p>
+
+<h2 id="what-s-next">What&rsquo;s next</h2>
+
+<ul>
+<li><a href="/docs/tasks/administer-cluster/dns-debugging-resolution/">Debugging DNS Resolution</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Was this page helpful? </p>
+  <button class="button feedback--yes">Yes</button>
+  <button class="button feedback--no">No</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/tasks/administer-cluster/dns-custom-nameservers.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/docs\/tasks\/administer-cluster\/dns-custom-nameservers\/",
+    "title" : "Customizing DNS Service",
+    "permalink" : "https:\/\/kubernetes.io\/docs\/tasks\/administer-cluster\/dns-custom-nameservers\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Create an Issue</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/tasks/administer-cluster/dns-custom-nameservers.md" class="button issue">Edit This Page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Page last modified on December 16, 2019 at 10:27 AM PST by
+    <a href="https://github.com/kubernetes/website/commit/a29da47ca8d4b2458679033312c6c97ec218b464/">Updated default Corefile that is installed with the current version of CoreDNS. (#18158)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/tasks/administer-cluster/dns-custom-nameservers.md">Page History</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/docs/home/">Home</a>
+            
+            <a href="/blog/">Blog</a>
+            
+            <a href="/training/">Training</a>
+            
+            <a href="/partners/">Partners</a>
+            
+            <a href="/community/">Community</a>
+            
+            <a href="/case-studies/">Case Studies</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribute</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

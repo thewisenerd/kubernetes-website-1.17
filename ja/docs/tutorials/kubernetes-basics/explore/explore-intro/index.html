@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html id="docs" lang="ja" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Podとノードについて - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="目標  KubernetesのPodについて学ぶ Kubernetesのノードについて学ぶ デプロイされたアプリケーションのトラブルシューティング   Kubernetes Pod モジュール2でDeploymentを作成したときに、KubernetesはアプリケーションインスタンスをホストするためのPodを作成しました。Podは、1つ以上のアプリケーションコンテナ(Dockerやrktなど)のグループとそれらのコンテナの共有リソースを表すKubernetesの抽象概念です。 Podには以下のものが含まれます:
+ 共有ストレージ(ボリューム) ネットワーキング(クラスターに固有のIPアドレス) コンテナのイメージバージョンや使用するポートなどの、各コンテナをどう動かすかに関する情報  Podは、アプリケーション固有の「論理ホスト」をモデル化し、比較的密接に結合されたさまざまなアプリケーションコンテナを含むことができます。 たとえば、Podには、Node.jsアプリケーションを含むコンテナと、Node.js Webサーバによって公開されるデータを供給する別のコンテナの両方を含めることができます。Pod内のコンテナはIPアドレスとポートスペースを共有し、常に同じ場所に配置され、同じスケジュールに入れられ、同じノード上の共有コンテキストで実行されます。
+Podは、Kubernetesプラットフォームの原子単位です。 Kubernetes上にDeploymentを作成すると、そのDeploymentはその中にコンテナを持つPodを作成します(コンテナを直接作成するのではなく)。 各Podは、スケジュールされているノードに関連付けられており、終了(再起動ポリシーに従って)または削除されるまでそこに残ります。 ノードに障害が発生した場合、同じPodがクラスター内の他の使用可能なノードにスケジュールされます。
+ まとめ:  Pod ノード kubectlの主要なコマンド    Podは1つ以上のアプリケーションコンテナ(Dockerやrktなど)のグループであり、共有ストレージ(ボリューム)、IPアドレス、それらの実行方法に関する情報が含まれています。 
+   Podの概要     ノード Podは常にノード上で動作します。ノードはKubernetesではワーカーマシンであり、クラスターによって仮想、物理マシンのどちらであってもかまいません。各ノードはマスターによって管理されます。ノードは複数のPodを持つことができ、Kubernetesマスターはクラスター内のノード間でPodのスケジュールを自動的に処理します。マスターの自動スケジューリングは各ノードで利用可能なリソースを考慮に入れます。
+すべてのKubernetesノードでは少なくとも以下のものが動作します。
+ Kubelet: Kubernetesマスターとノード間の通信を担当するプロセス。マシン上で実行されているPodとコンテナを管理します。 レジストリからコンテナイメージを取得し、コンテナを解凍し、アプリケーションを実行することを担当する、Docker、rktのようなコンテナランタイム。    コンテナ同士が密接に結合され、ディスクなどのリソースを共有する必要がある場合は、コンテナを1つのPodにまとめてスケジュールする必要があります。 
+   ノードの概要     kubectlを使ったトラブルシューティング モジュール2では、kubectlのコマンドラインインターフェースを使用しました。モジュール3でもこれを使用して、デプロイされたアプリケーションとその環境に関する情報を入手します。最も一般的な操作は、次のkubectlコマンドで実行できます。
+ kubectl get - リソースの一覧を表示 kubectl describe - 単一リソースに関する詳細情報を表示 kubectl logs - 単一Pod上の単一コンテナ内のログを表示 kubectl exec - 単一Pod上の単一コンテナ内でコマンドを実行  これらのコマンドを使用して、アプリケーションがいつデプロイされたか、それらの現在の状況、実行中の場所、および構成を確認することができます。">
+<meta property="og:description" content="目標  KubernetesのPodについて学ぶ Kubernetesのノードについて学ぶ デプロイされたアプリケーションのトラブルシューティング   Kubernetes Pod モジュール2でDeploymentを作成したときに、KubernetesはアプリケーションインスタンスをホストするためのPodを作成しました。Podは、1つ以上のアプリケーションコンテナ(Dockerやrktなど)のグループとそれらのコンテナの共有リソースを表すKubernetesの抽象概念です。 Podには以下のものが含まれます:
+ 共有ストレージ(ボリューム) ネットワーキング(クラスターに固有のIPアドレス) コンテナのイメージバージョンや使用するポートなどの、各コンテナをどう動かすかに関する情報  Podは、アプリケーション固有の「論理ホスト」をモデル化し、比較的密接に結合されたさまざまなアプリケーションコンテナを含むことができます。 たとえば、Podには、Node.jsアプリケーションを含むコンテナと、Node.js Webサーバによって公開されるデータを供給する別のコンテナの両方を含めることができます。Pod内のコンテナはIPアドレスとポートスペースを共有し、常に同じ場所に配置され、同じスケジュールに入れられ、同じノード上の共有コンテキストで実行されます。
+Podは、Kubernetesプラットフォームの原子単位です。 Kubernetes上にDeploymentを作成すると、そのDeploymentはその中にコンテナを持つPodを作成します(コンテナを直接作成するのではなく)。 各Podは、スケジュールされているノードに関連付けられており、終了(再起動ポリシーに従って)または削除されるまでそこに残ります。 ノードに障害が発生した場合、同じPodがクラスター内の他の使用可能なノードにスケジュールされます。
+ まとめ:  Pod ノード kubectlの主要なコマンド    Podは1つ以上のアプリケーションコンテナ(Dockerやrktなど)のグループであり、共有ストレージ(ボリューム)、IPアドレス、それらの実行方法に関する情報が含まれています。 
+   Podの概要     ノード Podは常にノード上で動作します。ノードはKubernetesではワーカーマシンであり、クラスターによって仮想、物理マシンのどちらであってもかまいません。各ノードはマスターによって管理されます。ノードは複数のPodを持つことができ、Kubernetesマスターはクラスター内のノード間でPodのスケジュールを自動的に処理します。マスターの自動スケジューリングは各ノードで利用可能なリソースを考慮に入れます。
+すべてのKubernetesノードでは少なくとも以下のものが動作します。
+ Kubelet: Kubernetesマスターとノード間の通信を担当するプロセス。マシン上で実行されているPodとコンテナを管理します。 レジストリからコンテナイメージを取得し、コンテナを解凍し、アプリケーションを実行することを担当する、Docker、rktのようなコンテナランタイム。    コンテナ同士が密接に結合され、ディスクなどのリソースを共有する必要がある場合は、コンテナを1つのPodにまとめてスケジュールする必要があります。 
+   ノードの概要     kubectlを使ったトラブルシューティング モジュール2では、kubectlのコマンドラインインターフェースを使用しました。モジュール3でもこれを使用して、デプロイされたアプリケーションとその環境に関する情報を入手します。最も一般的な操作は、次のkubectlコマンドで実行できます。
+ kubectl get - リソースの一覧を表示 kubectl describe - 単一リソースに関する詳細情報を表示 kubectl logs - 単一Pod上の単一コンテナ内のログを表示 kubectl exec - 単一Pod上の単一コンテナ内でコマンドを実行  これらのコマンドを使用して、アプリケーションがいつデプロイされたか、それらの現在の状況、実行中の場所、および構成を確認することができます。">
+<meta name="twitter:description" content="目標  KubernetesのPodについて学ぶ Kubernetesのノードについて学ぶ デプロイされたアプリケーションのトラブルシューティング   Kubernetes Pod モジュール2でDeploymentを作成したときに、KubernetesはアプリケーションインスタンスをホストするためのPodを作成しました。Podは、1つ以上のアプリケーションコンテナ(Dockerやrktなど)のグループとそれらのコンテナの共有リソースを表すKubernetesの抽象概念です。 Podには以下のものが含まれます:
+ 共有ストレージ(ボリューム) ネットワーキング(クラスターに固有のIPアドレス) コンテナのイメージバージョンや使用するポートなどの、各コンテナをどう動かすかに関する情報  Podは、アプリケーション固有の「論理ホスト」をモデル化し、比較的密接に結合されたさまざまなアプリケーションコンテナを含むことができます。 たとえば、Podには、Node.jsアプリケーションを含むコンテナと、Node.js Webサーバによって公開されるデータを供給する別のコンテナの両方を含めることができます。Pod内のコンテナはIPアドレスとポートスペースを共有し、常に同じ場所に配置され、同じスケジュールに入れられ、同じノード上の共有コンテキストで実行されます。
+Podは、Kubernetesプラットフォームの原子単位です。 Kubernetes上にDeploymentを作成すると、そのDeploymentはその中にコンテナを持つPodを作成します(コンテナを直接作成するのではなく)。 各Podは、スケジュールされているノードに関連付けられており、終了(再起動ポリシーに従って)または削除されるまでそこに残ります。 ノードに障害が発生した場合、同じPodがクラスター内の他の使用可能なノードにスケジュールされます。
+ まとめ:  Pod ノード kubectlの主要なコマンド    Podは1つ以上のアプリケーションコンテナ(Dockerやrktなど)のグループであり、共有ストレージ(ボリューム)、IPアドレス、それらの実行方法に関する情報が含まれています。 
+   Podの概要     ノード Podは常にノード上で動作します。ノードはKubernetesではワーカーマシンであり、クラスターによって仮想、物理マシンのどちらであってもかまいません。各ノードはマスターによって管理されます。ノードは複数のPodを持つことができ、Kubernetesマスターはクラスター内のノード間でPodのスケジュールを自動的に処理します。マスターの自動スケジューリングは各ノードで利用可能なリソースを考慮に入れます。
+すべてのKubernetesノードでは少なくとも以下のものが動作します。
+ Kubelet: Kubernetesマスターとノード間の通信を担当するプロセス。マシン上で実行されているPodとコンテナを管理します。 レジストリからコンテナイメージを取得し、コンテナを解凍し、アプリケーションを実行することを担当する、Docker、rktのようなコンテナランタイム。    コンテナ同士が密接に結合され、ディスクなどのリソースを共有する必要がある場合は、コンテナを1つのPodにまとめてスケジュールする必要があります。 
+   ノードの概要     kubectlを使ったトラブルシューティング モジュール2では、kubectlのコマンドラインインターフェースを使用しました。モジュール3でもこれを使用して、デプロイされたアプリケーションとその環境に関する情報を入手します。最も一般的な操作は、次のkubectlコマンドで実行できます。
+ kubectl get - リソースの一覧を表示 kubectl describe - 単一リソースに関する詳細情報を表示 kubectl logs - 単一Pod上の単一コンテナ内のログを表示 kubectl exec - 単一Pod上の単一コンテナ内でコマンドを実行  これらのコマンドを使用して、アプリケーションがいつデプロイされたか、それらの現在の状況、実行中の場所、および構成を確認することができます。">
+<meta property="og:url" content="https://kubernetes.io/ja/docs/tutorials/kubernetes-basics/explore/explore-intro/">
+<meta property="og:title" content="Podとノードについて">
+<meta name="twitter:title" content="Podとノードについて">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ja/" class="logo" title="プロダクショングレードのコンテナ管理基盤 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ja/docs/" class="active">ドキュメント</a></li>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <li><a href="/ja/case-studies/">ケーススタディ</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    日本語 Japanese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/tutorials/kubernetes-basics/explore/explore-intro/">English</a></li>
+                
+                    <li><a href="/zh/docs/tutorials/kubernetes-basics/explore/explore-intro/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/docs/tutorials/kubernetes-basics/explore/explore-intro/">한국어 Korean</a></li>
+                
+                    <li><a href="/de/docs/tutorials/kubernetes-basics/explore/explore-intro/">Deutsch</a></li>
+                
+                    <li><a href="/pl/docs/tutorials/kubernetes-basics/explore/explore-intro/">Polski</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ja/docs/tutorials/kubernetes-basics/explore/explore-intro/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ja/docs/tutorials/kubernetes-basics/explore/explore-intro/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ja/docs/tutorials/kubernetes-basics/explore/explore-intro/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ja/docs/tutorials/kubernetes-basics/explore/explore-intro/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ja/docs/tutorials/kubernetes-basics/explore/explore-intro/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ja/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Kubernetesの基本を学ぶ</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ja/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>手を動かす準備はできていますか？本チュートリアルでは、Node.jsを使った簡単な"Hello World"を実行するKubernetesクラスタをビルドします。</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ja/docs/home/">ドキュメント</a></h3>
+           <p>チュートリアル、サンプルやドキュメントのリファレンスを使って Kubernetes の利用方法を学んでください。あなたは<a href="/editdocs/" data-auto-burger-exclude>ドキュメントへコントリビュートをする</a>こともできます!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Kubernetesのコードを編集することに興味がありますか？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHubで参照する</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">コミュニティを探す</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>フォーラム</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>イベントカレンダー</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1>チュートリアル</h1>
+<h5></h5>
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ja/docs/home/">ホーム</a></li>
+		
+		
+		<li><a href="/ja/docs/setup/">はじめに</a></li>
+		
+		
+		<li><a href="/ja/docs/concepts/">コンセプト</a></li>
+		
+		
+		<li><a href="/ja/docs/tasks/">タスク</a></li>
+		
+		
+		<li><a href="/ja/docs/tutorials/" class="YAH">チュートリアル</a></li>
+		
+		
+		<li><a href="/ja/docs/reference/">リファレンス</a></li>
+		
+		
+		<li><a href="/ja/docs/contribute/">貢献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="検索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  のドキュメントは積極的にメンテナンスされていません。現在表示されているバージョンはスナップショットです。最新のドキュメントはこちらです: 
+	 <a href="https://kubernetes.io/docs/home/">最新バージョン</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="チュートリアル" href="/ja/docs/tutorials/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Hello Minikube" href="/ja/docs/tutorials/hello-minikube/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetesの基本を学ぶ">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetesの基本を学ぶ" href="/ja/docs/tutorials/kubernetes-basics/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="クラスターの作成">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Minikubeを使ったクラスターの作成" href="/ja/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="対話型チュートリアル - クラスターの作成" href="/ja/docs/tutorials/kubernetes-basics/create-cluster/cluster-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="アプリケーションのデプロイ">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="kubectlを使ったDeploymentの作成" href="/ja/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="対話型チュートリアル - アプリケーションのデプロイ" href="/ja/docs/tutorials/kubernetes-basics/deploy-app/deploy-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="アプリケーションの探索">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Podとノードについて" href="/ja/docs/tutorials/kubernetes-basics/explore/explore-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="対話型チュートリアル - デプロイしたアプリケーションの探索" href="/ja/docs/tutorials/kubernetes-basics/explore/explore-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="アプリケーションの公開">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Serviceを使ったアプリケーションの公開" href="/ja/docs/tutorials/kubernetes-basics/expose/expose-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="対話型チュートリアル - アプリケーションの公開" href="/ja/docs/tutorials/kubernetes-basics/expose/expose-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="アプリケーションのスケーリング">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="アプリケーションの複数インスタンスを実行" href="/ja/docs/tutorials/kubernetes-basics/scale/scale-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="対話型チュートリアル - アプリケーションのスケーリング" href="/ja/docs/tutorials/kubernetes-basics/scale/scale-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="アプリケーションのアップデート">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ローリングアップデートの実行" href="/ja/docs/tutorials/kubernetes-basics/update/update-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="対話型チュートリアル - アプリケーションのアップデート" href="/ja/docs/tutorials/kubernetes-basics/update/update-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="設定">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ConfigMapを使ったRedisの設定" href="/ja/docs/tutorials/configuration/configure-redis-using-configmap/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="ステートレスアプリケーション">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="クラスター内のアプリケーションにアクセスするために外部IPアドレスを公開する" href="/ja/docs/tutorials/stateless-application/expose-external-ip-address/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Example: Deploying PHP Guestbook application with Redis <small>(EN)</small>" href="/docs/tutorials/stateless-application/guestbook/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Example: Add logging and metrics to the PHP / Redis Guestbook example <small>(EN)</small>" href="/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Stateful Applications">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="StatefulSet Basics <small>(EN)</small>" href="/docs/tutorials/stateful-application/basic-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Example: Deploying WordPress and MySQL with Persistent Volumes <small>(EN)</small>" href="/docs/tutorials/stateful-application/mysql-wordpress-persistent-volume/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Example: Deploying Cassandra with Stateful Sets <small>(EN)</small>" href="/docs/tutorials/stateful-application/cassandra/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running ZooKeeper, A Distributed System Coordinator <small>(EN)</small>" href="/docs/tutorials/stateful-application/zookeeper/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Clusters">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="AppArmor <small>(EN)</small>" href="/docs/tutorials/clusters/apparmor/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Services">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Using Source IP <small>(EN)</small>" href="/docs/tutorials/services/source-ip/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ja/docs/tutorials/kubernetes-basics/explore/explore-intro.html" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Podとノードについて</h1>
+
+
+
+
+
+
+<!DOCTYPE html>
+
+<html lang="ja">
+
+<body>
+
+<link href="/docs/tutorials/kubernetes-basics/public/css/styles.css" rel="stylesheet">
+
+
+<div class="layout" id="top">
+
+    <main class="content">
+
+        <div class="row">
+
+     <div class="col-md-8">
+          <h3>目標</h3>
+                <ul>
+                    <li>KubernetesのPodについて学ぶ</li>
+                    <li>Kubernetesのノードについて学ぶ</li>
+                    <li>デプロイされたアプリケーションのトラブルシューティング</li>
+                </ul>
+            </div>
+
+            <div class="col-md-8">
+                <h2>Kubernetes Pod</h2>
+                <p>モジュール<a href="/ja/docs/tutorials/kubernetes-basics/deploy-intro/">2</a>でDeploymentを作成したときに、KubernetesはアプリケーションインスタンスをホストするためのPodを作成しました。Podは、1つ以上のアプリケーションコンテナ(Dockerやrktなど)のグループとそれらのコンテナの共有リソースを表すKubernetesの抽象概念です。 Podには以下のものが含まれます:</p>
+                <ul>
+                    <li>共有ストレージ(ボリューム)</li>
+                    <li>ネットワーキング(クラスターに固有のIPアドレス)</li>
+                    <li>コンテナのイメージバージョンや使用するポートなどの、各コンテナをどう動かすかに関する情報</li>
+                </ul>
+                <p>Podは、アプリケーション固有の「論理ホスト」をモデル化し、比較的密接に結合されたさまざまなアプリケーションコンテナを含むことができます。 たとえば、Podには、Node.jsアプリケーションを含むコンテナと、Node.js Webサーバによって公開されるデータを供給する別のコンテナの両方を含めることができます。Pod内のコンテナはIPアドレスとポートスペースを共有し、常に同じ場所に配置され、同じスケジュールに入れられ、同じノード上の共有コンテキストで実行されます。</p>
+                <p>Podは、Kubernetesプラットフォームの原子単位です。 Kubernetes上にDeploymentを作成すると、そのDeploymentはその中にコンテナを持つPodを作成します(コンテナを直接作成するのではなく)。 各Podは、スケジュールされているノードに関連付けられており、終了(再起動ポリシーに従って)または削除されるまでそこに残ります。 ノードに障害が発生した場合、同じPodがクラスター内の他の使用可能なノードにスケジュールされます。</p>
+            </div>
+            <div class="col-md-4">
+                <div class="content__box content__box_lined">
+                    <h3>まとめ:</h3>
+                    <ul>
+                        <li>Pod</li>
+                        <li>ノード</li>
+                        <li>kubectlの主要なコマンド</li>
+                    </ul>
+                </div>
+                <div class="content__box content__box_fill">
+                        <p><i>
+                            Podは1つ以上のアプリケーションコンテナ(Dockerやrktなど)のグループであり、共有ストレージ(ボリューム)、IPアドレス、それらの実行方法に関する情報が含まれています。
+                        </i></p>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h2 style="color: #3771e3;">Podの概要</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <p><img src="/docs/tutorials/kubernetes-basics/public/images/module_03_pods.svg"></p>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h2>ノード</h2>
+                <p>Podは常に<b>ノード</b>上で動作します。ノードはKubernetesではワーカーマシンであり、クラスターによって仮想、物理マシンのどちらであってもかまいません。各ノードはマスターによって管理されます。ノードは複数のPodを持つことができ、Kubernetesマスターはクラスター内のノード間でPodのスケジュールを自動的に処理します。マスターの自動スケジューリングは各ノードで利用可能なリソースを考慮に入れます。</p>
+
+                <p>すべてのKubernetesノードでは少なくとも以下のものが動作します。</p>
+                <ul>
+                    <li>Kubelet: Kubernetesマスターとノード間の通信を担当するプロセス。マシン上で実行されているPodとコンテナを管理します。</li>
+                    <li>レジストリからコンテナイメージを取得し、コンテナを解凍し、アプリケーションを実行することを担当する、Docker、rktのようなコンテナランタイム。</li>
+                </ul>
+
+            </div>
+            <div class="col-md-4">
+                <div class="content__box content__box_fill">
+                    <p><i> コンテナ同士が密接に結合され、ディスクなどのリソースを共有する必要がある場合は、コンテナを1つのPodにまとめてスケジュールする必要があります。 </i></p>
+                </div>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h2 style="color: #3771e3;">ノードの概要</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <p><img src="/docs/tutorials/kubernetes-basics/public/images/module_03_nodes.svg"></p>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h2>kubectlを使ったトラブルシューティング</h2>
+                <p>モジュール<a href="/ja/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/">2</a>では、kubectlのコマンドラインインターフェースを使用しました。モジュール3でもこれを使用して、デプロイされたアプリケーションとその環境に関する情報を入手します。最も一般的な操作は、次のkubectlコマンドで実行できます。</p>
+                <ul>
+                    <li><b>kubectl get</b> - リソースの一覧を表示</li>
+                    <li><b>kubectl describe</b> - 単一リソースに関する詳細情報を表示</li>
+                    <li><b>kubectl logs</b> - 単一Pod上の単一コンテナ内のログを表示</li>
+                    <li><b>kubectl exec</b> - 単一Pod上の単一コンテナ内でコマンドを実行</li>
+                </ul>
+
+                <p>これらのコマンドを使用して、アプリケーションがいつデプロイされたか、それらの現在の状況、実行中の場所、および構成を確認することができます。</p>
+
+                <p>クラスターのコンポーネントとコマンドラインの詳細についてわかったので、次にデプロイしたアプリケーションを探索してみましょう。</p>
+
+            </div>
+            <div class="col-md-4">
+                <div class="content__box content__box_fill">
+                    <p><i> ノードはKubernetesではワーカーマシンであり、クラスターに応じてVMまたは物理マシンになります。 複数のPodを1つのノードで実行できます。 </i></p>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-12">
+                <a class="btn btn-lg btn-success" href="/ja/docs/tutorials/kubernetes-basics/explore/explore-interactive/" role="button">対話型のチュートリアルを始める <span class="btn__next">›</span></a>
+            </div>
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>
+
+
+
+
+    
+            
+  <h2>フィードバック</h2>
+  <p class="feedback--prompt">このページは役に立ちましたか？ </p>
+  <button class="button feedback--yes">はい</button>
+  <button class="button feedback--no">いいえ</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      問題を報告する</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      改善を提案</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/tutorials/kubernetes-basics/explore/explore-intro.html?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ja\/docs\/tutorials\/kubernetes-basics\/explore\/explore-intro\/",
+    "title" : "Podとノードについて",
+    "permalink" : "https:\/\/kubernetes.io\/ja\/docs\/tutorials\/kubernetes-basics\/explore\/explore-intro\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Issue作成</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ja/docs/tutorials/kubernetes-basics/explore/explore-intro.html" class="button issue">ページ編集</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    ページの最終更新 November 23, 2019 at 6:39 PM PST by
+    <a href="https://github.com/kubernetes/website/commit/ef00b57e7bef567acb376e311eb7f770a4b987ee/">ja-docs: fixes for broken links. (#17781)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/tutorials/kubernetes-basics/explore/explore-intro.html">ページ履歴</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ja/docs/home/">ホーム</a>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <a href="/ja/case-studies/">ケーススタディ</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>フォーラム</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>イベントカレンダー</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">コントリビュート</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

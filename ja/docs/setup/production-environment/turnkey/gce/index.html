@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html id="docs" lang="ja" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Google Compute Engine上でKubernetesを動かす - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/ja/docs/setup/production-environment/turnkey/gce/">
+<meta property="og:title" content="Google Compute Engine上でKubernetesを動かす">
+<meta name="twitter:title" content="Google Compute Engine上でKubernetesを動かす">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ja/" class="logo" title="プロダクショングレードのコンテナ管理基盤 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ja/docs/" class="active">ドキュメント</a></li>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <li><a href="/ja/case-studies/">ケーススタディ</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    日本語 Japanese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/setup/production-environment/turnkey/gce/">English</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ja/docs/setup/production-environment/turnkey/gce/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ja/docs/setup/production-environment/turnkey/gce/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ja/docs/setup/production-environment/turnkey/gce/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ja/docs/setup/production-environment/turnkey/gce/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ja/docs/setup/production-environment/turnkey/gce/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ja/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Kubernetesの基本を学ぶ</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ja/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>手を動かす準備はできていますか？本チュートリアルでは、Node.jsを使った簡単な"Hello World"を実行するKubernetesクラスタをビルドします。</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ja/docs/home/">ドキュメント</a></h3>
+           <p>チュートリアル、サンプルやドキュメントのリファレンスを使って Kubernetes の利用方法を学んでください。あなたは<a href="/editdocs/" data-auto-burger-exclude>ドキュメントへコントリビュートをする</a>こともできます!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Kubernetesのコードを編集することに興味がありますか？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHubで参照する</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">コミュニティを探す</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>フォーラム</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>イベントカレンダー</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>はじめに</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ja/docs/home/">ホーム</a></li>
+		
+		
+		<li><a href="/ja/docs/setup/" class="YAH">はじめに</a></li>
+		
+		
+		<li><a href="/ja/docs/concepts/">コンセプト</a></li>
+		
+		
+		<li><a href="/ja/docs/tasks/">タスク</a></li>
+		
+		
+		<li><a href="/ja/docs/tutorials/">チュートリアル</a></li>
+		
+		
+		<li><a href="/ja/docs/reference/">リファレンス</a></li>
+		
+		
+		<li><a href="/ja/docs/contribute/">貢献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="検索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  のドキュメントは積極的にメンテナンスされていません。現在表示されているバージョンはスナップショットです。最新のドキュメントはこちらです: 
+	 <a href="https://kubernetes.io/docs/home/">最新バージョン</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="はじめに" href="/ja/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="リリースノート及びバージョンスキュー">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetesバージョンとバージョンスキューサポートポリシー" href="/ja/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="リリースのビルド" href="/ja/docs/setup/release/building-from-source/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="環境について学ぶ">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Minikubeを使用してローカル環境でKubernetesを動かす" href="/ja/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="プロダクション環境">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="CRIのインストール" href="/ja/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetesをデプロイツールでインストールする">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="kubeadmを使ってクラスターを構築する">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="kubeadmのインストール" href="/ja/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadmを使用したシングルコントロールプレーンクラスターの作成" href="/ja/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadmを使ったコントロールプレーンの設定のカスタマイズ" href="/ja/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Options for Highly Available topology" href="/ja/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadmを使用した高可用性クラスターの作成" href="/ja/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadmを使用した高可用性etcdクラスターの作成" href="/ja/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadmを使用したクラスター内の各kubeletの設定" href="/ja/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadmのトラブルシューティング" href="/ja/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuring your kubernetes cluster to self-host the control plane" href="/ja/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kopsを使ったAWS上でのKubernetesのインストール" href="/ja/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="KRIBを使用してDigital Rebar Provision (DRP)と共にKubernetesをインストールする" href="/ja/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubesprayを使ったオンプレミス/クラウドプロバイダへのKubernetesのインストール" href="/ja/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="ターンキークラウドソリューション">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Alibaba CloudでKubernetesを動かす" href="/ja/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="AWS EC2上でKubernetesを動かす" href="/ja/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Azure 上で Kubernetes を動かす" href="/ja/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CenturyLink Cloud上でKubernetesを動かす" href="/ja/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Google Compute Engine上でKubernetesを動かす" href="/ja/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IBM Cloud Privateを使ってマルチクラウドでKubernetesを動かす" href="/ja/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Tencent Kubernetes Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Stackpoint.ioを利用して複数のクラウド上でKubernetesを動かす" href="/ja/docs/setup/production-environment/turnkey/stackpoint/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows in Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Intro to Windows support in Kubernetes" href="/ja/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for adding Windows Nodes in Kubernetes" href="/ja/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for scheduling Windows containers in Kubernetes" href="/ja/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="オンプレミスVM">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Cloudstack" href="/ja/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DC/OS上のKubernetes" href="/ja/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="oVirt" href="/ja/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="ベストプラクティス">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="複数のゾーンで動かす" href="/ja/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="大規模クラスタの構築" href="/ja/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ノードのセットアップの検証" href="/ja/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI証明書とその要件" href="/ja/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ja/docs/setup/production-environment/turnkey/gce.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Google Compute Engine上でKubernetesを動かす</h1>
+
+
+
+
+<p>The example below creates a Kubernetes cluster with 3 worker node Virtual Machines and a master Virtual Machine (i.e. 4 VMs in your cluster). This cluster is set up and controlled from your workstation (or wherever you find convenient).</p>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%a7%8b%e3%82%81%e3%82%8b%e5%89%8d%e3%81%ab">始める前に</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e3%82%af%e3%83%a9%e3%82%b9%e3%82%bf%e3%83%bc%e3%81%ae%e8%b5%b7%e5%8b%95">クラスターの起動</a></li>
+
+
+
+
+<li><a href="#%e3%83%af%e3%83%bc%e3%82%af%e3%82%b9%e3%83%86%e3%83%bc%e3%82%b7%e3%83%a7%e3%83%b3%e4%b8%8a%e3%81%a7%e3%81%aekubernetes%e3%82%b3%e3%83%9e%e3%83%b3%e3%83%89%e3%83%a9%e3%82%a4%e3%83%b3%e3%83%84%e3%83%bc%e3%83%ab%e3%81%ae%e3%82%a4%e3%83%b3%e3%82%b9%e3%83%88%e3%83%bc%e3%83%ab">ワークステーション上でのKubernetesコマンドラインツールのインストール</a></li>
+
+
+
+
+<li><a href="#%e3%82%af%e3%83%a9%e3%82%b9%e3%82%bf%e3%83%bc%e3%81%ae%e5%a7%8b%e3%81%be%e3%82%8a">クラスターの始まり</a></li>
+
+
+
+
+<li><a href="#%e3%82%af%e3%83%a9%e3%82%b9%e3%82%bf%e3%83%bc%e3%81%ae%e8%a7%a3%e4%bd%93">クラスターの解体</a></li>
+
+
+
+
+<li><a href="#%e3%82%ab%e3%82%b9%e3%82%bf%e3%83%9e%e3%82%a4%e3%82%ba">カスタマイズ</a></li>
+
+
+
+
+<li><a href="#%e3%83%88%e3%83%a9%e3%83%96%e3%83%ab%e3%82%b7%e3%83%a5%e3%83%bc%e3%83%86%e3%82%a3%e3%83%b3%e3%82%b0">トラブルシューティング</a></li>
+
+
+
+
+<li><a href="#%e3%82%b5%e3%83%9d%e3%83%bc%e3%83%88%e3%83%ac%e3%83%99%e3%83%ab">サポートレベル</a></li>
+
+
+
+
+<li><a href="#%e5%8f%82%e8%80%83%e6%96%87%e7%8c%ae">参考文献</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+
+<h2 id="始める前に">始める前に</h2>
+<p>If you want a simplified getting started experience and GUI for managing clusters, please consider trying <a href="https://cloud.google.com/kubernetes-engine/" target="_blank">Google Kubernetes Engine</a> for hosted cluster installation and management.</p>
+
+<p>For an easy way to experiment with the Kubernetes development environment, click the button below
+to open a Google Cloud Shell with an auto-cloned copy of the Kubernetes source repo.</p>
+
+<p><a href="https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/kubernetes/kubernetes&amp;page=editor&amp;open_in_editor=README.md" target="_blank"><img src="https://gstatic.com/cloudssh/images/open-btn.png" alt="Open in Cloud Shell" /></a></p>
+
+<p>If you want to use custom binaries or pure open source Kubernetes, please continue with the instructions below.</p>
+
+<h3 id="前提条件">前提条件</h3>
+
+<ol>
+<li>You need a Google Cloud Platform account with billing enabled. Visit the <a href="https://console.cloud.google.com" target="_blank">Google Developers Console</a> for more details.</li>
+<li>Install <code>gcloud</code> as necessary. <code>gcloud</code> can be installed as a part of the <a href="https://cloud.google.com/sdk/" target="_blank">Google Cloud SDK</a>.</li>
+<li>Enable the <a href="https://console.developers.google.com/apis/api/replicapool.googleapis.com/overview" target="_blank">Compute Engine Instance Group Manager API</a> in the <a href="https://console.developers.google.com/apis/library" target="_blank">Google Cloud developers console</a>.</li>
+<li>Make sure that gcloud is set to use the Google Cloud Platform project you want. You can check the current project using <code>gcloud config list project</code> and change it via <code>gcloud config set project &lt;project-id&gt;</code>.</li>
+<li>Make sure you have credentials for GCloud by running <code>gcloud auth login</code>.</li>
+<li>(Optional)  In order to make API calls against GCE, you must also run <code>gcloud auth application-default login</code>.</li>
+<li>Make sure you can start up a GCE VM from the command line.  At least make sure you can do the <a href="https://cloud.google.com/compute/docs/instances/#startinstancegcloud" target="_blank">Create an instance</a> part of the GCE Quickstart.</li>
+<li>Make sure you can SSH into the VM without interactive prompts.  See the <a href="https://cloud.google.com/compute/docs/instances/#sshing" target="_blank">Log in to the instance</a> part of the GCE Quickstart.</li>
+</ol>
+
+
+
+
+<h2 id="クラスターの起動">クラスターの起動</h2>
+
+<p>You can install a client and start a cluster with either one of these commands (we list both in case only one is installed on your machine):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -sS https://get.k8s.io | bash</code></pre></div>
+<p>or</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">wget -q -O - https://get.k8s.io | bash</code></pre></div>
+<p>Once this command completes, you will have a master VM and four worker VMs, running as a Kubernetes cluster.</p>
+
+<p>By default, some containers will already be running on your cluster. Containers like <code>fluentd</code> provide <a href="/docs/concepts/cluster-administration/logging/">logging</a>, while <code>heapster</code> provides <a href="https://releases.k8s.io/master/cluster/addons/cluster-monitoring/README.md" target="_blank">monitoring</a> services.</p>
+
+<p>The script run by the commands above creates a cluster with the name/prefix &ldquo;kubernetes&rdquo;. It defines one specific cluster config, so you can&rsquo;t run it more than once.</p>
+
+<p>Alternately, you can download and install the latest Kubernetes release from <a href="https://github.com/kubernetes/kubernetes/releases" target="_blank">this page</a>, then run the <code>&lt;kubernetes&gt;/cluster/kube-up.sh</code> script to start the cluster:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#a2f">cd</span> kubernetes
+cluster/kube-up.sh</code></pre></div>
+<p>If you want more than one cluster running in your project, want to use a different name, or want a different number of worker nodes, see the <code>&lt;kubernetes&gt;/cluster/gce/config-default.sh</code> file for more fine-grained configuration before you start up your cluster.</p>
+
+<p>If you run into trouble, please see the section on <a href="/ja/docs/setup/production-environment/turnkey/gce/#troubleshooting">troubleshooting</a>, post to the
+<a href="https://discuss.kubernetes.io" target="_blank">Kubernetes Forum</a>, or come ask questions on <a href="/docs/troubleshooting/#slack">Slack</a>.</p>
+
+<p>The next few steps will show you:</p>
+
+<ol>
+<li>How to set up the command line client on your workstation to manage the cluster</li>
+<li>Examples of how to use the cluster</li>
+<li>How to delete the cluster</li>
+<li>How to start clusters with non-default options (like larger clusters)</li>
+</ol>
+
+<h2 id="ワークステーション上でのkubernetesコマンドラインツールのインストール">ワークステーション上でのKubernetesコマンドラインツールのインストール</h2>
+
+<p>The cluster startup script will leave you with a running cluster and a <code>kubernetes</code> directory on your workstation.</p>
+
+<p>The <a href="/docs/user-guide/kubectl/">kubectl</a> tool controls the Kubernetes cluster
+manager.  It lets you inspect your cluster resources, create, delete, and update
+components, and much more. You will use it to look at your new cluster and bring
+up example apps.</p>
+
+<p>You can use <code>gcloud</code> to install the <code>kubectl</code> command-line tool on your workstation:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">gcloud components install kubectl</code></pre></div>
+<blockquote class="note">
+  <div><strong>備考:</strong> The kubectl version bundled with <code>gcloud</code> may be older than the one
+downloaded by the get.k8s.io install script. See <a href="/docs/tasks/kubectl/install/">Installing kubectl</a>
+document to see how you can set up the latest <code>kubectl</code> on your workstation.</div>
+</blockquote>
+
+<h2 id="クラスターの始まり">クラスターの始まり</h2>
+
+<h3 id="クラスターの様子を見る">クラスターの様子を見る</h3>
+
+<p>Once <code>kubectl</code> is in your path, you can use it to look at your cluster. E.g., running:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get --all-namespaces services</code></pre></div>
+<p>should show a set of <a href="/docs/user-guide/services">services</a> that look something like this:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAMESPACE     NAME          TYPE             CLUSTER_IP       EXTERNAL_IP       PORT<span style="color:#666">(</span>S<span style="color:#666">)</span>        AGE
+default       kubernetes    ClusterIP        <span style="color:#666">10</span>.0.0.1         &lt;none&gt;            <span style="color:#666">443</span>/TCP        1d
+kube-system   kube-dns      ClusterIP        <span style="color:#666">10</span>.0.0.2         &lt;none&gt;            <span style="color:#666">53</span>/TCP,53/UDP  1d
+kube-system   kube-ui       ClusterIP        <span style="color:#666">10</span>.0.0.3         &lt;none&gt;            <span style="color:#666">80</span>/TCP         1d
+...</code></pre></div>
+<p>Similarly, you can take a look at the set of <a href="/docs/user-guide/pods">pods</a> that were created during cluster startup.
+You can do this via the</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get --all-namespaces pods</code></pre></div>
+<p>command.</p>
+
+<p>You&rsquo;ll see a list of pods that looks something like this (the name specifics will be different):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAMESPACE     NAME                                           READY     STATUS    RESTARTS   AGE
+kube-system   coredns-5f4fbb68df-mc8z8                       <span style="color:#666">1</span>/1       Running   <span style="color:#666">0</span>          15m
+kube-system   fluentd-cloud-logging-kubernetes-minion-63uo   <span style="color:#666">1</span>/1       Running   <span style="color:#666">0</span>          14m
+kube-system   fluentd-cloud-logging-kubernetes-minion-c1n9   <span style="color:#666">1</span>/1       Running   <span style="color:#666">0</span>          14m
+kube-system   fluentd-cloud-logging-kubernetes-minion-c4og   <span style="color:#666">1</span>/1       Running   <span style="color:#666">0</span>          14m
+kube-system   fluentd-cloud-logging-kubernetes-minion-ngua   <span style="color:#666">1</span>/1       Running   <span style="color:#666">0</span>          14m
+kube-system   kube-ui-v1-curt1                               <span style="color:#666">1</span>/1       Running   <span style="color:#666">0</span>          15m
+kube-system   monitoring-heapster-v5-ex4u3                   <span style="color:#666">1</span>/1       Running   <span style="color:#666">1</span>          15m
+kube-system   monitoring-influx-grafana-v1-piled             <span style="color:#666">2</span>/2       Running   <span style="color:#666">0</span>          15m</code></pre></div>
+<p>Some of the pods may take a few seconds to start up (during this time they&rsquo;ll show <code>Pending</code>), but check that they all show as <code>Running</code> after a short period.</p>
+
+<h3 id="いくつかの例の実行">いくつかの例の実行</h3>
+
+<p>Then, see <a href="/docs/user-guide/simple-nginx">a simple nginx example</a> to try out your new cluster.</p>
+
+<p>For more complete applications, please look in the <a href="https://github.com/kubernetes/examples/tree/v1.17.17/" target="_blank">examples directory</a>.  The <a href="https://github.com/kubernetes/examples/tree/v1.17.17/guestbook/" target="_blank">guestbook example</a> is a good &ldquo;getting started&rdquo; walkthrough.</p>
+
+<h2 id="クラスターの解体">クラスターの解体</h2>
+
+<p>To remove/delete/teardown the cluster, use the <code>kube-down.sh</code> script.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#a2f">cd</span> kubernetes
+cluster/kube-down.sh</code></pre></div>
+<p>Likewise, the <code>kube-up.sh</code> in the same directory will bring it back up. You do not need to rerun the <code>curl</code> or <code>wget</code> command: everything needed to setup the Kubernetes cluster is now on your workstation.</p>
+
+<h2 id="カスタマイズ">カスタマイズ</h2>
+
+<p>The script above relies on Google Storage to stage the Kubernetes release. It
+then will start (by default) a single master VM along with 3 worker VMs.  You
+can tweak some of these parameters by editing <code>kubernetes/cluster/gce/config-default.sh</code>
+You can view a transcript of a successful cluster creation
+<a href="https://gist.github.com/satnam6502/fc689d1b46db9772adea" target="_blank">here</a>.</p>
+
+<h2 id="トラブルシューティング">トラブルシューティング</h2>
+
+<h3 id="プロジェクトの設定">プロジェクトの設定</h3>
+
+<p>You need to have the Google Cloud Storage API, and the Google Cloud Storage
+JSON API enabled. It is activated by default for new projects. Otherwise, it
+can be done in the Google Cloud Console.  See the <a href="https://cloud.google.com/storage/docs/json_api/" target="_blank">Google Cloud Storage JSON
+API Overview</a> for more
+details.</p>
+
+<p>Also ensure that&ndash; as listed in the <a href="#前提条件">Prerequisites section</a>&ndash; you&rsquo;ve enabled the <code>Compute Engine Instance Group Manager API</code>, and can start up a GCE VM from the command line as in the <a href="https://cloud.google.com/compute/docs/quickstart" target="_blank">GCE Quickstart</a> instructions.</p>
+
+<h3 id="クラスター初期化のハング">クラスター初期化のハング</h3>
+
+<p>If the Kubernetes startup script hangs waiting for the API to be reachable, you can troubleshoot by SSHing into the master and node VMs and looking at logs such as <code>/var/log/startupscript.log</code>.</p>
+
+<p><strong>Once you fix the issue, you should run <code>kube-down.sh</code> to cleanup</strong> after the partial cluster creation, before running <code>kube-up.sh</code> to try again.</p>
+
+<h3 id="ssh">SSH</h3>
+
+<p>If you&rsquo;re having trouble SSHing into your instances, ensure the GCE firewall
+isn&rsquo;t blocking port 22 to your VMs.  By default, this should work but if you
+have edited firewall rules or created a new non-default network, you&rsquo;ll need to
+expose it: <code>gcloud compute firewall-rules create default-ssh --network=&lt;network-name&gt;
+--description &quot;SSH allowed from anywhere&quot; --allow tcp:22</code></p>
+
+<p>Additionally, your GCE SSH key must either have no passcode or you need to be
+using <code>ssh-agent</code>.</p>
+
+<h3 id="ネットワーク">ネットワーク</h3>
+
+<p>The instances must be able to connect to each other using their private IP. The
+script uses the &ldquo;default&rdquo; network which should have a firewall rule called
+&ldquo;default-allow-internal&rdquo; which allows traffic on any port on the private IPs.
+If this rule is missing from the default network or if you change the network
+being used in <code>cluster/config-default.sh</code> create a new rule with the following
+field values:</p>
+
+<ul>
+<li>Source Ranges: <code>10.0.0.0/8</code></li>
+<li>Allowed Protocols and Port: <code>tcp:1-65535;udp:1-65535;icmp</code></li>
+</ul>
+
+<h2 id="サポートレベル">サポートレベル</h2>
+
+<table>
+<thead>
+<tr>
+<th>IaaS Provider</th>
+<th>Config. Mgmt</th>
+<th>OS</th>
+<th>Networking</th>
+<th>Docs</th>
+<th>Conforms</th>
+<th>Support Level</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GCE</td>
+<td>Saltstack</td>
+<td>Debian</td>
+<td>GCE</td>
+<td><a href="/ja/docs/setup/production-environment/turnkey/gce/">docs</a></td>
+<td></td>
+<td>Project</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="参考文献">参考文献</h2>
+
+<p>Please see the <a href="/ja/docs/">Kubernetes docs</a> for more details on administering
+and using a Kubernetes cluster.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>フィードバック</h2>
+  <p class="feedback--prompt">このページは役に立ちましたか？ </p>
+  <button class="button feedback--yes">はい</button>
+  <button class="button feedback--no">いいえ</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      問題を報告する</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      改善を提案</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/production-environment/turnkey/gce.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ja\/docs\/setup\/production-environment\/turnkey\/gce\/",
+    "title" : "Google Compute Engine上でKubernetesを動かす",
+    "permalink" : "https:\/\/kubernetes.io\/ja\/docs\/setup\/production-environment\/turnkey\/gce\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Issue作成</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ja/docs/setup/production-environment/turnkey/gce.md" class="button issue">ページ編集</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    ページの最終更新 November 20, 2019 at 2:25 PM PST by
+    <a href="https://github.com/kubernetes/website/commit/4532bd2bdb4419de4783be084195f18be516ee53/">First Japanese l10n work for release-1.15. (#17693)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/production-environment/turnkey/gce.md">ページ履歴</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ja/docs/home/">ホーム</a>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <a href="/ja/case-studies/">ケーススタディ</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>フォーラム</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>イベントカレンダー</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">コントリビュート</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

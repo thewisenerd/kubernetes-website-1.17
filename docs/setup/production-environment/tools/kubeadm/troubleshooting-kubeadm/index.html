@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html id="docs" lang="en" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Troubleshooting kubeadm - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/">
+<meta property="og:title" content="Troubleshooting kubeadm">
+<meta name="twitter:title" content="Troubleshooting kubeadm">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/" class="logo" title="Production-Grade Container Orchestration - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/blog/">Blog</a></li>
+            
+            <li><a href="/training/">Training</a></li>
+            
+            <li><a href="/partners/">Partners</a></li>
+            
+            <li><a href="/community/">Community</a></li>
+            
+            <li><a href="/case-studies/">Case Studies</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    English <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/zh/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/">中文 Chinese</a></li>
+                
+                    <li><a href="/ja/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Learn Kubernetes Basics</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/docs/home/">Documentation</a></h3>
+           <p>Learn how to use Kubernetes with conceptual, tutorial, and reference documentation. You can even <a href="/editdocs/" data-auto-burger-exclude>help contribute to the docs</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/blog/">Blog</a></h3>
+           <p>Read the latest news for Kubernetes and the containers space in general, and get technical how-tos hot off the presses.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Interested in hacking on the core Kubernetes code base?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>View On GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explore the community</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>Getting started</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/docs/home/">HOME</a></li>
+		
+		
+		<li><a href="/docs/setup/" class="YAH">GETTING STARTED</a></li>
+		
+		
+		<li><a href="/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/docs/tasks/">TASKS</a></li>
+		
+		
+		<li><a href="/docs/tutorials/">TUTORIALS</a></li>
+		
+		
+		<li><a href="/docs/reference/">REFERENCE</a></li>
+		
+		
+		<li><a href="/docs/contribute/">CONTRIBUTE</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Search" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation is no longer actively maintained. The version you are currently viewing is a static snapshot. For up-to-date documentation, see the 
+	 <a href="https://kubernetes.io/docs/home/">latest version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Getting started" href="/docs/setup/"></a>
+
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Release notes and version skew">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="v1.17 Release Notes" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes version and version skew support policy" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Learning environment">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Minikube" href="/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Kind" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Production environment">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Container runtimes" href="/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Bootstrapping clusters with kubeadm">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installing kubeadm" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Troubleshooting kubeadm" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Creating a single control-plane cluster with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Customizing control plane configuration with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Options for Highly Available topology" href="/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Creating Highly Available clusters with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Set up a High Availability etcd cluster with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuring each kubelet in your cluster using kubeadm" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuring your kubernetes cluster to self-host the control plane" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with kops" href="/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with KRIB" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Kubespray" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Turnkey Cloud Solutions">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Alibaba Cloud" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on AWS EC2" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Azure" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on CenturyLink Cloud" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Google Compute Engine" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Tencent Kubernetes Engine" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="On-Premises VMs">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Cloudstack" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes on DC/OS" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="oVirt" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows in Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Intro to Windows support in Kubernetes" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for adding Windows Nodes in Kubernetes" href="/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for scheduling Windows containers in Kubernetes" href="/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Best practices">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running in multiple zones" href="/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Building large clusters" href="/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Validate node setup" href="/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI certificates and requirements" href="/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Troubleshooting kubeadm</h1>
+
+
+
+<p>As with any program, you might run into an error installing or running kubeadm.
+This page lists some common failure scenarios and have provided steps that can help you understand and fix the problem.</p>
+
+<p>If your problem is not listed below, please follow the following steps:</p>
+
+<ul>
+<li><p>If you think your problem is a bug with kubeadm:</p>
+
+<ul>
+<li>Go to <a href="https://github.com/kubernetes/kubeadm/issues" target="_blank">github.com/kubernetes/kubeadm</a> and search for existing issues.</li>
+<li>If no issue exists, please <a href="https://github.com/kubernetes/kubeadm/issues/new" target="_blank">open one</a> and follow the issue template.</li>
+</ul></li>
+
+<li><p>If you are unsure about how kubeadm works, you can ask on <a href="http://slack.k8s.io/" target="_blank">Slack</a> in #kubeadm, or open a question on <a href="https://stackoverflow.com/questions/tagged/kubernetes" target="_blank">StackOverflow</a>. Please include
+relevant tags like <code>#kubernetes</code> and <code>#kubeadm</code> so folks can help you.</p></li>
+</ul>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#ebtables-or-some-similar-executable-not-found-during-installation"><code>ebtables</code> or some similar executable not found during installation</a></li>
+
+
+
+
+<li><a href="#kubeadm-blocks-waiting-for-control-plane-during-installation">kubeadm blocks waiting for control plane during installation</a></li>
+
+
+
+
+<li><a href="#kubeadm-blocks-when-removing-managed-containers">kubeadm blocks when removing managed containers</a></li>
+
+
+
+
+<li><a href="#pods-in-runcontainererror-crashloopbackoff-or-error-state">Pods in <code>RunContainerError</code>, <code>CrashLoopBackOff</code> or <code>Error</code> state</a></li>
+
+
+
+
+<li><a href="#coredns-or-kube-dns-is-stuck-in-the-pending-state"><code>coredns</code> (or <code>kube-dns</code>) is stuck in the <code>Pending</code> state</a></li>
+
+
+
+
+<li><a href="#hostport-services-do-not-work"><code>HostPort</code> services do not work</a></li>
+
+
+
+
+<li><a href="#pods-are-not-accessible-via-their-service-ip">Pods are not accessible via their Service IP</a></li>
+
+
+
+
+<li><a href="#tls-certificate-errors">TLS certificate errors</a></li>
+
+
+
+
+<li><a href="#default-nic-when-using-flannel-as-the-pod-network-in-vagrant">Default NIC When using flannel as the pod network in Vagrant</a></li>
+
+
+
+
+<li><a href="#non-public-ip-used-for-containers">Non-public IP used for containers</a></li>
+
+
+
+
+<li><a href="#coredns-pods-have-crashloopbackoff-or-error-state"><code>coredns</code> pods have <code>CrashLoopBackOff</code> or <code>Error</code> state</a></li>
+
+
+
+
+<li><a href="#etcd-pods-restart-continually">etcd pods restart continually</a></li>
+
+
+
+
+<li><a href="#not-possible-to-pass-a-comma-separated-list-of-values-to-arguments-inside-a-component-extra-args-flag">Not possible to pass a comma separated list of values to arguments inside a <code>--component-extra-args</code> flag</a></li>
+
+
+
+
+<li><a href="#kube-proxy-scheduled-before-node-is-initialized-by-cloud-controller-manager">kube-proxy scheduled before node is initialized by cloud-controller-manager</a></li>
+
+
+
+
+<li><a href="#the-noderegistration-taints-field-is-omitted-when-marshalling-kubeadm-configuration">The NodeRegistration.Taints field is omitted when marshalling kubeadm configuration</a></li>
+
+
+
+
+<li><a href="#usr-mounted-read-only"><code>/usr</code> is mounted read-only on nodes</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<h2 id="ebtables-or-some-similar-executable-not-found-during-installation"><code>ebtables</code> or some similar executable not found during installation</h2>
+
+<p>If you see the following warnings while running <code>kubeadm init</code></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#666">[</span>preflight<span style="color:#666">]</span> WARNING: ebtables not found in system path
+<span style="color:#666">[</span>preflight<span style="color:#666">]</span> WARNING: ethtool not found in system path</code></pre></div>
+<p>Then you may be missing <code>ebtables</code>, <code>ethtool</code> or a similar executable on your node. You can install them with the following commands:</p>
+
+<ul>
+<li>For Ubuntu/Debian users, run <code>apt install ebtables ethtool</code>.</li>
+<li>For CentOS/Fedora users, run <code>yum install ebtables ethtool</code>.</li>
+</ul>
+
+<h2 id="kubeadm-blocks-waiting-for-control-plane-during-installation">kubeadm blocks waiting for control plane during installation</h2>
+
+<p>If you notice that <code>kubeadm init</code> hangs after printing out the following line:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#666">[</span>apiclient<span style="color:#666">]</span> Created API client, waiting <span style="color:#a2f;font-weight:bold">for</span> the control plane to become ready</code></pre></div>
+<p>This may be caused by a number of problems. The most common are:</p>
+
+<ul>
+<li>network connection problems. Check that your machine has full network connectivity before continuing.</li>
+
+<li><p>the default cgroup driver configuration for the kubelet differs from that used by Docker.
+Check the system log file (e.g. <code>/var/log/message</code>) or examine the output from <code>journalctl -u kubelet</code>. If you see something like the following:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">error: failed to run Kubelet: failed to create kubelet:
+misconfiguration: kubelet cgroup driver: <span style="color:#b44">&#34;systemd&#34;</span> is different from docker cgroup driver: <span style="color:#b44">&#34;cgroupfs&#34;</span></code></pre></div></li>
+</ul>
+
+<p>There are two common ways to fix the cgroup driver problem:</p>
+
+<ol>
+<li><p>Install Docker again following instructions
+<a href="/docs/setup/production-environment/container-runtimes/#docker">here</a>.</p></li>
+
+<li><p>Change the kubelet config to match the Docker cgroup driver manually, you can refer to
+<a href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#configure-cgroup-driver-used-by-kubelet-on-master-node">Configure cgroup driver used by kubelet on Master Node</a></p></li>
+</ol>
+
+<ul>
+<li>control plane Docker containers are crashlooping or hanging. You can check this by running <code>docker ps</code> and investigating each container by running <code>docker logs</code>.</li>
+</ul>
+
+<h2 id="kubeadm-blocks-when-removing-managed-containers">kubeadm blocks when removing managed containers</h2>
+
+<p>The following could happen if Docker halts and does not remove any Kubernetes-managed containers:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo kubeadm reset
+<span style="color:#666">[</span>preflight<span style="color:#666">]</span> Running pre-flight checks
+<span style="color:#666">[</span>reset<span style="color:#666">]</span> Stopping the kubelet service
+<span style="color:#666">[</span>reset<span style="color:#666">]</span> Unmounting mounted directories in <span style="color:#b44">&#34;/var/lib/kubelet&#34;</span>
+<span style="color:#666">[</span>reset<span style="color:#666">]</span> Removing kubernetes-managed containers
+<span style="color:#666">(</span>block<span style="color:#666">)</span></code></pre></div>
+<p>A possible solution is to restart the Docker service and then re-run <code>kubeadm reset</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo systemctl restart docker.service
+sudo kubeadm reset</code></pre></div>
+<p>Inspecting the logs for docker may also be useful:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">journalctl -ul docker</code></pre></div>
+<h2 id="pods-in-runcontainererror-crashloopbackoff-or-error-state">Pods in <code>RunContainerError</code>, <code>CrashLoopBackOff</code> or <code>Error</code> state</h2>
+
+<p>Right after <code>kubeadm init</code> there should not be any pods in these states.</p>
+
+<ul>
+<li>If there are pods in one of these states <em>right after</em> <code>kubeadm init</code>, please open an
+issue in the kubeadm repo. <code>coredns</code> (or <code>kube-dns</code>) should be in the <code>Pending</code> state
+until you have deployed the network solution.</li>
+<li>If you see Pods in the <code>RunContainerError</code>, <code>CrashLoopBackOff</code> or <code>Error</code> state
+after deploying the network solution and nothing happens to <code>coredns</code> (or <code>kube-dns</code>),
+it&rsquo;s very likely that the Pod Network solution that you installed is somehow broken.
+You might have to grant it more RBAC privileges or use a newer version. Please file
+an issue in the Pod Network providers&rsquo; issue tracker and get the issue triaged there.</li>
+<li>If you install a version of Docker older than 1.12.1, remove the <code>MountFlags=slave</code> option
+when booting <code>dockerd</code> with <code>systemd</code> and restart <code>docker</code>. You can see the MountFlags in <code>/usr/lib/systemd/system/docker.service</code>.
+MountFlags can interfere with volumes mounted by Kubernetes, and put the Pods in <code>CrashLoopBackOff</code> state.
+The error happens when Kubernetes does not find <code>var/run/secrets/kubernetes.io/serviceaccount</code> files.</li>
+</ul>
+
+<h2 id="coredns-or-kube-dns-is-stuck-in-the-pending-state"><code>coredns</code> (or <code>kube-dns</code>) is stuck in the <code>Pending</code> state</h2>
+
+<p>This is <strong>expected</strong> and part of the design. kubeadm is network provider-agnostic, so the admin
+should <a href="/docs/concepts/cluster-administration/addons/">install the pod network solution</a>
+of choice. You have to install a Pod Network
+before CoreDNS may be deployed fully. Hence the <code>Pending</code> state before the network is set up.</p>
+
+<h2 id="hostport-services-do-not-work"><code>HostPort</code> services do not work</h2>
+
+<p>The <code>HostPort</code> and <code>HostIP</code> functionality is available depending on your Pod Network
+provider. Please contact the author of the Pod Network solution to find out whether
+<code>HostPort</code> and <code>HostIP</code> functionality are available.</p>
+
+<p>Calico, Canal, and Flannel CNI providers are verified to support HostPort.</p>
+
+<p>For more information, see the <a href="https://github.com/containernetworking/plugins/blob/master/plugins/meta/portmap/README.md" target="_blank">CNI portmap documentation</a>.</p>
+
+<p>If your network provider does not support the portmap CNI plugin, you may need to use the <a href="/docs/concepts/services-networking/service/#nodeport">NodePort feature of
+services</a> or use <code>HostNetwork=true</code>.</p>
+
+<h2 id="pods-are-not-accessible-via-their-service-ip">Pods are not accessible via their Service IP</h2>
+
+<ul>
+<li><p>Many network add-ons do not yet enable <a href="/docs/tasks/debug-application-cluster/debug-service/#a-pod-cannot-reach-itself-via-service-ip">hairpin mode</a>
+which allows pods to access themselves via their Service IP. This is an issue related to
+<a href="https://github.com/containernetworking/cni/issues/476" target="_blank">CNI</a>. Please contact the network
+add-on provider to get the latest status of their support for hairpin mode.</p></li>
+
+<li><p>If you are using VirtualBox (directly or via Vagrant), you will need to
+ensure that <code>hostname -i</code> returns a routable IP address. By default the first
+interface is connected to a non-routable host-only network. A work around
+is to modify <code>/etc/hosts</code>, see this <a href="https://github.com/errordeveloper/k8s-playground/blob/22dd39dfc06111235620e6c4404a96ae146f26fd/Vagrantfile#L11" target="_blank">Vagrantfile</a>
+for an example.</p></li>
+</ul>
+
+<h2 id="tls-certificate-errors">TLS certificate errors</h2>
+
+<p>The following error indicates a possible certificate mismatch.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-none" data-lang="none"># kubectl get pods
+Unable to connect to the server: x509: certificate signed by unknown authority (possibly because of &#34;crypto/rsa: verification error&#34; while trying to verify candidate authority certificate &#34;kubernetes&#34;)</code></pre></div>
+<ul>
+<li>Verify that the <code>$HOME/.kube/config</code> file contains a valid certificate, and
+regenerate a certificate if necessary. The certificates in a kubeconfig file
+are base64 encoded. The <code>base64 --decode</code> command can be used to decode the certificate
+and <code>openssl x509 -text -noout</code> can be used for viewing the certificate information.</li>
+
+<li><p>Unset the <code>KUBECONFIG</code> environment variable using:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#a2f">unset</span> KUBECONFIG</code></pre></div></li>
+</ul>
+
+<p>Or set it to the default <code>KUBECONFIG</code> location:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">  <span style="color:#a2f">export</span> <span style="color:#b8860b">KUBECONFIG</span><span style="color:#666">=</span>/etc/kubernetes/admin.conf</code></pre></div>
+<ul>
+<li><p>Another workaround is to overwrite the existing <code>kubeconfig</code> for the &ldquo;admin&rdquo; user:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">mv  <span style="color:#b8860b">$HOME</span>/.kube <span style="color:#b8860b">$HOME</span>/.kube.bak
+mkdir <span style="color:#b8860b">$HOME</span>/.kube
+sudo cp -i /etc/kubernetes/admin.conf <span style="color:#b8860b">$HOME</span>/.kube/config
+sudo chown <span style="color:#a2f;font-weight:bold">$(</span>id -u<span style="color:#a2f;font-weight:bold">)</span>:<span style="color:#a2f;font-weight:bold">$(</span>id -g<span style="color:#a2f;font-weight:bold">)</span> <span style="color:#b8860b">$HOME</span>/.kube/config</code></pre></div></li>
+</ul>
+
+<h2 id="default-nic-when-using-flannel-as-the-pod-network-in-vagrant">Default NIC When using flannel as the pod network in Vagrant</h2>
+
+<p>The following error might indicate that something was wrong in the pod network:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Error from server <span style="color:#666">(</span>NotFound<span style="color:#666">)</span>: the server could not find the requested resource</code></pre></div>
+<ul>
+<li>If you&rsquo;re using flannel as the pod network inside Vagrant, then you will have to specify the default interface name for flannel.</li>
+</ul>
+
+<p>Vagrant typically assigns two interfaces to all VMs. The first, for which all hosts are assigned the IP address <code>10.0.2.15</code>, is for external traffic that gets NATed.</p>
+
+<p>This may lead to problems with flannel, which defaults to the first interface on a host. This leads to all hosts thinking they have the same public IP address. To prevent this, pass the <code>--iface eth1</code> flag to flannel so that the second interface is chosen.</p>
+
+<h2 id="non-public-ip-used-for-containers">Non-public IP used for containers</h2>
+
+<p>In some situations <code>kubectl logs</code> and <code>kubectl run</code> commands may return with the following errors in an otherwise functional cluster:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Error from server: Get https://10.19.0.41:10250/containerLogs/default/mysql-ddc65b868-glc5m/mysql: dial tcp <span style="color:#666">10</span>.19.0.41:10250: getsockopt: no route to host</code></pre></div>
+<ul>
+<li>This may be due to Kubernetes using an IP that can not communicate with other IPs on the seemingly same subnet, possibly by policy of the machine provider.</li>
+<li>DigitalOcean assigns a public IP to <code>eth0</code> as well as a private one to be used internally as anchor for their floating IP feature, yet <code>kubelet</code> will pick the latter as the node&rsquo;s <code>InternalIP</code> instead of the public one.</li>
+</ul>
+
+<p>Use <code>ip addr show</code> to check for this scenario instead of <code>ifconfig</code> because <code>ifconfig</code> will not display the offending alias IP address. Alternatively an API endpoint specific to DigitalOcean allows to query for the anchor IP from the droplet:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">  curl http://169.254.169.254/metadata/v1/interfaces/public/0/anchor_ipv4/address</code></pre></div>
+<p>The workaround is to tell <code>kubelet</code> which IP to use using <code>--node-ip</code>. When using DigitalOcean, it can be the public one (assigned to <code>eth0</code>) or the private one (assigned to <code>eth1</code>) should you want to use the optional private network. The <a href="https://github.com/kubernetes/kubernetes/blob/release-1.13/cmd/kubeadm/app/apis/kubeadm/v1beta1/types.go" target="_blank"><code>KubeletExtraArgs</code> section of the kubeadm <code>NodeRegistrationOptions</code> structure</a> can be used for this.</p>
+
+<p>Then restart <code>kubelet</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">  systemctl daemon-reload
+  systemctl restart kubelet</code></pre></div>
+<h2 id="coredns-pods-have-crashloopbackoff-or-error-state"><code>coredns</code> pods have <code>CrashLoopBackOff</code> or <code>Error</code> state</h2>
+
+<p>If you have nodes that are running SELinux with an older version of Docker you might experience a scenario
+where the <code>coredns</code> pods are not starting. To solve that you can try one of the following options:</p>
+
+<ul>
+<li><p>Upgrade to a <a href="/docs/setup/production-environment/container-runtimes/#docker">newer version of Docker</a>.</p></li>
+
+<li><p><a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/security-enhanced_linux/sect-security-enhanced_linux-enabling_and_disabling_selinux-disabling_selinux" target="_blank">Disable SELinux</a>.</p></li>
+
+<li><p>Modify the <code>coredns</code> deployment to set <code>allowPrivilegeEscalation</code> to <code>true</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl -n kube-system get deployment coredns -o yaml | <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>sed <span style="color:#b44">&#39;s/allowPrivilegeEscalation: false/allowPrivilegeEscalation: true/g&#39;</span> | <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>kubectl apply -f -</code></pre></div></li>
+</ul>
+
+<p>Another cause for CoreDNS to have <code>CrashLoopBackOff</code> is when a CoreDNS Pod deployed in Kubernetes detects a loop. <a href="https://github.com/coredns/coredns/tree/master/plugin/loop#troubleshooting-loops-in-kubernetes-clusters" target="_blank">A number of workarounds</a>
+are available to avoid Kubernetes trying to restart the CoreDNS Pod every time CoreDNS detects the loop and exits.</p>
+
+<blockquote class="warning">
+  <div><strong>Warning:</strong> Disabling SELinux or setting <code>allowPrivilegeEscalation</code> to <code>true</code> can compromise
+the security of your cluster.</div>
+</blockquote>
+
+<h2 id="etcd-pods-restart-continually">etcd pods restart continually</h2>
+
+<p>If you encounter the following error:</p>
+
+<pre><code>rpc error: code = 2 desc = oci runtime error: exec failed: container_linux.go:247: starting container process caused &quot;process_linux.go:110: decoding init error from pipe caused \&quot;read parent: connection reset by peer\&quot;&quot;
+</code></pre>
+
+<p>this issue appears if you run CentOS 7 with Docker 1.13.1.84.
+This version of Docker can prevent the kubelet from executing into the etcd container.</p>
+
+<p>To work around the issue, choose one of these options:</p>
+
+<ul>
+<li><p>Roll back to an earlier version of Docker, such as 1.13.1-75</p>
+
+<pre><code>yum downgrade docker-1.13.1-75.git8633870.el7.centos.x86_64 docker-client-1.13.1-75.git8633870.el7.centos.x86_64 docker-common-1.13.1-75.git8633870.el7.centos.x86_64
+</code></pre></li>
+
+<li><p>Install one of the more recent recommended versions, such as 18.06:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum install docker-ce-18.06.1.ce-3.el7.x86_64</code></pre></div></li>
+</ul>
+
+<h2 id="not-possible-to-pass-a-comma-separated-list-of-values-to-arguments-inside-a-component-extra-args-flag">Not possible to pass a comma separated list of values to arguments inside a <code>--component-extra-args</code> flag</h2>
+
+<p><code>kubeadm init</code> flags such as <code>--component-extra-args</code> allow you to pass custom arguments to a control-plane
+component like the kube-apiserver. However, this mechanism is limited due to the underlying type used for parsing
+the values (<code>mapStringString</code>).</p>
+
+<p>If you decide to pass an argument that supports multiple, comma-separated values such as
+<code>--apiserver-extra-args &quot;enable-admission-plugins=LimitRanger,NamespaceExists&quot;</code> this flag will fail with
+<code>flag: malformed pair, expect string=string</code>. This happens because the list of arguments for
+<code>--apiserver-extra-args</code> expects <code>key=value</code> pairs and in this case <code>NamespacesExists</code> is considered
+as a key that is missing a value.</p>
+
+<p>Alternatively, you can try separating the <code>key=value</code> pairs like so:
+<code>--apiserver-extra-args &quot;enable-admission-plugins=LimitRanger,enable-admission-plugins=NamespaceExists&quot;</code>
+but this will result in the key <code>enable-admission-plugins</code> only having the value of <code>NamespaceExists</code>.</p>
+
+<p>A known workaround is to use the kubeadm <a href="/docs/setup/production-environment/tools/kubeadm/control-plane-flags/#apiserver-flags">configuration file</a>.</p>
+
+<h2 id="kube-proxy-scheduled-before-node-is-initialized-by-cloud-controller-manager">kube-proxy scheduled before node is initialized by cloud-controller-manager</h2>
+
+<p>In cloud provider scenarios, kube-proxy can end up being scheduled on new worker nodes before
+the cloud-controller-manager has initialized the node addresses. This causes kube-proxy to fail
+to pick up the node&rsquo;s IP address properly and has knock-on effects to the proxy function managing
+load balancers.</p>
+
+<p>The following error can be seen in kube-proxy Pods:</p>
+
+<pre><code>server.go:610] Failed to retrieve node IP: host IP unknown; known addresses: []
+proxier.go:340] invalid nodeIP, initializing kube-proxy with 127.0.0.1 as nodeIP
+</code></pre>
+
+<p>A known solution is to patch the kube-proxy DaemonSet to allow scheduling it on control-plane
+nodes regardless of their conditions, keeping it off of other nodes until their initial guarding
+conditions abate:</p>
+
+<pre><code>kubectl -n kube-system patch ds kube-proxy -p='{ &quot;spec&quot;: { &quot;template&quot;: { &quot;spec&quot;: { &quot;tolerations&quot;: [ { &quot;key&quot;: &quot;CriticalAddonsOnly&quot;, &quot;operator&quot;: &quot;Exists&quot; }, { &quot;effect&quot;: &quot;NoSchedule&quot;, &quot;key&quot;: &quot;node-role.kubernetes.io/master&quot; } ] } } } }'
+</code></pre>
+
+<p>The tracking issue for this problem is <a href="https://github.com/kubernetes/kubeadm/issues/1027" target="_blank">here</a>.</p>
+
+<h2 id="the-noderegistration-taints-field-is-omitted-when-marshalling-kubeadm-configuration">The NodeRegistration.Taints field is omitted when marshalling kubeadm configuration</h2>
+
+<p><em>Note: This <a href="https://github.com/kubernetes/kubeadm/issues/1358" target="_blank">issue</a> only applies to tools that marshal kubeadm types (e.g. to a YAML configuration file). It will be fixed in kubeadm API v1beta2.</em></p>
+
+<p>By default, kubeadm applies the <code>node-role.kubernetes.io/master:NoSchedule</code> taint to control-plane nodes.
+If you prefer kubeadm to not taint the control-plane node, and set <code>InitConfiguration.NodeRegistration.Taints</code> to an empty slice,
+the field will be omitted when marshalling. When the field is omitted, kubeadm applies the default taint.</p>
+
+<p>There are at least two workarounds:</p>
+
+<ol>
+<li><p>Use the <code>node-role.kubernetes.io/master:PreferNoSchedule</code> taint instead of an empty slice. <a href="/docs/concepts/configuration/taint-and-toleration/">Pods will get scheduled on masters</a>, unless other nodes have capacity.</p></li>
+
+<li><p>Remove the taint after kubeadm init exits:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl taint nodes NODE_NAME node-role.kubernetes.io/master:NoSchedule-</code></pre></div></li>
+</ol>
+
+<h2 id="usr-mounted-read-only"><code>/usr</code> is mounted read-only on nodes</h2>
+
+<p>On Linux distributions such as Fedora CoreOS, the directory <code>/usr</code> is mounted as a read-only filesystem.
+For <a href="https://github.com/kubernetes/community/blob/ab55d85/contributors/devel/sig-storage/flexvolume.md" target="_blank">flex-volume support</a>,
+Kubernetes components like the kubelet and kube-controller-manager use the default path of
+<code>/usr/libexec/kubernetes/kubelet-plugins/volume/exec/</code>, yet the flex-volume directory <em>must be writeable</em>
+for the feature to work.</p>
+
+<p>To workaround this issue you can configure the flex-volume directory using the kubeadm
+<a href="https://godoc.org/k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1beta2" target="_blank">configuration file</a>.</p>
+
+<p>On the primary control-plane Node (created using <code>kubeadm init</code>) pass the following
+file using <code>--config</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>kubeadm.k8s.io/v1beta2<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>InitConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>nodeRegistration:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kubeletExtraArgs:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volume-plugin-dir:<span style="color:#bbb"> </span><span style="color:#b44">&#34;/opt/libexec/kubernetes/kubelet-plugins/volume/exec/&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>kubeadm.k8s.io/v1beta2<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ClusterConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>controllerManager:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>extraArgs:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>flex-volume-plugin-dir:<span style="color:#bbb"> </span><span style="color:#b44">&#34;/opt/libexec/kubernetes/kubelet-plugins/volume/exec/&#34;</span></code></pre></div>
+<p>On joining Nodes:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>kubeadm.k8s.io/v1beta2<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>JoinConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>nodeRegistration:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kubeletExtraArgs:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volume-plugin-dir:<span style="color:#bbb"> </span><span style="color:#b44">&#34;/opt/libexec/kubernetes/kubelet-plugins/volume/exec/&#34;</span></code></pre></div>
+<p>Alternatively, you can modify <code>/etc/fstab</code> to make the <code>/usr</code> mount writeable, but please
+be advised that this is modifying a design principle of the Linux distribution.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Was this page helpful? </p>
+  <button class="button feedback--yes">Yes</button>
+  <button class="button feedback--no">No</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/docs\/setup\/production-environment\/tools\/kubeadm\/troubleshooting-kubeadm\/",
+    "title" : "Troubleshooting kubeadm",
+    "permalink" : "https:\/\/kubernetes.io\/docs\/setup\/production-environment\/tools\/kubeadm\/troubleshooting-kubeadm\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Create an Issue</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm.md" class="button issue">Edit This Page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Page last modified on March 11, 2020 at 10:13 AM PST by
+    <a href="https://github.com/kubernetes/website/commit/c331ff47a7da09be0eb0705b1086033fbd24a6d2/">fixes troubleshooting-kubeadm references to taint node-role.kubernetes.io/master (#19293)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm.md">Page History</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/docs/home/">Home</a>
+            
+            <a href="/blog/">Blog</a>
+            
+            <a href="/training/">Training</a>
+            
+            <a href="/partners/">Partners</a>
+            
+            <a href="/community/">Community</a>
+            
+            <a href="/case-studies/">Case Studies</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribute</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

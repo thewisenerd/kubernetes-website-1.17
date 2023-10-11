@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>垃圾收集 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/concepts/workloads/controllers/garbage-collection/">
+<meta property="og:title" content="垃圾收集">
+<meta name="twitter:title" content="垃圾收集">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/workloads/controllers/garbage-collection/">English</a></li>
+                
+                    <li><a href="/ko/docs/concepts/workloads/controllers/garbage-collection/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/docs/concepts/workloads/controllers/garbage-collection/">日本語 Japanese</a></li>
+                
+                    <li><a href="/id/docs/concepts/workloads/controllers/garbage-collection/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/concepts/workloads/controllers/garbage-collection/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/concepts/workloads/controllers/garbage-collection/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/concepts/workloads/controllers/garbage-collection/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/concepts/workloads/controllers/garbage-collection/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/concepts/workloads/controllers/garbage-collection/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>概念</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/" class="YAH">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="概念" href="/zh/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="概述">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="概述" href="/zh/docs/concepts/overview/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 是什么？" href="/zh/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 组件" href="/zh/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API" href="/zh/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="使用 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="理解 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 对象管理" href="/zh/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="名称" href="/zh/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间" href="/zh/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="标签和选择器" href="/zh/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="注解" href="/zh/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="字段选择器" href="/zh/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="推荐使用的标签" href="/zh/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes 架构">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 架构" href="/zh/docs/concepts/architecture/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="节点" href="/zh/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云控制器管理器的基础概念" href="/zh/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器" href="/zh/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Master 节点通信" href="/zh/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/cluster-administration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="集群管理概述" href="/zh/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书" href="/zh/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云驱动" href="/zh/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理资源" href="/zh/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 控制面板的指标" href="/zh/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="日志架构" href="/zh/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 kubelet 垃圾回收策略" href="/zh/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器管理器指标" href="/zh/docs/concepts/cluster-administration/controller-metrics/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 中的代理" href="/zh/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装扩展（Addons）" href="/zh/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦" href="/zh/docs/concepts/cluster-administration/federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/concepts/extend-kubernetes/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展 Kubernetes 集群" href="/zh/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes API">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Custom Resources <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过聚合层扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Operator 模式" href="/zh/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网络插件" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="服务目录" href="/zh/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="容器" href="/zh/docs/concepts/containers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="镜像" href="/zh/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器运行时类(Runtime Class)" href="/zh/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器生命周期钩子" href="/zh/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器环境变量" href="/zh/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="工作负载">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="工作负载" href="/zh/docs/concepts/workloads/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pods">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Pod 概览" href="/zh/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Preset" href="/zh/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 拓扑扩展约束" href="/zh/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="干扰" href="/zh/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="临时容器" href="/zh/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Init 容器" href="/zh/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 的生命周期" href="/zh/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="控制器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="控制器" href="/zh/docs/concepts/workloads/controllers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/zh/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ReplicationController" href="/zh/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Deployments" href="/zh/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StatefulSets" href="/zh/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DaemonSet" href="/zh/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="垃圾收集" href="/zh/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="已完成资源的 TTL 控制器" href="/zh/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Jobs - Run to Completion <small>(EN)</small>" href="/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CronJob" href="/zh/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="存储">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="存储" href="/zh/docs/concepts/storage/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Volumes" href="/zh/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Persistent Volumes <small>(EN)</small>" href="/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照" href="/zh/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CSI 卷克隆" href="/zh/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Storage Classes" href="/zh/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照类" href="/zh/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="动态卷供应" href="/zh/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="特定于节点的卷数限制" href="/zh/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置" href="/zh/docs/concepts/configuration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展资源的资源箱打包" href="/zh/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置最佳实践" href="/zh/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 开销" href="/zh/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器管理计算资源" href="/zh/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Taint 和 Toleration" href="/zh/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Secret" href="/zh/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeconfig 文件组织集群访问" href="/zh/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度框架" href="/zh/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="服务、负载均衡和联网">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="服务、负载均衡和联网" href="/zh/docs/concepts/services-networking/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Endpoint Slices" href="/zh/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service 拓扑" href="/zh/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Services" href="/zh/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 与 Service 的 DNS" href="/zh/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用连接到 Service" href="/zh/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/zh/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress 控制器" href="/zh/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="网络策略" href="/zh/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HostAliases 向 Pod /etc/hosts 文件添加条目" href="/zh/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IPv4/IPv6 双协议栈" href="/zh/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安全">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安全" href="/zh/docs/concepts/security/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Overview of Cloud Native Security <small>(EN)</small>" href="/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="调度">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="调度" href="/zh/docs/concepts/scheduling/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 调度器" href="/zh/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度器性能调优" href="/zh/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="策略">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="策略" href="/zh/docs/concepts/policy/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 安全策略" href="/zh/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源配额" href="/zh/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/workloads/controllers/garbage-collection.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>垃圾收集</h1>
+
+
+
+<!--
+The role of the Kubernetes garbage collector is to delete certain objects
+that once had an owner, but no longer have an owner.
+-->
+
+<p>Kubernetes 垃圾收集器的作用是删除某些曾经拥有所有者（owner）但现在不再拥有所有者的对象。</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e6%89%80%e6%9c%89%e8%80%85%e5%92%8c%e9%99%84%e5%b1%9e">所有者和附属</a></li>
+
+
+
+
+<li><a href="#%e6%8e%a7%e5%88%b6%e5%9e%83%e5%9c%be%e6%94%b6%e9%9b%86%e5%99%a8%e5%88%a0%e9%99%a4%e9%99%84%e5%b1%9e%e8%80%85">控制垃圾收集器删除附属者</a></li>
+
+
+
+
+<li><a href="#%e5%b7%b2%e7%9f%a5%e7%9a%84%e9%97%ae%e9%a2%98">已知的问题</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e6%8e%a5%e4%b8%8b%e6%9d%a5">接下来</a></li>
+
+
+
+</ul>
+
+
+<!--
+## Owners and dependents
+
+Some Kubernetes objects are owners of other objects. For example, a ReplicaSet
+is the owner of a set of Pods. The owned objects are called *dependents* of the
+owner object. Every dependent object has a `metadata.ownerReferences` field that
+points to the owning object.
+
+Sometimes, Kubernetes sets the value of `ownerReference` automatically. For
+example, when you create a ReplicaSet, Kubernetes automatically sets the
+`ownerReference` field of each Pod in the ReplicaSet. In 1.8, Kubernetes
+automatically sets the value of `ownerReference` for objects created or adopted
+by ReplicationController, ReplicaSet, StatefulSet, DaemonSet, Deployment, Job
+and CronJob.
+
+You can also specify relationships between owners and dependents by manually
+setting the `ownerReference` field.
+
+Here's a configuration file for a ReplicaSet that has three Pods:
+-->
+
+<h2 id="所有者和附属">所有者和附属</h2>
+
+<p>某些 Kubernetes 对象是其它一些对象的所有者。例如，一个 ReplicaSet 是一组 Pod 的所有者。
+具有所有者的对象被称为是所有者的*附属*。
+每个附属对象具有一个指向其所属对象的 <code>metadata.ownerReferences</code> 字段。</p>
+
+<p>有时，Kubernetes 会自动设置 <code>ownerReference</code> 的值。
+例如，当创建一个 ReplicaSet 时，Kubernetes 自动设置 ReplicaSet 中每个 Pod 的 <code>ownerReference</code> 字段值。
+在 Kubernetes 1.8 版本，Kubernetes 会自动为某些对象设置 <code>ownerReference</code> 的值，这些对象是由 ReplicationController、ReplicaSet、StatefulSet、DaemonSet、Deployment、Job 和 CronJob 所创建或管理。
+也可以通过手动设置 <code>ownerReference</code> 的值，来指定所有者和附属之间的关系。</p>
+
+<p>这里有一个配置文件，表示一个具有 3 个 Pod 的 ReplicaSet：</p>
+
+<table class="includecode" id="controllers-replicaset-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/controllers/replicaset.yaml" download="controllers/replicaset.yaml">
+                    <code>controllers/replicaset.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('controllers-replicaset-yaml')" title="Copy controllers/replicaset.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ReplicaSet<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>my-repset<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">3</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>pod-is-for:<span style="color:#bbb"> </span>garbage-collection-example<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>pod-is-for:<span style="color:#bbb"> </span>garbage-collection-example<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!--
+If you create the ReplicaSet and then view the Pod metadata, you can see
+OwnerReferences field:
+-->
+
+<p>如果创建该 ReplicaSet，然后查看 Pod 的 metadata 字段，能够看到 OwnerReferences 字段：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f https://k8s.io/examples/controllers/replicaset.yaml
+kubectl get pods --output<span style="color:#666">=</span>yaml</code></pre></div>
+<!--
+The output shows that the Pod owner is a ReplicaSet named `my-repset`:
+-->
+
+<p>输出显示了 Pod 的所有者是名为 my-repset 的 ReplicaSet：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>...<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ownerReferences:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>controller:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>blockOwnerDeletion:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kind:<span style="color:#bbb"> </span>ReplicaSet<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>my-repset<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>uid:<span style="color:#bbb"> </span>d9607e19-f88f<span style="color:#666">-11e6</span>-a518-42010a800195<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>...</code></pre></div>
+<!--
+Cross-namespace owner references are disallowed by design. This means:
+1) Namespace-scoped dependents can only specify owners in the same namespace,
+and owners that are cluster-scoped.
+2) Cluster-scoped dependents can only specify cluster-scoped owners, but not
+namespace-scoped owners.
+-->
+
+<blockquote class="note">
+  <div><strong>注意：</strong> 根据设计，kubernetes 不允许跨命名空间指定所有者。这意味着：
+1）命名空间范围的附属只能在相同的命名空间中指定所有者，并且只能指定集群范围的所有者。
+2）集群范围的附属只能指定集群范围的所有者，不能指定命名空间范围的。</div>
+</blockquote>
+
+<!--
+## Controlling how the garbage collector deletes dependents
+
+When you delete an object, you can specify whether the object's dependents are
+also deleted automatically. Deleting dependents automatically is called *cascading
+deletion*.  There are two modes of *cascading deletion*: *background* and *foreground*.
+
+If you delete an object without deleting its dependents
+automatically, the dependents are said to be *orphaned*.
+
+-->
+
+<h2 id="控制垃圾收集器删除附属者">控制垃圾收集器删除附属者</h2>
+
+<p>当删除对象时，可以指定该对象的附属者是否也自动删除掉。
+自动删除 Dependent 也称为 <em>级联删除</em> 。
+Kubernetes 中有两种 <em>级联删除</em> 的模式：<em>background</em> 模式和 <em>foreground</em> 模式。</p>
+
+<p>如果删除对象时，不自动删除它的附属者，这些附属者被称作是原对象的 <em>orphaned</em> 。</p>
+
+<!--
+### Foreground cascading deletion
+-->
+
+<h3 id="显式级联删除">显式级联删除</h3>
+
+<!--
+In *foreground cascading deletion*, the root object first
+enters a "deletion in progress" state. In the "deletion in progress" state,
+the following things are true:
+
+ * The object is still visible via the REST API
+ * The object's `deletionTimestamp` is set
+ * The object's `metadata.finalizers` contains the value "foregroundDeletion".
+-->
+
+<p>在*显式级联删除*模式下，根对象首先进入 <code>deletion in progress</code> 状态。在 <code>deletion in progress</code> 状态会有如下的情况：</p>
+
+<ul>
+<li>对象仍然可以通过 REST API 可见。</li>
+<li>会设置对象的 <code>deletionTimestamp</code> 字段。</li>
+<li>对象的 <code>metadata.finalizers</code> 字段包含了值 <code>foregroundDeletion</code>。</li>
+</ul>
+
+<!--
+Once the "deletion in progress" state is set, the garbage
+collector deletes the object's dependents. Once the garbage collector has deleted all
+"blocking" dependents (objects with `ownerReference.blockOwnerDeletion=true`), it deletes
+the owner object.
+-->
+
+<p>一旦对象被设置为 <code>deletion in progress</code> 状态，垃圾收集器会删除对象的所有附属。
+垃圾收集器在删除了所有 <code>Blocking</code> 状态的附属（对象的 <code>ownerReference.blockOwnerDeletion=true</code>）之后，它会删除拥有者对象。</p>
+
+<!--
+Note that in the "foregroundDeletion", only dependents with
+`ownerReference.blockOwnerDeletion=true` block the deletion of the owner object.
+Kubernetes version 1.7 added an [admission controller](/docs/reference/access-authn-authz/admission-controllers/#ownerreferencespermissionenforcement) that controls user access to set
+`blockOwnerDeletion` to true based on delete permissions on the owner object, so that
+unauthorized dependents cannot delay deletion of an owner object.
+
+If an object's `ownerReferences` field is set by a controller (such as Deployment or ReplicaSet),
+blockOwnerDeletion is set automatically and you do not need to manually modify this field.
+-->
+
+<p>注意，在 <code>foregroundDeletion</code> 模式下，只有设置了 <code>ownerReference.blockOwnerDeletion</code> 值的附属者才能阻止删除拥有者对象。
+在 Kubernetes 1.7 版本中将增加<a href="/docs/reference/access-authn-authz/admission-controllers/#ownerreferencespermissionenforcement">准入控制器</a>，基于拥有者对象上的删除权限来控制用户去设置 <code>blockOwnerDeletion</code> 的值为 true，所以未授权的附属者不能够延迟拥有者对象的删除。</p>
+
+<p>如果一个对象的 <code>ownerReferences</code> 字段被一个 Controller（例如 Deployment 或 ReplicaSet）设置，<code>blockOwnerDeletion</code> 会被自动设置，不需要手动修改这个字段。</p>
+
+<!--
+### Background cascading deletion
+
+In *background cascading deletion*, Kubernetes deletes the owner object
+immediately and the garbage collector then deletes the dependents in
+the background.
+-->
+
+<h3 id="隐式级联删除">隐式级联删除</h3>
+
+<p>在 <em>隐式级联删除</em> 模式下，Kubernetes 会立即删除拥有者对象，然后垃圾收集器会在后台删除这些附属值。</p>
+
+<!--
+### Setting the cascading deletion policy
+
+To control the cascading deletion policy, set the `propagationPolicy`
+field on the `deleteOptions` argument when deleting an Object. Possible values include "Orphan",
+"Foreground", or "Background".
+
+Prior to Kubernetes 1.9, the default garbage collection policy for many controller resources was `orphan`.
+This included ReplicationController, ReplicaSet, StatefulSet, DaemonSet, and
+Deployment. For kinds in the `extensions/v1beta1`, `apps/v1beta1`, and `apps/v1beta2` group versions, unless you 
+specify otherwise, dependent objects are orphaned by default. In Kubernetes 1.9, for all kinds in the `apps/v1` 
+group version, dependent objects are deleted by default.
+
+-->
+
+<h3 id="设置级联删除策略">设置级联删除策略</h3>
+
+<p>通过为拥有者对象设置 <code>deleteOptions.propagationPolicy</code> 字段，可以控制级联删除策略。
+可能的取值包括：<code>orphan</code>、<code>Foreground</code> 或者 <code>Background</code>。</p>
+
+<p>对很多 Controller 资源，包括 ReplicationController、ReplicaSet、StatefulSet、DaemonSet 和 Deployment，默认的垃圾收集策略是 <code>orphan</code>。
+因此，对于使用 <code>extensions/v1beta1</code>、<code>apps/v1beta1</code> 和 <code>apps/v1beta2</code> 组版本中的 <code>Kind</code>,除非指定其它的垃圾收集策略，否则所有附属对象默认使用的都是 <code>orphan</code> 策略。</p>
+
+<!--
+Here's an example that deletes dependents in background:
+-->
+
+<p>下面是一个在 <code>Background</code> 中删除 Dependent 对象的示例：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl proxy --port<span style="color:#666">=</span><span style="color:#666">8080</span>
+curl -X DELETE localhost:8080/apis/apps/v1/namespaces/default/replicasets/my-repset <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  -d <span style="color:#b44">&#39;{&#34;kind&#34;:&#34;DeleteOptions&#34;,&#34;apiVersion&#34;:&#34;v1&#34;,&#34;propagationPolicy&#34;:&#34;Background&#34;}&#39;</span> <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  -H <span style="color:#b44">&#34;Content-Type: application/json&#34;</span></code></pre></div>
+<!--
+Here's an example that deletes dependents in foreground:
+-->
+
+<p>下面是一个在 <code>Foreground</code> 中删除附属对象的示例：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl proxy --port<span style="color:#666">=</span><span style="color:#666">8080</span>
+curl -X DELETE localhost:8080/apis/apps/v1/namespaces/default/replicasets/my-repset <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  -d <span style="color:#b44">&#39;{&#34;kind&#34;:&#34;DeleteOptions&#34;,&#34;apiVersion&#34;:&#34;v1&#34;,&#34;propagationPolicy&#34;:&#34;Foreground&#34;}&#39;</span> <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  -H <span style="color:#b44">&#34;Content-Type: application/json&#34;</span></code></pre></div>
+<!--
+Here's an example that orphans dependents:
+-->
+
+<p>这里是一个 <code>Orphan</code> 附属的示例：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl proxy --port<span style="color:#666">=</span><span style="color:#666">8080</span>
+curl -X DELETE localhost:8080/apis/apps/v1/namespaces/default/replicasets/my-repset <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  -d <span style="color:#b44">&#39;{&#34;kind&#34;:&#34;DeleteOptions&#34;,&#34;apiVersion&#34;:&#34;v1&#34;,&#34;propagationPolicy&#34;:&#34;Orphan&#34;}&#39;</span> <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  -H <span style="color:#b44">&#34;Content-Type: application/json&#34;</span></code></pre></div>
+<!--
+kubectl also supports cascading deletion.
+To delete dependents automatically using kubectl, set `--cascade` to true.  To
+orphan dependents, set `--cascade` to false. The default value for `--cascade`
+is true.
+
+Here's an example that orphans the dependents of a ReplicaSet:
+-->
+
+<p>kubectl 也支持级联删除。
+通过设置 <code>--cascade</code> 为 <code>true</code>，可以使用 kubectl 自动删除附属对象。设置 <code>--cascade</code> 为 <code>false</code>，会使附属对象成为孤儿附属对象。<code>--cascade</code> 的默认值是 true。</p>
+
+<p>下面是一个例子，使一个 ReplicaSet 的附属对象成为孤儿附属：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl delete replicaset my-repset --cascade<span style="color:#666">=</span>false</code></pre></div>
+<!--
+### Additional note on Deployments
+
+Prior to 1.7, When using cascading deletes with Deployments you *must* use `propagationPolicy: Foreground`
+to delete not only the ReplicaSets created, but also their Pods. If this type of _propagationPolicy_
+is not used, only the ReplicaSets will be deleted, and the Pods will be orphaned.
+See [kubeadm/#149](https://github.com/kubernetes/kubeadm/issues/149#issuecomment-284766613) for more information.
+-->
+
+<h3 id="deployment-的其他说明">Deployment 的其他说明</h3>
+
+<p>在 1.7 之前的版本中，当在 Deployment 中使用级联删除时，您必须<em>使用</em> <code>propagationPolicy:Foreground</code> 模式。这样不仅删除所创建的 ReplicaSet，还删除其 Pod。如果不使用这种类型的 <code>propagationPolicy</code>，则将只删除 ReplicaSet，而 Pod 被孤立。</p>
+
+<p>更多信息，请参考 <a href="https://github.com/kubernetes/kubeadm/issues/149#issuecomment-284766613" target="_blank">kubeadm/#149</a>。</p>
+
+<!--
+## Known issues
+
+Tracked at [#26120](https://github.com/kubernetes/kubernetes/issues/26120)
+-->
+
+<h2 id="已知的问题">已知的问题</h2>
+
+<p>跟踪 <a href="https://github.com/kubernetes/kubernetes/issues/26120" target="_blank">#26120</a></p>
+
+
+
+<!--
+---
+title: Garbage Collection
+content_template: templates/concept
+weight: 60
+---
+-->
+
+
+
+
+
+
+
+
+
+
+<h2 id="接下来">接下来</h2>
+<!--
+[Design Doc 1](https://git.k8s.io/community/contributors/design-proposals/api-machinery/garbage-collection.md)
+
+[Design Doc 2](https://git.k8s.io/community/contributors/design-proposals/api-machinery/synchronous-garbage-collection.md)
+-->
+
+<p><a href="https://git.k8s.io/community/contributors/design-proposals/api-machinery/garbage-collection.md" target="_blank">设计文档 1</a></p>
+
+<p><a href="https://git.k8s.io/community/contributors/design-proposals/api-machinery/synchronous-garbage-collection.md" target="_blank">设计文档 2</a></p>
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/workloads/controllers/garbage-collection.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/concepts\/workloads\/controllers\/garbage-collection\/",
+    "title" : "垃圾收集",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/concepts\/workloads\/controllers\/garbage-collection\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/workloads/controllers/garbage-collection.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 February 08, 2020 at 8:27 PM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/9004bae90e181756e3dc6244f3eddd6aa30b2a74/">sync zh-trans content/zh/docs/concepts/workloads/controllers/garbage-collection.md (#18865)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/workloads/controllers/garbage-collection.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

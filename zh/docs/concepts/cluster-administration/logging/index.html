@@ -1,0 +1,2397 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>日志架构 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/concepts/cluster-administration/logging/">
+<meta property="og:title" content="日志架构">
+<meta name="twitter:title" content="日志架构">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/cluster-administration/logging/">English</a></li>
+                
+                    <li><a href="/fr/docs/concepts/cluster-administration/logging/">Français</a></li>
+                
+                    <li><a href="/pt/docs/concepts/cluster-administration/logging/">Português</a></li>
+                
+                    <li><a href="/id/docs/concepts/cluster-administration/logging/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/concepts/cluster-administration/logging/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/concepts/cluster-administration/logging/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/concepts/cluster-administration/logging/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/concepts/cluster-administration/logging/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/concepts/cluster-administration/logging/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>概念</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/" class="YAH">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="概念" href="/zh/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="概述">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="概述" href="/zh/docs/concepts/overview/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 是什么？" href="/zh/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 组件" href="/zh/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API" href="/zh/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="使用 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="理解 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 对象管理" href="/zh/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="名称" href="/zh/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间" href="/zh/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="标签和选择器" href="/zh/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="注解" href="/zh/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="字段选择器" href="/zh/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="推荐使用的标签" href="/zh/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes 架构">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 架构" href="/zh/docs/concepts/architecture/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="节点" href="/zh/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云控制器管理器的基础概念" href="/zh/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器" href="/zh/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Master 节点通信" href="/zh/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/cluster-administration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="集群管理概述" href="/zh/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书" href="/zh/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云驱动" href="/zh/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理资源" href="/zh/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 控制面板的指标" href="/zh/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="日志架构" href="/zh/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 kubelet 垃圾回收策略" href="/zh/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器管理器指标" href="/zh/docs/concepts/cluster-administration/controller-metrics/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 中的代理" href="/zh/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装扩展（Addons）" href="/zh/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦" href="/zh/docs/concepts/cluster-administration/federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/concepts/extend-kubernetes/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展 Kubernetes 集群" href="/zh/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes API">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Custom Resources <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过聚合层扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Operator 模式" href="/zh/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网络插件" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="服务目录" href="/zh/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="容器" href="/zh/docs/concepts/containers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="镜像" href="/zh/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器运行时类(Runtime Class)" href="/zh/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器生命周期钩子" href="/zh/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器环境变量" href="/zh/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="工作负载">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="工作负载" href="/zh/docs/concepts/workloads/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pods">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Pod 概览" href="/zh/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Preset" href="/zh/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 拓扑扩展约束" href="/zh/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="干扰" href="/zh/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="临时容器" href="/zh/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Init 容器" href="/zh/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 的生命周期" href="/zh/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="控制器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="控制器" href="/zh/docs/concepts/workloads/controllers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/zh/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ReplicationController" href="/zh/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Deployments" href="/zh/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StatefulSets" href="/zh/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DaemonSet" href="/zh/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="垃圾收集" href="/zh/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="已完成资源的 TTL 控制器" href="/zh/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Jobs - Run to Completion <small>(EN)</small>" href="/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CronJob" href="/zh/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="存储">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="存储" href="/zh/docs/concepts/storage/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Volumes" href="/zh/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Persistent Volumes <small>(EN)</small>" href="/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照" href="/zh/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CSI 卷克隆" href="/zh/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Storage Classes" href="/zh/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照类" href="/zh/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="动态卷供应" href="/zh/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="特定于节点的卷数限制" href="/zh/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置" href="/zh/docs/concepts/configuration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展资源的资源箱打包" href="/zh/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置最佳实践" href="/zh/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 开销" href="/zh/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器管理计算资源" href="/zh/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Taint 和 Toleration" href="/zh/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Secret" href="/zh/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeconfig 文件组织集群访问" href="/zh/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度框架" href="/zh/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="服务、负载均衡和联网">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="服务、负载均衡和联网" href="/zh/docs/concepts/services-networking/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Endpoint Slices" href="/zh/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service 拓扑" href="/zh/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Services" href="/zh/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 与 Service 的 DNS" href="/zh/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用连接到 Service" href="/zh/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/zh/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress 控制器" href="/zh/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="网络策略" href="/zh/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HostAliases 向 Pod /etc/hosts 文件添加条目" href="/zh/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IPv4/IPv6 双协议栈" href="/zh/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安全">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安全" href="/zh/docs/concepts/security/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Overview of Cloud Native Security <small>(EN)</small>" href="/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="调度">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="调度" href="/zh/docs/concepts/scheduling/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 调度器" href="/zh/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度器性能调优" href="/zh/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="策略">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="策略" href="/zh/docs/concepts/policy/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 安全策略" href="/zh/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源配额" href="/zh/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/cluster-administration/logging.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>日志架构</h1>
+
+
+
+<!--
+Application and systems logs can help you understand what is happening inside your cluster. The logs are particularly useful for debugging problems and monitoring cluster activity. Most modern applications have some kind of logging mechanism; as such, most container engines are likewise designed to support some kind of logging. The easiest and most embraced logging method for containerized applications is to write to the standard output and standard error streams.
+-->
+
+<p>应用和系统日志可以让您了解集群内部的运行状况。日志对调试问题和监控集群活动非常有用。大部分现代化应用都有某种日志记录机制；同样地，大多数容器引擎也被设计成支持某种日志记录机制。针对容器化应用，最简单且受欢迎的日志记录方式就是写入标准输出和标准错误流。</p>
+
+<!--
+However, the native functionality provided by a container engine or runtime is usually not enough for a complete logging solution. For example, if a container crashes, a pod is evicted, or a node dies, you'll usually still want to access your application's logs. As such, logs should have a separate storage and lifecycle independent of nodes, pods, or containers. This concept is called _cluster-level-logging_. Cluster-level logging requires a separate backend to store, analyze, and query logs. Kubernetes provides no native storage solution for log data, but you can integrate many existing logging solutions into your Kubernetes cluster.
+-->
+
+<p>但是，由容器引擎或 runtime 提供的原生功能通常不足以满足完整的日志记录方案。例如，如果发生容器崩溃、pod 被逐出或节点宕机等情况，您仍然想访问到应用日志。因此，日志应该具有独立的存储和生命周期，与节点、pod 或容器的生命周期相独立。这个概念叫 <em>集群级的日志</em> 。集群级日志方案需要一个独立的后台来存储、分析和查询日志。Kubernetes 没有为日志数据提供原生存储方案，但是您可以集成许多现有的日志解决方案到 Kubernetes 集群中。</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#kubernetes-%e4%b8%ad%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%97%a5%e5%bf%97%e8%ae%b0%e5%bd%95">Kubernetes 中的基本日志记录</a></li>
+
+
+
+
+<li><a href="#%e8%8a%82%e7%82%b9%e7%ba%a7%e6%97%a5%e5%bf%97%e8%ae%b0%e5%bd%95">节点级日志记录</a></li>
+
+
+
+
+<li><a href="#%e9%9b%86%e7%be%a4%e7%ba%a7%e6%97%a5%e5%bf%97%e6%9e%b6%e6%9e%84">集群级日志架构</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<!--
+Cluster-level logging architectures are described in assumption that
+a logging backend is present inside or outside of your cluster. If you're
+not interested in having cluster-level logging, you might still find
+the description of how logs are stored and handled on the node to be useful.
+-->
+
+<p>集群级日志架构假定在集群内部或者外部有一个日志后台。如果您对集群级日志不感兴趣，您仍会发现关于如何在节点上存储和处理日志的描述对您是有用的。</p>
+
+<!--
+## Basic logging in Kubernetes
+
+In this section, you can see an example of basic logging in Kubernetes that
+outputs data to the standard output stream. This demonstration uses
+a [pod specification](/examples/debug/counter-pod.yaml) with
+a container that writes some text to standard output once per second.
+-->
+
+<h2 id="kubernetes-中的基本日志记录">Kubernetes 中的基本日志记录</h2>
+
+<p>本节，您会看到一个kubernetes 中生成基本日志的例子，该例子中数据被写入到标准输出。
+这里通过一个特定的 <a href="/examples/debug/counter-pod.yaml">pod 规约</a> 演示创建一个容器，并令该容器每秒钟向标准输出写入数据。</p>
+
+<table class="includecode" id="debug-counter-pod-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/debug/counter-pod.yaml" download="debug/counter-pod.yaml">
+                    <code>debug/counter-pod.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('debug-counter-pod-yaml')" title="Copy debug/counter-pod.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>counter<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb"> </span>[/bin/sh,<span style="color:#bbb"> </span>-c,<span style="color:#bbb">
+</span><span style="color:#bbb">            </span><span style="color:#b44">&#39;i=0; while true; do echo &#34;$i: $(date)&#34;; i=$((i+1)); sleep 1; done&#39;</span>]<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!--
+To run this pod, use the following command:
+-->
+
+<p>用下面的命令运行 pod：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f https://k8s.io/examples/debug/counter-pod.yaml</code></pre></div>
+<!--
+The output is:
+-->
+
+<p>输出结果为：</p>
+
+<pre><code>pod/counter created
+</code></pre>
+
+<!--
+To fetch the logs, use the `kubectl logs` command, as follows:
+-->
+
+<p>使用 <code>kubectl logs</code> 命令获取日志:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl logs counter</code></pre></div>
+<!--
+The output is:
+-->
+
+<p>输出结果为：</p>
+
+<pre><code>0: Mon Jan  1 00:00:00 UTC 2001
+1: Mon Jan  1 00:00:01 UTC 2001
+2: Mon Jan  1 00:00:02 UTC 2001
+...
+</code></pre>
+
+<!--
+You can use `kubectl logs` to retrieve logs from a previous instantiation of a container with `--previous` flag, in case the container has crashed. If your pod has multiple containers, you should specify which container's logs you want to access by appending a container name to the command. See the [`kubectl logs` documentation](/docs/reference/generated/kubectl/kubectl-commands#logs) for more details.
+-->
+
+<p>一旦发生容器崩溃，您可以使用命令 <code>kubectl logs</code> 和参数 <code>--previous</code> 检索之前的容器日志。
+如果 pod 中有多个容器，您应该向该命令附加一个容器名以访问对应容器的日志。
+详见 <a href="/docs/reference/generated/kubectl/kubectl-commands#logs"><code>kubectl logs</code> 文档</a>。</p>
+
+<!--
+## Logging at the node level
+
+![Node level logging](/images/docs/user-guide/logging/logging-node-level.png)
+-->
+
+<h2 id="节点级日志记录">节点级日志记录</h2>
+
+<p><img src="/images/docs/user-guide/logging/logging-node-level.png" alt="节点级别的日志记录" /></p>
+
+<!--
+Everything a containerized application writes to `stdout` and `stderr` is handled and redirected somewhere by a container engine. For example, the Docker container engine redirects those two streams to [a logging driver](https://docs.docker.com/engine/admin/logging/overview), which is configured in Kubernetes to write to a file in json format.
+-->
+
+<p>容器化应用写入 <code>stdout</code> 和 <code>stderr</code> 的任何数据，都会被容器引擎捕获并被重定向到某个位置。
+例如，Docker 容器引擎将这两个输出流重定向到某个 <a href="https://docs.docker.com/engine/admin/logging/overview" target="_blank">日志驱动</a> ，
+该日志驱动在 Kubernetes 中配置为以 json 格式写入文件。</p>
+
+<!--
+<blockquote class="note">
+  <div><strong>注意：</strong> The Docker json logging driver treats each line as a separate message. When using the Docker logging driver, there is no direct support for multi-line messages. You need to handle multi-line messages at the logging agent level or higher.</div>
+</blockquote>
+-->
+
+<blockquote class="note">
+  <div><strong>注意：</strong> Docker json 日志驱动将日志的每一行当作一条独立的消息。该日志驱动不直接支持多行消息。您需要在日志代理级别或更高级别处理多行消息。</div>
+</blockquote>
+
+<!--
+By default, if a container restarts, the kubelet keeps one terminated container with its logs. If a pod is evicted from the node, all corresponding containers are also evicted, along with their logs.
+-->
+
+<p>默认情况下，如果容器重启，kubelet 会保留被终止的容器日志。
+如果 pod 在工作节点被驱逐，该 pod 中所有的容器也会被驱逐，包括容器日志。</p>
+
+<!--
+An important consideration in node-level logging is implementing log rotation,
+so that logs don't consume all available storage on the node. Kubernetes
+currently is not responsible for rotating logs, but rather a deployment tool
+should set up a solution to address that.
+For example, in Kubernetes clusters, deployed by the `kube-up.sh` script,
+there is a [`logrotate`](https://linux.die.net/man/8/logrotate)
+tool configured to run each hour. You can also set up a container runtime to
+rotate application's logs automatically, e.g. by using Docker's `log-opt`.
+In the `kube-up.sh` script, the latter approach is used for COS image on GCP,
+and the former approach is used in any other environment. In both cases, by
+default rotation is configured to take place when log file exceeds 10MB.
+-->
+
+<p>节点级日志记录中，需要重点考虑实现日志的轮转，以此来保证日志不会消耗节点上所有的可用空间。
+Kubernetes 当前并不负责轮转日志，而是通过部署工具建立一个解决问题的方案。
+例如，在 Kubernetes 集群中，用 <code>kube-up.sh</code> 部署一个每小时运行的工具 <a href="https://linux.die.net/man/8/logrotate" target="_blank"><code>logrotate</code></a>。
+您也可以设置容器 runtime 来自动地轮转应用日志，比如使用 Docker 的 <code>log-opt</code> 选项。
+在 <code>kube-up.sh</code> 脚本中，使用后一种方式来处理 GCP 上的 COS 镜像，而使用前一种方式来处理其他环境。
+这两种方式，默认日志超过 10MB 大小时都会触发日志轮转。</p>
+
+<!--
+As an example, you can find detailed information about how `kube-up.sh` sets
+up logging for COS image on GCP in the corresponding [script][cosConfigureHelper].
+-->
+
+<p>例如，您可以找到关于 <code>kube-up.sh</code> 为 GCP 环境的 COS 镜像设置日志的详细信息，
+相应的脚本在 <a href="https://github.com/kubernetes/kubernetes/blob/v1.17.17/cluster/gce/gci/configure-helper.sh" target="_blank">这里</a>。</p>
+
+<!--
+When you run [`kubectl logs`](/docs/reference/generated/kubectl/kubectl-commands#logs) as in
+the basic logging example, the kubelet on the node handles the request and
+reads directly from the log file, returning the contents in the response.
+-->
+
+<p>当运行 <a href="/docs/reference/generated/kubectl/kubectl-commands#logs"><code>kubectl logs</code></a> 时，
+节点上的 kubelet 处理该请求并直接读取日志文件，同时在响应中返回日志文件内容。</p>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+Currently, if some external system has performed the rotation,
+only the contents of the latest log file will be available through
+`kubectl logs`. E.g. if there's a 10MB file, `logrotate` performs
+the rotation and there are two files, one 10MB in size and one empty,
+`kubectl logs` will return an empty response.
+-->
+
+<p>当前，如果有其他系统机制执行日志轮转，那么 <code>kubectl logs</code> 仅可查询到最新的日志内容。
+比如，一个 10MB 大小的文件，通过<code>logrotate</code> 执行轮转后生成两个文件，一个 10MB 大小，一个为空，所以 <code>kubectl logs</code> 将返回空。</div>
+</blockquote>
+
+<!--
+### System component logs
+
+There are two types of system components: those that run in a container and those
+that do not run in a container. For example:
+-->
+
+<h3 id="系统组件日志">系统组件日志</h3>
+
+<p>系统组件有两种类型：在容器中运行的和不在容器中运行的。例如：</p>
+
+<!--
+* The Kubernetes scheduler and kube-proxy run in a container.
+* The kubelet and container runtime, for example Docker, do not run in containers.
+-->
+
+<ul>
+<li>在容器中运行的 kube-scheduler 和 kube-proxy。</li>
+<li>不在容器中运行的 kubelet 和容器运行时（例如 Docker。</li>
+</ul>
+
+<!--
+On machines with systemd, the kubelet and container runtime write to journald. If
+systemd is not present, they write to `.log` files in the `/var/log` directory.
+System components inside containers always write to the `/var/log` directory,
+bypassing the default logging mechanism. They use the [klog][klog]
+logging library. You can find the conventions for logging severity for those
+components in the [development docs on logging](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-instrumentation/logging.md).
+-->
+
+<p>在使用 systemd 机制的服务器上，kubelet 和容器 runtime 写入日志到 journald。
+如果没有 systemd，他们写入日志到 <code>/var/log</code> 目录的 <code>.log</code> 文件。
+容器中的系统组件通常将日志写到 <code>/var/log</code> 目录，绕过了默认的日志机制。他们使用 <a href="https://github.com/kubernetes/klog" target="_blank">klog</a> 日志库。
+您可以在<a href="https://github.com/kubernetes/community/blob/master/contributors/devel/sig-instrumentation/logging.md" target="_blank">日志开发文档</a>找到这些组件的日志告警级别协议。</p>
+
+<!--
+Similarly to the container logs, system component logs in the `/var/log`
+directory should be rotated. In Kubernetes clusters brought up by
+the `kube-up.sh` script, those logs are configured to be rotated by
+the `logrotate` tool daily or once the size exceeds 100MB.
+-->
+
+<p>和容器日志类似，<code>/var/log</code> 目录中的系统组件日志也应该被轮转。
+通过脚本 <code>kube-up.sh</code> 启动的 Kubernetes 集群中，日志被工具 <code>logrotate</code> 执行每日轮转，或者日志大小超过 100MB 时触发轮转。</p>
+
+<!--
+## Cluster-level logging architectures
+-->
+
+<h2 id="集群级日志架构">集群级日志架构</h2>
+
+<!--
+While Kubernetes does not provide a native solution for cluster-level logging, there are several common approaches you can consider. Here are some options:
+
+* Use a node-level logging agent that runs on every node.
+* Include a dedicated sidecar container for logging in an application pod.
+* Push logs directly to a backend from within an application.
+-->
+
+<p>虽然Kubernetes没有为集群级日志记录提供原生的解决方案，但您可以考虑几种常见的方法。以下是一些选项：</p>
+
+<ul>
+<li>使用在每个节点上运行的节点级日志记录代理。</li>
+<li>在应用程序的 pod 中，包含专门记录日志的 sidecar 容器。</li>
+<li>将日志直接从应用程序中推送到日志记录后端。</li>
+</ul>
+
+<!--
+### Using a node logging agent
+
+![Using a node level logging agent](/images/docs/user-guide/logging/logging-with-node-agent.png)
+-->
+
+<h3 id="使用节点级日志代理">使用节点级日志代理</h3>
+
+<p><img src="/images/docs/user-guide/logging/logging-with-node-agent.png" alt="使用节点日志记录代理" /></p>
+
+<!--
+You can implement cluster-level logging by including a _node-level logging agent_ on each node. The logging agent is a dedicated tool that exposes logs or pushes logs to a backend. Commonly, the logging agent is a container that has access to a directory with log files from all of the application containers on that node.
+-->
+
+<p>您可以通过在每个节点上使用 <em>节点级的日志记录代理</em> 来实现群集级日志记录。日志记录代理是一种用于暴露日志或将日志推送到后端的专用工具。通常，日志记录代理程序是一个容器，它可以访问包含该节点上所有应用程序容器的日志文件的目录。</p>
+
+<!--
+Because the logging agent must run on every node, it's common to implement it as either a DaemonSet replica, a manifest pod, or a dedicated native process on the node. However the latter two approaches are deprecated and highly discouraged.
+-->
+
+<p>由于日志记录代理必须在每个节点上运行，它可以用 DaemonSet 副本，Pod 或 本机进程来实现。然而，后两种方法被弃用并且非常不别推荐。</p>
+
+<!--
+Using a node-level logging agent is the most common and encouraged approach for a Kubernetes cluster, because it creates only one agent per node, and it doesn't require any changes to the applications running on the node. However, node-level logging _only works for applications' standard output and standard error_.
+-->
+
+<p>对于 Kubernetes 集群来说，使用节点级的日志代理是最常用和被推荐的方式，因为在每个节点上仅创建一个代理，并且不需要对节点上的应用做修改。
+但是，节点级的日志 _仅适用于应用程序的标准输出和标准错误输出_。</p>
+
+<!--
+Kubernetes doesn't specify a logging agent, but two optional logging agents are packaged with the Kubernetes release: [Stackdriver Logging](/docs/user-guide/logging/stackdriver) for use with Google Cloud Platform, and [Elasticsearch](/docs/user-guide/logging/elasticsearch). You can find more information and instructions in the dedicated documents. Both use [fluentd](http://www.fluentd.org/) with custom configuration as an agent on the node.
+-->
+
+<p>Kubernetes 并不指定日志代理，但是有两个可选的日志代理与 Kubernetes 发行版一起发布。
+<a href="/docs/user-guide/logging/stackdriver">Stackdriver 日志</a> 适用于 Google Cloud Platform，和 <a href="/docs/user-guide/logging/elasticsearch">Elasticsearch</a>。
+您可以在专门的文档中找到更多的信息和说明。两者都使用 <a href="http://www.fluentd.org/" target="_blank">fluentd</a> 与自定义配置作为节点上的代理。</p>
+
+<!--
+### Using a sidecar container with the logging agent
+-->
+
+<h3 id="使用-sidecar-容器和日志代理">使用 sidecar 容器和日志代理</h3>
+
+<!--
+You can use a sidecar container in one of the following ways:
+-->
+
+<p>您可以通过以下方式之一使用 sidecar 容器：</p>
+
+<!--
+* The sidecar container streams application logs to its own `stdout`.
+* The sidecar container runs a logging agent, which is configured to pick up logs from an application container.
+-->
+
+<ul>
+<li>sidecar 容器将应用程序日志传送到自己的标准输出。</li>
+<li>sidecar 容器运行一个日志代理，配置该日志代理以便从应用容器收集日志。</li>
+</ul>
+
+<!--
+#### Streaming sidecar container
+-->
+
+<h4 id="传输数据流的-sidecar-容器">传输数据流的 sidecar 容器</h4>
+
+<!--
+![Sidecar container with a streaming container](/images/docs/user-guide/logging/logging-with-streaming-sidecar.png)
+
+By having your sidecar containers stream to their own `stdout` and `stderr`
+streams, you can take advantage of the kubelet and the logging agent that
+already run on each node. The sidecar containers read logs from a file, a socket,
+or the journald. Each individual sidecar container prints log to its own `stdout`
+or `stderr` stream.
+-->
+
+<p>利用 sidecar 容器向自己的 <code>stdout</code> 和 <code>stderr</code> 传输流的方式，您就可以利用每个节点上的 kubelet 和日志代理来处理日志。
+sidecar 容器从文件，socket 或 journald 读取日志。每个 sidecar 容器打印其自己的 <code>stdout</code> 和 <code>stderr</code> 流。</p>
+
+<!--
+This approach allows you to separate several log streams from different
+parts of your application, some of which can lack support
+for writing to `stdout` or `stderr`. The logic behind redirecting logs
+is minimal, so it's hardly a significant overhead. Additionally, because
+`stdout` and `stderr` are handled by the kubelet, you can use built-in tools
+like `kubectl logs`.
+-->
+
+<p>这种方法允许您将日志流从应用程序的不同部分分离开，其中一些可能缺乏对写入 <code>stdout</code> 或 <code>stderr</code> 的支持。重定向日志背后的逻辑是最小的，因此它的开销几乎可以忽略不计。
+另外，因为 <code>stdout</code>、<code>stderr</code> 由 kubelet 处理，你可以使用内置的工具 <code>kubectl logs</code>。</p>
+
+<!--
+Consider the following example. A pod runs a single container, and the container
+writes to two different log files, using two different formats. Here's a
+configuration file for the Pod:
+-->
+
+<p>考虑接下来的例子。pod 的容器向两个文件写不同格式的日志，下面是这个 pod 的配置文件:</p>
+
+<table class="includecode" id="admin-logging-two-files-counter-pod-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/admin/logging/two-files-counter-pod.yaml" download="admin/logging/two-files-counter-pod.yaml">
+                    <code>admin/logging/two-files-counter-pod.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('admin-logging-two-files-counter-pod-yaml')" title="Copy admin/logging/two-files-counter-pod.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>counter<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>/bin/sh<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>-c<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">      i=0;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>while<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>do<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$i: $(date)&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">1.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$(date) INFO $i&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">2.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>i=$((i<span style="color:#666">+1</span>));<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>sleep<span style="color:#bbb"> </span><span style="color:#666">1</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>done<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>emptyDir:<span style="color:#bbb"> </span>{}<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!--
+It would be a mess to have log entries of different formats in the same log
+stream, even if you managed to redirect both components to the `stdout` stream of
+the container. Instead, you could introduce two sidecar containers. Each sidecar
+container could tail a particular log file from a shared volume and then redirect
+the logs to its own `stdout` stream.
+-->
+
+<p>在同一个日志流中有两种不同格式的日志条目，这有点混乱，即使您试图重定向它们到容器的 <code>stdout</code> 流。
+取而代之的是，您可以引入两个 sidecar 容器。
+每一个 sidecar 容器可以从共享卷跟踪特定的日志文件，并重定向文件内容到各自的 <code>stdout</code> 流。</p>
+
+<!--
+Here's a configuration file for a pod that has two sidecar containers:
+-->
+
+<p>这是运行两个 sidecar 容器的 pod 文件。</p>
+
+<table class="includecode" id="admin-logging-two-files-counter-pod-streaming-sidecar-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/admin/logging/two-files-counter-pod-streaming-sidecar.yaml" download="admin/logging/two-files-counter-pod-streaming-sidecar.yaml">
+                    <code>admin/logging/two-files-counter-pod-streaming-sidecar.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('admin-logging-two-files-counter-pod-streaming-sidecar-yaml')" title="Copy admin/logging/two-files-counter-pod-streaming-sidecar.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>counter<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>/bin/sh<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>-c<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">      i=0;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>while<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>do<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$i: $(date)&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">1.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$(date) INFO $i&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">2.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>i=$((i<span style="color:#666">+1</span>));<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>sleep<span style="color:#bbb"> </span><span style="color:#666">1</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>done<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count-log<span style="color:#666">-1</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb"> </span>[/bin/sh,<span style="color:#bbb"> </span>-c,<span style="color:#bbb"> </span><span style="color:#b44">&#39;tail -n+1 -f /var/log/1.log&#39;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count-log<span style="color:#666">-2</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb"> </span>[/bin/sh,<span style="color:#bbb"> </span>-c,<span style="color:#bbb"> </span><span style="color:#b44">&#39;tail -n+1 -f /var/log/2.log&#39;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>emptyDir:<span style="color:#bbb"> </span>{}<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!--
+Now when you run this pod, you can access each log stream separately by
+running the following commands:
+-->
+
+<p>现在当您运行这个 pod 时，您可以分别地访问每一个日志流，运行如下命令：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl logs counter count-log-1</code></pre></div>
+<pre><code>0: Mon Jan  1 00:00:00 UTC 2001
+1: Mon Jan  1 00:00:01 UTC 2001
+2: Mon Jan  1 00:00:02 UTC 2001
+...
+</code></pre>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl logs counter count-log-2</code></pre></div>
+<pre><code>Mon Jan  1 00:00:00 UTC 2001 INFO 0
+Mon Jan  1 00:00:01 UTC 2001 INFO 1
+Mon Jan  1 00:00:02 UTC 2001 INFO 2
+...
+</code></pre>
+
+<!--
+The node-level agent installed in your cluster picks up those log streams
+automatically without any further configuration. If you like, you can configure
+the agent to parse log lines depending on the source container.
+-->
+
+<p>集群中安装的节点级代理会自动获取这些日志流，而无需进一步配置。如果您愿意，您可以配置代理程序来解析源容器的日志行。</p>
+
+<!--
+Note, that despite low CPU and memory usage (order of couple of millicores
+for cpu and order of several megabytes for memory), writing logs to a file and
+then streaming them to `stdout` can double disk usage. If you have
+an application that writes to a single file, it's generally better to set
+`/dev/stdout` as destination rather than implementing the streaming sidecar
+container approach.
+-->
+
+<p>注意，尽管 CPU 和内存使用率都很低（以多个 cpu millicores 指标排序或者按内存的兆字节排序），
+向文件写日志然后输出到 <code>stdout</code> 流仍然会成倍地增加磁盘使用率。
+如果您的应用向单一文件写日志，通常最好设置 <code>/dev/stdout</code> 作为目标路径，而不是使用流式的 sidecar 容器方式。</p>
+
+<!--
+Sidecar containers can also be used to rotate log files that cannot be
+rotated by the application itself. An example
+of this approach is a small container running logrotate periodically.
+However, it's recommended to use `stdout` and `stderr` directly and leave rotation
+and retention policies to the kubelet.
+-->
+
+<p>应用本身如果不具备轮转日志文件的功能，可以通过 sidecar 容器实现。
+该方式的一个例子是运行一个定期轮转日志的容器。
+然而，还是推荐直接使用 <code>stdout</code> 和 <code>stderr</code>，将日志的轮转和保留策略交给 kubelet。</p>
+
+<!--
+#### Sidecar container with a logging agent
+
+![Sidecar container with a logging agent](/images/docs/user-guide/logging/logging-with-sidecar-agent.png)
+-->
+
+<h3 id="具有日志代理功能的-sidecar-容器">具有日志代理功能的 sidecar 容器</h3>
+
+<p><img src="/images/docs/user-guide/logging/logging-with-sidecar-agent.png" alt="日志记录代理功能的 sidecar 容器" /></p>
+
+<!--
+If the node-level logging agent is not flexible enough for your situation, you
+can create a sidecar container with a separate logging agent that you have
+configured specifically to run with your application.
+-->
+
+<p>如果节点级日志记录代理程序对于你的场景来说不够灵活，您可以创建一个带有单独日志记录代理程序的 sidecar 容器，将代理程序专门配置为与您的应用程序一起运行。</p>
+
+<!--
+<blockquote class="note">
+  <div><strong>注意：</strong> Using a logging agent in a sidecar container can lead
+to significant resource consumption. Moreover, you won&rsquo;t be able to access
+those logs using <code>kubectl logs</code> command, because they are not controlled
+by the kubelet.</div>
+</blockquote>
+-->
+
+<blockquote class="note">
+  <div><strong>注意：</strong> 在 sidecar 容器中使用日志代理会导致严重的资源损耗。此外，您不能使用 <code>kubectl logs</code> 命令访问日志，因为日志并没有被 kubelet 管理。</div>
+</blockquote>
+
+<!--
+As an example, you could use [Stackdriver](/docs/tasks/debug-application-cluster/logging-stackdriver/),
+which uses fluentd as a logging agent. Here are two configuration files that
+you can use to implement this approach. The first file contains
+a [ConfigMap](/docs/tasks/configure-pod-container/configure-pod-configmap/) to configure fluentd.
+-->
+
+<p>例如，您可以使用 <a href="/docs/tasks/debug-application-cluster/logging-stackdriver/">Stackdriver</a>，它使用fluentd作为日志记录代理。
+以下是两个可用于实现此方法的配置文件。
+第一个文件包含配置 fluentd 的<a href="/docs/tasks/configure-pod-container/configure-pod-configmap/">ConfigMap</a>。</p>
+
+<table class="includecode" id="admin-logging-fluentd-sidecar-config-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/admin/logging/fluentd-sidecar-config.yaml" download="admin/logging/fluentd-sidecar-config.yaml">
+                    <code>admin/logging/fluentd-sidecar-config.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('admin-logging-fluentd-sidecar-config-yaml')" title="Copy admin/logging/fluentd-sidecar-config.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>fluentd-config<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>fluentd.conf:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    &lt;source&gt;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>type<span style="color:#bbb"> </span>tail<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>format<span style="color:#bbb"> </span>none<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>path<span style="color:#bbb"> </span>/var/log/<span style="color:#666">1.</span>log<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>pos_file<span style="color:#bbb"> </span>/var/log/<span style="color:#666">1.</span>log.pos<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>tag<span style="color:#bbb"> </span>count.format1<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>&lt;/source<span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">
+</span><span style="color:#b44;font-style:italic">    &lt;source&gt;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>type<span style="color:#bbb"> </span>tail<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>format<span style="color:#bbb"> </span>none<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>path<span style="color:#bbb"> </span>/var/log/<span style="color:#666">2.</span>log<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>pos_file<span style="color:#bbb"> </span>/var/log/<span style="color:#666">2.</span>log.pos<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>tag<span style="color:#bbb"> </span>count.format2<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>&lt;/source<span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">
+</span><span style="color:#b44;font-style:italic">    &lt;match **&gt;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>type<span style="color:#bbb"> </span>google_cloud<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>&lt;/match&gt;<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!--
+<blockquote class="note">
+  <div><strong>注意：</strong> The configuration of fluentd is beyond the scope of this article. For
+information about configuring fluentd, see the
+<a href="http://docs.fluentd.org/" target="_blank">official fluentd documentation</a>.</div>
+</blockquote>
+-->
+
+<blockquote class="note">
+  <div><strong>注意：</strong> 配置fluentd超出了本文的范围。要知道更多的关于如何配置fluentd，请参考<a href="http://docs.fluentd.org/" target="_blank">fluentd 官方文档</a>.</div>
+</blockquote>
+
+<!--
+The second file describes a pod that has a sidecar container running fluentd.
+The pod mounts a volume where fluentd can pick up its configuration data.
+-->
+
+<p>第二个文件描述了运行 fluentd  sidecar 容器的 pod 。flutend 通过 pod 的挂载卷获取它的配置数据。</p>
+
+<table class="includecode" id="admin-logging-two-files-counter-pod-agent-sidecar-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/admin/logging/two-files-counter-pod-agent-sidecar.yaml" download="admin/logging/two-files-counter-pod-agent-sidecar.yaml">
+                    <code>admin/logging/two-files-counter-pod-agent-sidecar.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('admin-logging-two-files-counter-pod-agent-sidecar-yaml')" title="Copy admin/logging/two-files-counter-pod-agent-sidecar.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>counter<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>/bin/sh<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>-c<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">      i=0;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>while<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>do<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$i: $(date)&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">1.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$(date) INFO $i&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">2.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>i=$((i<span style="color:#666">+1</span>));<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>sleep<span style="color:#bbb"> </span><span style="color:#666">1</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>done<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count-agent<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/fluentd-gcp:<span style="color:#666">1.30</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>FLUENTD_ARGS<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>value:<span style="color:#bbb"> </span>-c<span style="color:#bbb"> </span>/etc/fluentd-config/fluentd.conf<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>config-volume<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/etc/fluentd-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>emptyDir:<span style="color:#bbb"> </span>{}<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>config-volume<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>configMap:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>fluentd-config<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!--
+After some time you can find log messages in the Stackdriver interface.
+-->
+
+<p>一段时间后，您可以在 Stackdriver 界面看到日志消息。</p>
+
+<!--
+Remember, that this is just an example and you can actually replace fluentd
+with any logging agent, reading from any source inside an application
+container.
+-->
+
+<p>记住，这只是一个例子，事实上您可以用任何一个日志代理替换 fluentd ，并从应用容器中读取任何资源。</p>
+
+<!--
+### Exposing logs directly from the application
+
+![Exposing logs directly from the application](/images/docs/user-guide/logging/logging-from-application.png)
+-->
+
+<h3 id="从应用中直接暴露日志目录">从应用中直接暴露日志目录</h3>
+
+<p><img src="/images/docs/user-guide/logging/logging-from-application.png" alt="直接从应用程序暴露日志" /></p>
+
+<!--
+You can implement cluster-level logging by exposing or pushing logs directly from
+every application; however, the implementation for such a logging mechanism
+is outside the scope of Kubernetes.
+-->
+
+<p>通过暴露或推送每个应用的日志，您可以实现集群级日志记录；然而，这种日志记录机制的实现已超出 Kubernetes 的范围。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/cluster-administration/logging.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/concepts\/cluster-administration\/logging\/",
+    "title" : "日志架构",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/concepts\/cluster-administration\/logging\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/cluster-administration/logging.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 December 25, 2019 at 8:51 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/b8b2cc7c7443e32de70834a2b3d2186cae6eea5a/">ZH-trans: merge release1.16-temporary to master (#18217)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/cluster-administration/logging.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

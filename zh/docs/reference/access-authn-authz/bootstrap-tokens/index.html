@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>使用启动引导令牌（Bootstrap Tokens）认证 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="概述 令牌格式 启用启动引导令牌 启动引导令牌的密文格式 使用 kubeadm 管理令牌  ConfigMap 签名     概述 启动引导令牌是一种简单的持有者令牌（Bearer Token），这种令牌是在新建集群或者在现有集群中添加新节点时使用的。 它被设计成能够支持 kubeadm，但是也可以被用在其他的案例中以便用户在 不使用 kubeadm 的情况下启动集群。它也被设计成可以通过 RBAC 策略，结合 Kubelet TLS Bootstrapping 系统进行工作。
+启动引导令牌被定义成一个特定类型的 secrets(bootstrap.kubernetes.io/token)，并存在于 kube-system 命名空间中。然后这些 secrets 会被 API 服务器上的启动引导的认证器读取。 控制器管理器中的控制器 TokenCleaner 能够删除过期的令牌。在节点发现的过程中 Kubernetes 会使用特殊的 ConfigMap 对象。 控制器管理器中的 BootstrapSigner 控制器也会使用启动引导令牌为这类对象生成签名信息。
+目前，启动引导令牌处于 alpha 阶段，但是预期也不会有大的突破性变化。
+令牌格式 启动引导令牌使用 abcdef.0123456789abcdef 的形式。 更加规范地说，它们必须符合正则表达式 [a-z0-9]{6}\.[a-z0-9]{16}。
+令牌的第一部分是 &ldquo;Token ID&rdquo; ，它是公共信息。用于引用某个令牌，并确保不会泄露认证所使用的秘密信息。 第二部分是“令牌秘密（Token Secret）”，它应该被共享给收信的第三方。
+启用启动引导令牌 所有与启动引导令牌相关的特性在 Kubernetes v1.6 版本中默认都是禁用的。">
+<meta property="og:description" content="概述 令牌格式 启用启动引导令牌 启动引导令牌的密文格式 使用 kubeadm 管理令牌  ConfigMap 签名     概述 启动引导令牌是一种简单的持有者令牌（Bearer Token），这种令牌是在新建集群或者在现有集群中添加新节点时使用的。 它被设计成能够支持 kubeadm，但是也可以被用在其他的案例中以便用户在 不使用 kubeadm 的情况下启动集群。它也被设计成可以通过 RBAC 策略，结合 Kubelet TLS Bootstrapping 系统进行工作。
+启动引导令牌被定义成一个特定类型的 secrets(bootstrap.kubernetes.io/token)，并存在于 kube-system 命名空间中。然后这些 secrets 会被 API 服务器上的启动引导的认证器读取。 控制器管理器中的控制器 TokenCleaner 能够删除过期的令牌。在节点发现的过程中 Kubernetes 会使用特殊的 ConfigMap 对象。 控制器管理器中的 BootstrapSigner 控制器也会使用启动引导令牌为这类对象生成签名信息。
+目前，启动引导令牌处于 alpha 阶段，但是预期也不会有大的突破性变化。
+令牌格式 启动引导令牌使用 abcdef.0123456789abcdef 的形式。 更加规范地说，它们必须符合正则表达式 [a-z0-9]{6}\.[a-z0-9]{16}。
+令牌的第一部分是 &ldquo;Token ID&rdquo; ，它是公共信息。用于引用某个令牌，并确保不会泄露认证所使用的秘密信息。 第二部分是“令牌秘密（Token Secret）”，它应该被共享给收信的第三方。
+启用启动引导令牌 所有与启动引导令牌相关的特性在 Kubernetes v1.6 版本中默认都是禁用的。">
+<meta name="twitter:description" content="概述 令牌格式 启用启动引导令牌 启动引导令牌的密文格式 使用 kubeadm 管理令牌  ConfigMap 签名     概述 启动引导令牌是一种简单的持有者令牌（Bearer Token），这种令牌是在新建集群或者在现有集群中添加新节点时使用的。 它被设计成能够支持 kubeadm，但是也可以被用在其他的案例中以便用户在 不使用 kubeadm 的情况下启动集群。它也被设计成可以通过 RBAC 策略，结合 Kubelet TLS Bootstrapping 系统进行工作。
+启动引导令牌被定义成一个特定类型的 secrets(bootstrap.kubernetes.io/token)，并存在于 kube-system 命名空间中。然后这些 secrets 会被 API 服务器上的启动引导的认证器读取。 控制器管理器中的控制器 TokenCleaner 能够删除过期的令牌。在节点发现的过程中 Kubernetes 会使用特殊的 ConfigMap 对象。 控制器管理器中的 BootstrapSigner 控制器也会使用启动引导令牌为这类对象生成签名信息。
+目前，启动引导令牌处于 alpha 阶段，但是预期也不会有大的突破性变化。
+令牌格式 启动引导令牌使用 abcdef.0123456789abcdef 的形式。 更加规范地说，它们必须符合正则表达式 [a-z0-9]{6}\.[a-z0-9]{16}。
+令牌的第一部分是 &ldquo;Token ID&rdquo; ，它是公共信息。用于引用某个令牌，并确保不会泄露认证所使用的秘密信息。 第二部分是“令牌秘密（Token Secret）”，它应该被共享给收信的第三方。
+启用启动引导令牌 所有与启动引导令牌相关的特性在 Kubernetes v1.6 版本中默认都是禁用的。">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/reference/access-authn-authz/bootstrap-tokens/">
+<meta property="og:title" content="使用启动引导令牌（Bootstrap Tokens）认证">
+<meta name="twitter:title" content="使用启动引导令牌（Bootstrap Tokens）认证">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/reference/access-authn-authz/bootstrap-tokens/">English</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/reference/access-authn-authz/bootstrap-tokens/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/reference/access-authn-authz/bootstrap-tokens/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/reference/access-authn-authz/bootstrap-tokens/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/reference/access-authn-authz/bootstrap-tokens/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/reference/access-authn-authz/bootstrap-tokens/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1>参考</h1>
+<h5></h5>
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/" class="YAH">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="参考" href="/zh/docs/reference/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="标准化词汇表" href="/zh/docs/reference/glossary/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes 问题和安全">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 问题和安全" href="/zh/docs/reference/issues-security/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 问题追踪" href="/zh/docs/reference/issues-security/issues/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 安全和信息披露" href="/zh/docs/reference/issues-security/security/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="使用 Kubernetes API">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 Kubernetes API" href="/zh/docs/reference/using-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API 总览" href="/zh/docs/reference/using-api/api-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes API Concepts <small>(EN)</small>" href="/docs/reference/using-api/api-concepts/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="客户端库" href="/zh/docs/reference/using-api/client-libraries/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes Deprecation Policy <small>(EN)</small>" href="/docs/reference/using-api/deprecation-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="访问 API">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Authenticating <small>(EN)</small>" href="/docs/reference/access-authn-authz/authentication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用准入控制器" href="/zh/docs/reference/access-authn-authz/admission-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="动态准入控制" href="/zh/docs/reference/access-authn-authz/extensible-admission-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="授权概述" href="/zh/docs/reference/access-authn-authz/authorization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 RBAC 鉴权" href="/zh/docs/reference/access-authn-authz/rbac/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Node 鉴权" href="/zh/docs/reference/access-authn-authz/node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Webhook 模式" href="/zh/docs/reference/access-authn-authz/webhook/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API 访问控制" href="/zh/docs/reference/access-authn-authz/controlling-access/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ABAC 鉴权" href="/zh/docs/reference/access-authn-authz/abac/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用启动引导令牌（Bootstrap Tokens）认证" href="/zh/docs/reference/access-authn-authz/bootstrap-tokens/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理 Service Accounts" href="/zh/docs/reference/access-authn-authz/service-accounts-admin/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="API 参考">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="API 参考" href="/zh/docs/reference/kubernetes-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="v1.17" href="/zh/docs/reference/kubernetes-api/api-index/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="知名标签（Label）、注解（Annotation）和 Taints" href="/zh/docs/reference/kubernetes-api/labels-annotations-taints/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安装工具">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Kubeadm">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="kubeadm 概述" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm init" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-init/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm join" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-join/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm upgrade" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm config" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm reset" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-reset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm 令牌" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-token/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm version" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-version/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm alpha" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-alpha/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm init phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm join phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-join-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm reset phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-reset-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm upgrade phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-upgrade-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Implementation details <small>(EN)</small>" href="/docs/reference/setup-tools/kubeadm/implementation-details/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="kubectl 命令行界面">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="kubectl 命令行界面" href="/zh/docs/reference/kubectl/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="kubectl 概述" href="/zh/docs/reference/kubectl/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="JSONPath 支持" href="/zh/docs/reference/kubectl/jsonpath/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl" href="/zh/docs/reference/kubectl/kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl 命令" href="/zh/docs/reference/kubectl/kubectl-cmds/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl 备忘单" href="/zh/docs/reference/kubectl/cheatsheet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl 的用法约定" href="/zh/docs/reference/kubectl/conventions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="适用于 Docker 用户的 kubectl" href="/zh/docs/reference/kubectl/docker-cli-to-kubectl/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="命令行工具参考">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="命令行工具参考" href="/zh/docs/reference/command-line-tools-reference/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="特性门控" href="/zh/docs/reference/command-line-tools-reference/feature-gates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="cloud-controller-manager <small>(EN)</small>" href="/docs/reference/command-line-tools-reference/cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-proxy" href="/zh/docs/reference/command-line-tools-reference/kube-proxy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-scheduler" href="/zh/docs/reference/command-line-tools-reference/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubelet" href="/zh/docs/reference/command-line-tools-reference/kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-apiserver" href="/zh/docs/reference/command-line-tools-reference/kube-apiserver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-controller-manager" href="/zh/docs/reference/command-line-tools-reference/kube-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubelet authentication/authorization" href="/zh/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="TLS bootstrapping" href="/zh/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="工具" href="/zh/docs/reference/tools/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/reference/access-authn-authz/bootstrap-tokens.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>使用启动引导令牌（Bootstrap Tokens）认证</h1>
+
+
+
+
+
+<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#概述">概述</a></li>
+<li><a href="#令牌格式">令牌格式</a></li>
+<li><a href="#启用启动引导令牌">启用启动引导令牌</a></li>
+<li><a href="#启动引导令牌的密文格式">启动引导令牌的密文格式</a></li>
+<li><a href="#使用-kubeadm-管理令牌">使用 <code>kubeadm</code> 管理令牌</a>
+<ul>
+<li><a href="#configmap-签名">ConfigMap 签名</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+
+<h2 id="概述">概述</h2>
+
+<p>启动引导令牌是一种简单的持有者令牌（Bearer Token），这种令牌是在新建集群或者在现有集群中添加新节点时使用的。
+它被设计成能够支持 <a href="/docs/admin/kubeadm/"><code>kubeadm</code></a>，但是也可以被用在其他的案例中以便用户在
+不使用 <code>kubeadm</code> 的情况下启动集群。它也被设计成可以通过 RBAC 策略，结合 <a href="/docs/admin/kubelet-tls-bootstrapping/">Kubelet TLS
+Bootstrapping</a> 系统进行工作。</p>
+
+<p>启动引导令牌被定义成一个特定类型的 secrets(<code>bootstrap.kubernetes.io/token</code>)，并存在于
+<code>kube-system</code> 命名空间中。然后这些 secrets 会被 API 服务器上的启动引导的认证器读取。
+控制器管理器中的控制器 TokenCleaner 能够删除过期的令牌。在节点发现的过程中 Kubernetes 会使用特殊的 ConfigMap 对象。
+控制器管理器中的 BootstrapSigner 控制器也会使用启动引导令牌为这类对象生成签名信息。</p>
+
+<p>目前，启动引导令牌处于 <strong>alpha</strong> 阶段，但是预期也不会有大的突破性变化。</p>
+
+<h2 id="令牌格式">令牌格式</h2>
+
+<p>启动引导令牌使用 <code>abcdef.0123456789abcdef</code> 的形式。
+更加规范地说，它们必须符合正则表达式 <code>[a-z0-9]{6}\.[a-z0-9]{16}</code>。</p>
+
+<p>令牌的第一部分是 &ldquo;Token ID&rdquo; ，它是公共信息。用于引用某个令牌，并确保不会泄露认证所使用的秘密信息。
+第二部分是“令牌秘密（Token Secret）”，它应该被共享给收信的第三方。</p>
+
+<h2 id="启用启动引导令牌">启用启动引导令牌</h2>
+
+<p>所有与启动引导令牌相关的特性在 Kubernetes v1.6 版本中默认都是禁用的。</p>
+
+<p>你可以在 API 服务器上通过 <code>--enable-bootstrap-token-auth</code> 参数启用启动引导令牌。
+你可以设置控制管理器的 <code>--controllers</code> 参数来启用启动引导令牌相关的控制器，例如 <code>--controllers=*,tokencleaner,bootstrapsigner</code> 。
+在使用 <code>kubeadm</code> 时，这是自动完成的。</p>
+
+<p>HTTPS 调用中的令牌是这样使用的：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-http" data-lang="http"><span style="">Authorization: Bearer 07401b.f395accd246ae52d</span></code></pre></div>
+<h2 id="启动引导令牌的密文格式">启动引导令牌的密文格式</h2>
+
+<p>每个合法的令牌背后对应着 <code>kube-system</code> 命名空间中的某个 Secret 对象。
+你可以从 <a href="https://git.k8s.io/community/contributors/design-proposals/bootstrap-discovery.md" target="_blank">这里</a> 找到完整设计文档。</p>
+
+<p>这是 secret 看起来的样子。注意，<code>base64(string)</code> 表示应该通过 base64 对值进行编码。
+这里使用的是未解码的版本以便于阅读。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Secret<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>bootstrap-token-07401b<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb"></span>type:<span style="color:#bbb"> </span>bootstrap.kubernetes.io/token<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>description:<span style="color:#bbb"> </span>base64(The<span style="color:#bbb"> </span>default<span style="color:#bbb"> </span>bootstrap<span style="color:#bbb"> </span>token<span style="color:#bbb"> </span>generated<span style="color:#bbb"> </span>by<span style="color:#bbb"> </span><span style="color:#b44">&#39;kubeadm init&#39;</span>.)<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>token-id:<span style="color:#bbb"> </span>base64(07401b)<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>token-secret:<span style="color:#bbb"> </span>base64(f395accd246ae52d)<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>expiration:<span style="color:#bbb"> </span>base64(2017-03-10T03:22:11Z)<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>usage-bootstrap-authentication:<span style="color:#bbb"> </span>base64(<span style="color:#a2f;font-weight:bold">true</span>)<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>usage-bootstrap-signing:<span style="color:#bbb"> </span>base64(<span style="color:#a2f;font-weight:bold">true</span>)</code></pre></div>
+<p>secret 的类型必须是 <code>bootstrap.kubernetes.io/token</code> ，而且名字必须是 <code>bootstrap-token-&lt;token id&gt;</code>。
+<code>description</code> 是人类可读的描述，而不应该是机器可读的信息。令牌 ID 和 Secret 是包含在数据字典中的。</p>
+
+<p><code>usage-bootstrap-*</code> 成员表示这个 secret 的用途。启用时，值必须设置为 <code>true</code>。</p>
+
+<p><code>usage-bootstrap-authentication</code> 表示令牌可以用于 API 服务器的认证。认证器会以
+<code>system:bootstrap:&lt;Token ID&gt;</code> 认证。它被包含在 <code>system:bootstrappers</code> 组中。
+命名和组是故意受限制的，以防止用户在启动引导后再使用这些令牌。</p>
+
+<p><code>usage-bootstrap-signing</code> 表示令牌应该被用于 <code>cluster-info</code> ConfigMap 的签名，就像下面描述的那样。</p>
+
+<p><code>expiration</code> 数据成员显示了令牌在失效后到现在的时间。这是遵循 RFC3339 进行编码的 UTC 时间。
+TokenCleaner 控制器会删除过期的令牌。</p>
+
+<h2 id="使用-kubeadm-管理令牌">使用 <code>kubeadm</code> 管理令牌</h2>
+
+<p>你可以使用 <code>kubeadm</code> 工具管理正在运行集群的令牌。它会从 <code>kubeadm</code> 创建的集群（<code>/etc/kubernetes/admin.conf</code>）
+自动抓取默认管理员密码。你可以通过参数 <code>--kubeconfig</code> 对下面命令指定一个另外的 kubeconfig 文件抓取密码。</p>
+
+<ul>
+<li><code>kubeadm token list</code> 列举了令牌，同时显示了它们的过期时间和用途。</li>
+<li><code>kubeadm token create</code> 创建一个新令牌。
+
+<ul>
+<li><code>--description</code> 设置新令牌的描述。</li>
+<li><code>--ttl duration</code> 设置令牌从“现在”起到过期时间的差值。
+默认是 0 ，也就是不过期。</li>
+<li><code>--usages</code> 设置令牌被使用的方式。默认是 <code>signing,authentication</code>。用途在上面已经描述。</li>
+</ul></li>
+<li><code>kubeadm token delete &lt;token id&gt;|&lt;token id&gt;.&lt;token secret&gt;</code> 删除令牌。
+令牌可以只用 ID 来确认，也可以用整个令牌的值。如果只用 ID 的情况下，密文不匹配的令牌也会被删除。</li>
+</ul>
+
+<h3 id="configmap-签名">ConfigMap 签名</h3>
+
+<p>除了认证之外，令牌可以用于签名 ConfigMap。这在集群启动过程的早期，在客户端信任 API 服务器之前被使用。
+被签名的 ConfigMap 可以通过共享令牌被认证。</p>
+
+<p>被签名的 ConfigMap 是 <code>cluster-info</code>，存在于 <code>kube-public</code> 命名空间中。
+典型的工作流中，客户端在未经认证和忽略 TLS 报错的状态下读取这个 ConfigMap。
+通过 ConfigMap 中嵌入的签名校验 ConfigMap 的载荷。</p>
+
+<p>ConfigMap 会是这个样子的：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>cluster-info<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-public<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>jws-kubeconfig-07401b:<span style="color:#bbb"> </span>eyJhbGciOiJIUzI1NiIsImtpZCI6IjA3NDAxYiJ9..tYEfbo6zDNo40MQE07aZcQX2m3EB2rO3NuXtxVMYm9U<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kubeconfig:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    apiVersion: v1</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>clusters:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>cluster:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>certificate-authority-data:<span style="color:#bbb"> </span>&lt;really<span style="color:#bbb"> </span>long<span style="color:#bbb"> </span>certificate<span style="color:#bbb"> </span>data<span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">        server: https://10.138.0.2:6443</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>contexts:<span style="color:#bbb"> </span>[]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>current-context:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kind:<span style="color:#bbb"> </span>Config<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>preferences:<span style="color:#bbb"> </span>{}<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>users:<span style="color:#bbb"> </span>[]</code></pre></div>
+<p>ConfigMap 的 <code>kubeconfig</code> 成员是一个填好了集群信息的配置文件。
+这里主要交换的信息是 <code>certificate-authority-data</code>。在将来可能会有扩展。</p>
+
+<p>签名是一个 JWS 签名，使用了 &ldquo;detached&rdquo; 模式。为了检验签名，用户应该按照 JWS 规则
+（base64 编码而忽略结尾的 <code>=</code>）对 <code>kubeconfig</code> 的载荷进行编码。完成编码的载荷会被通过插入 JWS 并存在于两个点的中间
+，用于形成一个完整的 JWS。可以使用令牌的完整信息（比如 <code>07401b.f395accd246ae52d</code>）作为共享密钥，
+通过 <code>HS256</code> 方式 (HMAC-SHA256) 对 JWS 进行校验。 用户 <em>必须</em> 确保使用了 HS256。</p>
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/reference/access-authn-authz/bootstrap-tokens.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/reference\/access-authn-authz\/bootstrap-tokens\/",
+    "title" : "使用启动引导令牌（Bootstrap Tokens）认证",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/reference\/access-authn-authz\/bootstrap-tokens\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/reference/access-authn-authz/bootstrap-tokens.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 December 25, 2019 at 8:51 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/b8b2cc7c7443e32de70834a2b3d2186cae6eea5a/">ZH-trans: merge release1.16-temporary to master (#18217)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/reference/access-authn-authz/bootstrap-tokens.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

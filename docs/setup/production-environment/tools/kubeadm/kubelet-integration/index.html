@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html id="docs" lang="en" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Configuring each kubelet in your cluster using kubeadm - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/kubelet-integration/">
+<meta property="og:title" content="Configuring each kubelet in your cluster using kubeadm">
+<meta name="twitter:title" content="Configuring each kubelet in your cluster using kubeadm">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/" class="logo" title="Production-Grade Container Orchestration - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/blog/">Blog</a></li>
+            
+            <li><a href="/training/">Training</a></li>
+            
+            <li><a href="/partners/">Partners</a></li>
+            
+            <li><a href="/community/">Community</a></li>
+            
+            <li><a href="/case-studies/">Case Studies</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    English <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/zh/docs/setup/production-environment/tools/kubeadm/kubelet-integration/">中文 Chinese</a></li>
+                
+                    <li><a href="/ja/docs/setup/production-environment/tools/kubeadm/kubelet-integration/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/kubelet-integration/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/kubelet-integration/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/kubelet-integration/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/kubelet-integration/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/kubelet-integration/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Learn Kubernetes Basics</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/docs/home/">Documentation</a></h3>
+           <p>Learn how to use Kubernetes with conceptual, tutorial, and reference documentation. You can even <a href="/editdocs/" data-auto-burger-exclude>help contribute to the docs</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/blog/">Blog</a></h3>
+           <p>Read the latest news for Kubernetes and the containers space in general, and get technical how-tos hot off the presses.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Interested in hacking on the core Kubernetes code base?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>View On GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explore the community</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>Getting started</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/docs/home/">HOME</a></li>
+		
+		
+		<li><a href="/docs/setup/" class="YAH">GETTING STARTED</a></li>
+		
+		
+		<li><a href="/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/docs/tasks/">TASKS</a></li>
+		
+		
+		<li><a href="/docs/tutorials/">TUTORIALS</a></li>
+		
+		
+		<li><a href="/docs/reference/">REFERENCE</a></li>
+		
+		
+		<li><a href="/docs/contribute/">CONTRIBUTE</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Search" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation is no longer actively maintained. The version you are currently viewing is a static snapshot. For up-to-date documentation, see the 
+	 <a href="https://kubernetes.io/docs/home/">latest version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Getting started" href="/docs/setup/"></a>
+
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Release notes and version skew">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="v1.17 Release Notes" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes version and version skew support policy" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Learning environment">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Minikube" href="/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Kind" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Production environment">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Container runtimes" href="/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Bootstrapping clusters with kubeadm">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installing kubeadm" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Troubleshooting kubeadm" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Creating a single control-plane cluster with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Customizing control plane configuration with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Options for Highly Available topology" href="/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Creating Highly Available clusters with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Set up a High Availability etcd cluster with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuring each kubelet in your cluster using kubeadm" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuring your kubernetes cluster to self-host the control plane" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with kops" href="/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with KRIB" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Kubespray" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Turnkey Cloud Solutions">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Alibaba Cloud" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on AWS EC2" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Azure" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on CenturyLink Cloud" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Google Compute Engine" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Tencent Kubernetes Engine" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="On-Premises VMs">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Cloudstack" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes on DC/OS" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="oVirt" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows in Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Intro to Windows support in Kubernetes" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for adding Windows Nodes in Kubernetes" href="/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for scheduling Windows containers in Kubernetes" href="/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Best practices">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running in multiple zones" href="/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Building large clusters" href="/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Validate node setup" href="/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI certificates and requirements" href="/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/setup/production-environment/tools/kubeadm/kubelet-integration.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Configuring each kubelet in your cluster using kubeadm</h1>
+
+
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes 1.11</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>stable</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="stable">
+This feature is <em>stable</em>, meaning:</p>
+
+<ul>
+<li>The version name is vX where X is an integer.</li>
+<li>Stable versions of features will appear in released software for many subsequent versions.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>The lifecycle of the kubeadm CLI tool is decoupled from the
+<a href="/docs/reference/command-line-tools-reference/kubelet">kubelet</a>, which is a daemon that runs
+on each node within the Kubernetes cluster. The kubeadm CLI tool is executed by the user when Kubernetes is
+initialized or upgraded, whereas the kubelet is always running in the background.</p>
+
+<p>Since the kubelet is a daemon, it needs to be maintained by some kind of a init
+system or service manager. When the kubelet is installed using DEBs or RPMs,
+systemd is configured to manage the kubelet. You can use a different service
+manager instead, but you need to configure it manually.</p>
+
+<p>Some kubelet configuration details need to be the same across all kubelets involved in the cluster, while
+other configuration aspects need to be set on a per-kubelet basis, to accommodate the different
+characteristics of a given machine, such as OS, storage, and networking. You can manage the configuration
+of your kubelets manually, but <a href="#configure-kubelets-using-kubeadm">kubeadm now provides a <code>KubeletConfiguration</code> API type for managing your
+kubelet configurations centrally</a>.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#kubelet-configuration-patterns">Kubelet configuration patterns</a></li>
+
+
+
+
+<li><a href="#configure-kubelets-using-kubeadm">Configure kubelets using kubeadm</a></li>
+
+
+
+
+<li><a href="#the-kubelet-drop-in-file-for-systemd">The kubelet drop-in file for systemd</a></li>
+
+
+
+
+<li><a href="#kubernetes-binaries-and-package-contents">Kubernetes binaries and package contents</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<h2 id="kubelet-configuration-patterns">Kubelet configuration patterns</h2>
+
+<p>The following sections describe patterns to kubelet configuration that are simplified by
+using kubeadm, rather than managing the kubelet configuration for each Node manually.</p>
+
+<h3 id="propagating-cluster-level-configuration-to-each-kubelet">Propagating cluster-level configuration to each kubelet</h3>
+
+<p>You can provide the kubelet with default values to be used by <code>kubeadm init</code> and <code>kubeadm join</code>
+commands. Interesting examples include using a different CRI runtime or setting the default subnet
+used by services.</p>
+
+<p>If you want your services to use the subnet <code>10.96.0.0/12</code> as the default for services, you can pass
+the <code>--service-cidr</code> parameter to kubeadm:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubeadm init --service-cidr <span style="color:#666">10</span>.96.0.0/12</code></pre></div>
+<p>Virtual IPs for services are now allocated from this subnet. You also need to set the DNS address used
+by the kubelet, using the <code>--cluster-dns</code> flag. This setting needs to be the same for every kubelet
+on every manager and Node in the cluster. The kubelet provides a versioned, structured API object
+that can configure most parameters in the kubelet and push out this configuration to each running
+kubelet in the cluster. This object is called <strong>the kubelet&rsquo;s ComponentConfig</strong>.
+The ComponentConfig allows the user to specify flags such as the cluster DNS IP addresses expressed as
+a list of values to a camelCased key, illustrated by the following example:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>kubelet.config.k8s.io/v1beta1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>KubeletConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>clusterDNS:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span><span style="color:#666">10.96.0.10</span></code></pre></div>
+<p>For more details on the ComponentConfig have a look at <a href="#configure-kubelets-using-kubeadm">this section</a>.</p>
+
+<h3 id="providing-instance-specific-configuration-details">Providing instance-specific configuration details</h3>
+
+<p>Some hosts require specific kubelet configurations, due to differences in hardware, operating system,
+networking, or other host-specific parameters. The following list provides a few examples.</p>
+
+<ul>
+<li><p>The path to the DNS resolution file, as specified by the <code>--resolv-conf</code> kubelet
+configuration flag, may differ among operating systems, or depending on whether you are using
+<code>systemd-resolved</code>. If this path is wrong, DNS resolution will fail on the Node whose kubelet
+is configured incorrectly.</p></li>
+
+<li><p>The Node API object <code>.metadata.name</code> is set to the machine&rsquo;s hostname by default,
+unless you are using a cloud provider. You can use the <code>--hostname-override</code> flag to override the
+default behavior if you need to specify a Node name different from the machine&rsquo;s hostname.</p></li>
+
+<li><p>Currently, the kubelet cannot automatically detects the cgroup driver used by the CRI runtime,
+but the value of <code>--cgroup-driver</code> must match the cgroup driver used by the CRI runtime to ensure
+the health of the kubelet.</p></li>
+
+<li><p>Depending on the CRI runtime your cluster uses, you may need to specify different flags to the kubelet.
+For instance, when using Docker, you need to specify flags such as <code>--network-plugin=cni</code>, but if you
+are using an external runtime, you need to specify <code>--container-runtime=remote</code> and specify the CRI
+endpoint using the <code>--container-runtime-endpoint=&lt;path&gt;</code>.</p></li>
+</ul>
+
+<p>You can specify these flags by configuring an individual kubelet&rsquo;s configuration in your service manager,
+such as systemd.</p>
+
+<h2 id="configure-kubelets-using-kubeadm">Configure kubelets using kubeadm</h2>
+
+<p>It is possible to configure the kubelet that kubeadm will start if a custom <code>KubeletConfiguration</code>
+API object is passed with a configuration file like so <code>kubeadm ... --config some-config-file.yaml</code>.</p>
+
+<p>By calling <code>kubeadm config print init-defaults --component-configs KubeletConfiguration</code> you can
+see all the default values for this structure.</p>
+
+<p>Also have a look at the <a href="https://godoc.org/k8s.io/kubernetes/pkg/kubelet/apis/config#KubeletConfiguration" target="_blank">API reference for the
+kubelet ComponentConfig</a>
+for more information on the individual fields.</p>
+
+<h3 id="workflow-when-using-kubeadm-init">Workflow when using <code>kubeadm init</code></h3>
+
+<p>When you call <code>kubeadm init</code>, the kubelet configuration is marshalled to disk
+at <code>/var/lib/kubelet/config.yaml</code>, and also uploaded to a ConfigMap in the cluster. The ConfigMap
+is named <code>kubelet-config-1.X</code>, where <code>.X</code> is the minor version of the Kubernetes version you are
+initializing. A kubelet configuration file is also written to <code>/etc/kubernetes/kubelet.conf</code> with the
+baseline cluster-wide configuration for all kubelets in the cluster. This configuration file
+points to the client certificates that allow the kubelet to communicate with the API server. This
+addresses the need to
+<a href="#propagating-cluster-level-configuration-to-each-kubelet">propagate cluster-level configuration to each kubelet</a>.</p>
+
+<p>To address the second pattern of
+<a href="#providing-instance-specific-configuration-details">providing instance-specific configuration details</a>,
+kubeadm writes an environment file to <code>/var/lib/kubelet/kubeadm-flags.env</code>, which contains a list of
+flags to pass to the kubelet when it starts. The flags are presented in the file like this:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#b8860b">KUBELET_KUBEADM_ARGS</span><span style="color:#666">=</span><span style="color:#b44">&#34;--flag1=value1 --flag2=value2 ...&#34;</span></code></pre></div>
+<p>In addition to the flags used when starting the kubelet, the file also contains dynamic
+parameters such as the cgroup driver and whether to use a different CRI runtime socket
+(<code>--cri-socket</code>).</p>
+
+<p>After marshalling these two files to disk, kubeadm attempts to run the following two
+commands, if you are using systemd:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload <span style="color:#666">&amp;&amp;</span> systemctl restart kubelet</code></pre></div>
+<p>If the reload and restart are successful, the normal <code>kubeadm init</code> workflow continues.</p>
+
+<h3 id="workflow-when-using-kubeadm-join">Workflow when using <code>kubeadm join</code></h3>
+
+<p>When you run <code>kubeadm join</code>, kubeadm uses the Bootstrap Token credential to perform
+a TLS bootstrap, which fetches the credential needed to download the
+<code>kubelet-config-1.X</code> ConfigMap and writes it to <code>/var/lib/kubelet/config.yaml</code>. The dynamic
+environment file is generated in exactly the same way as <code>kubeadm init</code>.</p>
+
+<p>Next, <code>kubeadm</code> runs the following two commands to load the new configuration into the kubelet:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload <span style="color:#666">&amp;&amp;</span> systemctl restart kubelet</code></pre></div>
+<p>After the kubelet loads the new configuration, kubeadm writes the
+<code>/etc/kubernetes/bootstrap-kubelet.conf</code> KubeConfig file, which contains a CA certificate and Bootstrap
+Token. These are used by the kubelet to perform the TLS Bootstrap and obtain a unique
+credential, which is stored in <code>/etc/kubernetes/kubelet.conf</code>. When this file is written, the kubelet
+has finished performing the TLS Bootstrap.</p>
+
+<h2 id="the-kubelet-drop-in-file-for-systemd">The kubelet drop-in file for systemd</h2>
+
+<p>kubeadm ships with configuration for how systemd should run the kubelet.
+Note that the kubeadm CLI command never touches this drop-in file.</p>
+
+<p>This configuration file installed by the <code>kubeadm</code> <a href="https://github.com/kubernetes/kubernetes/blob/master/build/debs/10-kubeadm.conf" target="_blank">DEB</a> or <a href="https://github.com/kubernetes/kubernetes/blob/master/build/rpms/10-kubeadm.conf" target="_blank">RPM package</a> is written to
+<code>/etc/systemd/system/kubelet.service.d/10-kubeadm.conf</code> and is used by systemd.
+It augments the basic <a href="https://github.com/kubernetes/kubernetes/blob/master/build/rpms/kubelet.service" target="_blank"><code>kubelet.service</code> for RPM</a> (resp. <a href="https://github.com/kubernetes/kubernetes/blob/master/build/debs/kubelet.service" target="_blank"><code>kubelet.service</code> for DEB</a>)):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-none" data-lang="none">[Service]
+Environment=&#34;KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf
+--kubeconfig=/etc/kubernetes/kubelet.conf&#34;
+Environment=&#34;KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml&#34;
+# This is a file that &#34;kubeadm init&#34; and &#34;kubeadm join&#34; generate at runtime, populating
+the KUBELET_KUBEADM_ARGS variable dynamically
+EnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env
+# This is a file that the user can use for overrides of the kubelet args as a last resort. Preferably,
+#the user should use the .NodeRegistration.KubeletExtraArgs object in the configuration files instead.
+# KUBELET_EXTRA_ARGS should be sourced from this file.
+EnvironmentFile=-/etc/default/kubelet
+ExecStart=
+ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS</code></pre></div>
+<p>This file specifies the default locations for all of the files managed by kubeadm for the kubelet.</p>
+
+<ul>
+<li>The KubeConfig file to use for the TLS Bootstrap is <code>/etc/kubernetes/bootstrap-kubelet.conf</code>,
+but it is only used if <code>/etc/kubernetes/kubelet.conf</code> does not exist.</li>
+<li>The KubeConfig file with the unique kubelet identity is <code>/etc/kubernetes/kubelet.conf</code>.</li>
+<li>The file containing the kubelet&rsquo;s ComponentConfig is <code>/var/lib/kubelet/config.yaml</code>.</li>
+<li>The dynamic environment file that contains <code>KUBELET_KUBEADM_ARGS</code> is sourced from <code>/var/lib/kubelet/kubeadm-flags.env</code>.</li>
+<li>The file that can contain user-specified flag overrides with <code>KUBELET_EXTRA_ARGS</code> is sourced from
+<code>/etc/default/kubelet</code> (for DEBs), or <code>/etc/sysconfig/kubelet</code> (for RPMs). <code>KUBELET_EXTRA_ARGS</code>
+is last in the flag chain and has the highest priority in the event of conflicting settings.</li>
+</ul>
+
+<h2 id="kubernetes-binaries-and-package-contents">Kubernetes binaries and package contents</h2>
+
+<p>The DEB and RPM packages shipped with the Kubernetes releases are:</p>
+
+<table>
+<thead>
+<tr>
+<th>Package name</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>kubeadm</code></td>
+<td>Installs the <code>/usr/bin/kubeadm</code> CLI tool and the <a href="#the-kubelet-drop-in-file-for-systemd">kubelet drop-in file</a> for the kubelet.</td>
+</tr>
+
+<tr>
+<td><code>kubelet</code></td>
+<td>Installs the <code>/usr/bin/kubelet</code> binary.</td>
+</tr>
+
+<tr>
+<td><code>kubectl</code></td>
+<td>Installs the <code>/usr/bin/kubectl</code> binary.</td>
+</tr>
+
+<tr>
+<td><code>kubernetes-cni</code></td>
+<td>Installs the official CNI binaries into the <code>/opt/cni/bin</code> directory.</td>
+</tr>
+
+<tr>
+<td><code>cri-tools</code></td>
+<td>Installs the <code>/usr/bin/crictl</code> binary from the <a href="https://github.com/kubernetes-incubator/cri-tools" target="_blank">cri-tools git repository</a>.</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Was this page helpful? </p>
+  <button class="button feedback--yes">Yes</button>
+  <button class="button feedback--no">No</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/production-environment/tools/kubeadm/kubelet-integration.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/docs\/setup\/production-environment\/tools\/kubeadm\/kubelet-integration\/",
+    "title" : "Configuring each kubelet in your cluster using kubeadm",
+    "permalink" : "https:\/\/kubernetes.io\/docs\/setup\/production-environment\/tools\/kubeadm\/kubelet-integration\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Create an Issue</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/setup/production-environment/tools/kubeadm/kubelet-integration.md" class="button issue">Edit This Page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Page last modified on November 28, 2019 at 1:17 PM PST by
+    <a href="https://github.com/kubernetes/website/commit/68e836b267a1ff3df330ed3b60ff55597145dd81/">Fixed the incorrect parameter of specifying the CRI endpoint for kubelet and corrected Default CNs (#17839)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/production-environment/tools/kubeadm/kubelet-integration.md">Page History</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/docs/home/">Home</a>
+            
+            <a href="/blog/">Blog</a>
+            
+            <a href="/training/">Training</a>
+            
+            <a href="/partners/">Partners</a>
+            
+            <a href="/community/">Community</a>
+            
+            <a href="/case-studies/">Case Studies</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribute</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

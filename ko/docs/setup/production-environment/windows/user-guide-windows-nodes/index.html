@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html id="docs" lang="ko" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>쿠버네티스에서 윈도우 노드 추가 가이드 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-nodes/">
+<meta property="og:title" content="쿠버네티스에서 윈도우 노드 추가 가이드">
+<meta name="twitter:title" content="쿠버네티스에서 윈도우 노드 추가 가이드">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ko/" class="logo" title="운영 수준의 컨테이너 오케스트레이션 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ko/docs/" class="active">문서</a></li>
+            
+            
+            
+            <li><a href="/ko/training/">교육</a></li>
+            
+            
+            
+            
+            
+            <li><a href="/ko/case-studies/">사례 연구</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    한국어 Korean <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/setup/production-environment/windows/user-guide-windows-nodes/">English</a></li>
+                
+                    <li><a href="/ja/docs/setup/production-environment/windows/user-guide-windows-nodes/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-nodes/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-nodes/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-nodes/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-nodes/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ko/docs/setup/production-environment/windows/user-guide-windows-nodes/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ko/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>쿠버네티스 기초 학습</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/home/">문서</a></h3>
+           <p>개념, 튜토리얼 및 참조 문서와 함께 쿠버네티스 사용하는 방법을 익힐 수 있다. 또한, <a href="/editdocs/" data-auto-burger-exclude>문서에 기여하는 것도 도움을 줄 수 있다</a>!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">코어 쿠버네티스 코드 베이스를 살펴보는데 관심이 있으십니까?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHub에서 보기</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">커뮤니티 둘러보기</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>시작하기</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ko/docs/home/">홈</a></li>
+		
+		
+		<li><a href="/ko/docs/setup/" class="YAH">시작하기</a></li>
+		
+		
+		<li><a href="/ko/docs/concepts/">개념</a></li>
+		
+		
+		<li><a href="/ko/docs/tasks/">태스크</a></li>
+		
+		
+		<li><a href="/ko/docs/tutorials/">튜토리얼</a></li>
+		
+		
+		<li><a href="/ko/docs/reference/">레퍼런스</a></li>
+		
+		
+		<li><a href="/ko/docs/contribute/">기여</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="검색하기" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  문서는 더 이상 적극적으로 관리되지 않음. 현재 보고있는 문서는 정적 스냅샷임. 최신 문서를 위해서는, 다음을 참고. 
+	 <a href="https://kubernetes.io/docs/home/">최신 버전.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="시작하기" href="/ko/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="릴리스 노트와 버전 차이 지원(skew)">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes version and version skew support policy <small>(EN)</small>" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="학습 환경">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Minikube로 쿠버네티스 설치" href="/ko/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="운영 환경">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="컨테이너 런타임" href="/ko/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="kubeadm으로 클러스터 구성하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Troubleshooting kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating a single control-plane cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm으로 컨트롤 플레인 사용자 정의하기" href="/ko/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="고가용성 토폴로지 선택" href="/ko/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating Highly Available clusters with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up a High Availability etcd cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring each kubelet in your cluster using kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring your kubernetes cluster to self-host the control plane <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with KRIB <small>(EN)</small>" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kops로 쿠버네티스 설치하기" href="/ko/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kubespray <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="턴키 클라우드 솔루션">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Alibaba Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on AWS EC2 <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Azure <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on CenturyLink Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Google Compute Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Tencent Kubernetes Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="온-프레미스 VM">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloudstack <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes on DC/OS <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="oVirt <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="쿠버네티스에서 윈도우">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Intro to Windows support in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스에서 윈도우 노드 추가 가이드" href="/ko/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스에서 윈도우 컨테이너 스케줄링을 위한 가이드" href="/ko/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="모범 사례">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="여러 영역에서 구동" href="/ko/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="대형 클러스터 구축" href="/ko/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="노드 구성 검증하기" href="/ko/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI 인증서 및 요구 조건" href="/ko/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/setup/production-environment/windows/user-guide-windows-nodes.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>쿠버네티스에서 윈도우 노드 추가 가이드</h1>
+
+
+
+<p>쿠버네티스 플랫폼은 이제 리눅스와 윈도우 컨테이너 모두 운영할 수 있다. 윈도우 노드도 클러스터에 등록할 수 있다. 이 페이지에서는 어떻게 하나 또는 그 이상의 윈도우 노드를 클러스터에 등록할 수 있는지 보여준다.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%eb%aa%a9%ec%a0%81">목적</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%ec%8b%9c%ec%9e%91%ed%95%98%ea%b8%b0-%ec%a0%84%ec%97%90">시작하기 전에</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%ec%8b%9c%ec%9e%91%ed%95%98%ea%b8%b0-%ec%82%ac%ec%9a%a9%ec%9e%90-%ed%81%b4%eb%9f%ac%ec%8a%a4%ed%84%b0%ec%97%90-%ec%9c%88%eb%8f%84%ec%9a%b0-%eb%85%b8%eb%93%9c-%ec%b6%94%ea%b0%80%ed%95%98%ea%b8%b0">시작하기: 사용자 클러스터에 윈도우 노드 추가하기</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+
+<h2 id="목적">목적</h2>
+<ul>
+<li>윈도우 노드를 클러스터에 등록하기</li>
+<li>리눅스와 윈도우에서 동작하는 파드와 서비스가 상호 간에 통신할 수 있게 네트워크를 구성하기</li>
+</ul>
+
+
+
+
+
+<h2 id="시작하기-전에">시작하기 전에</h2>
+<ul>
+<li><p>윈도우 컨테이너를 호스트하는 윈도우 노드를 구성하려면 <a href="https://www.microsoft.com/en-us/cloud-platform/windows-server-pricing" target="_blank">윈도우 서버 2019 라이선스</a>를 소유해야 한다. 클러스터를 위해서 소속 기관의 라이선스를 사용하거나, Microsoft, 리셀러로 부터 취득할 수 있으며, GCP, AWS, Azure와 같은 주요 클라우드 제공자의 마켓플레이스를 통해 윈도우 서버를 운영하는 가상머신을 프로비저닝하여 취득할 수도 있다. <a href="https://www.microsoft.com/en-us/cloud-platform/windows-server-trial" target="_blank">사용시간이 제한된 시험판</a>도 활용 가능하다.</p></li>
+
+<li><p>컨트롤 플레인에 접근할 수 있는 리눅스 기반의 쿠버네티스 클러스터를 구축한다.(몇 가지 예시는 <a href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/">kubeadm으로 단일 컨트롤플레인 클러스터 만들기</a>, <a href="/docs/setup/production-environment/turnkey/azure/">AKS Engine</a>, <a href="/docs/setup/production-environment/turnkey/gce/">GCE</a>, <a href="/docs/setup/production-environment/turnkey/aws/">AWS</a>를 포함한다)</p></li>
+</ul>
+
+
+
+
+<h2 id="시작하기-사용자-클러스터에-윈도우-노드-추가하기">시작하기: 사용자 클러스터에 윈도우 노드 추가하기</h2>
+
+<h3 id="ip-주소-체계-설계하기">IP 주소 체계 설계하기</h3>
+
+<p>쿠버네티스 클러스터 관리를 위해 실수로 네트워크 충돌을 일으키지 않도록 IP 주소에 대해 신중히 설계해야 한다. 이 가이드는 <a href="/docs/concepts/cluster-administration/networking/">쿠버네티스 네트워킹 개념</a>에 익숙하다 가정한다.</p>
+
+<p>클러스터를 배포하려면 다음 주소 공간이 필요하다.</p>
+
+<table>
+<thead>
+<tr>
+<th>서브넷 / 주소 범위</th>
+<th>비고</th>
+<th>기본값</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>서비스 서브넷</td>
+<td>라우트 불가한 순수한 가상 서브넷으로 네트워크 토플로지에 관계없이 파드에서 서비스로 단일화된 접근을 제공하기 위해 사용한다. 서비스 서브넷은 노드에서 실행 중인 <code>kube-proxy</code>에 의해서 라우팅 가능한 주소 공간으로(또는 반대로) 번역된다.</td>
+<td>10.96.0.0/12</td>
+</tr>
+
+<tr>
+<td>클러스터 서브넷</td>
+<td>클러스터 내에 모든 파드에 사용되는 글로벌 서브넷이다. 각 노드에는 파드가 사용하기 위한 /24 보다 작거나 같은 서브넷을 할당한다. 서브넷은 클러스터 내에 모든 파드를 수용할 수 있을 정도로 충분히 큰 값이어야 한다. *최소 서브넷*의 크기를 계산하려면: <code>(노드의 개수) + (노드의 개수 * 구성하려는 노드 당 최대 파드 개수)</code>. 예: 노드 당 100개 파드인 5 노드짜리 클러스터 = <code>(5) + (5 * 100) = 505.</code></td>
+<td>10.244.0.0/16</td>
+</tr>
+
+<tr>
+<td>쿠버네티스 DNS 서비스 IP</td>
+<td>DNS 확인 및 클러스터 서비스 검색에 사용되는 서비스인 <code>kube-dns</code>의 IP 주소이다.</td>
+<td>10.96.0.10</td>
+</tr>
+</tbody>
+</table>
+
+<p>클러스터에 IP 주소를 얼마나 할당해야 할지 결정하기 위해 &lsquo;쿠버네티스에서 윈도우 컨테이너: 지원되는 기능: 네트워킹&rsquo;에서 소개한 네트워킹 선택 사항을 검토하자.</p>
+
+<h3 id="윈도우에서-실행되는-구성-요소">윈도우에서 실행되는 구성 요소</h3>
+
+<p>쿠버네티스 컨트롤 플레인이 리눅스 노드에서 운영되는 반면, 다음 요소는 윈도우 노드에서 구성되고 운영된다.</p>
+
+<ol>
+<li>kubelet</li>
+<li>kube-proxy</li>
+<li>kubectl (선택적)</li>
+<li>컨테이너 런타임</li>
+</ol>
+
+<p>v1.14 이후의 최신 바이너리를 <a href="https://github.com/kubernetes/kubernetes/releases" target="_blank">https://github.com/kubernetes/kubernetes/releases</a>에서 받아온다. kubeadm, kubectl, kubelet, kube-proxy의 Windows-amd64 바이너리는 CHANGELOG 링크에서 찾아볼 수 있다.</p>
+
+<h3 id="네트워크-구성">네트워크 구성</h3>
+
+<p>리눅스 기반의 쿠버네티스 컨트롤 플레인(&ldquo;마스터&rdquo;) 노드를 가지고 있다면 네트워킹 솔루션을 선택할 준비가 된 것이다. 이 가이드는 단순화를 위해 VXLAN 방식의 플라넬(Flannel)을 사용하여 설명한다.</p>
+
+<h4 id="리눅스-컨트롤-플레인에서-vxlan-방식으로-플라넬-구성하기">리눅스 컨트롤 플레인에서 VXLAN 방식으로 플라넬 구성하기</h4>
+
+<ol>
+<li><p>플라넬을 위해 쿠버네티스 마스터를 준비한다.</p>
+
+<p>클러스터의 쿠버네티스 마스터에서 사소한 준비를 권장한다. 플라넬을 사용할 때에 iptables 체인으로 IPv4 트래픽을 브릿지할 수 있게 하는 것은 추천한다. 이는 다음 커맨드를 이용하여 수행할 수 있다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo sysctl net.bridge.bridge-nf-call-iptables<span style="color:#666">=</span><span style="color:#666">1</span></code></pre></div></li>
+
+<li><p>플라넬 다운로드 받고 구성하기</p>
+
+<p>가장 최신의 플라넬 메니페스트를 다운로드한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml</code></pre></div>
+<p>VXLAN 네트워킹 벡엔드를 가능하게 하기 위해 수정할 곳은 두 곳이다.</p>
+
+<p>아래 단계를 적용하면 <code>kube-flannel.yml</code>의 <code>net-conf.json</code>부분을 다음과 같게 된다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="">net-conf.json:</span> <span style="">|</span>
+    {
+      <span style="color:#008000;font-weight:bold">&#34;Network&#34;</span>: <span style="color:#b44">&#34;10.244.0.0/16&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;Backend&#34;</span>: {
+        <span style="color:#008000;font-weight:bold">&#34;Type&#34;</span>: <span style="color:#b44">&#34;vxlan&#34;</span>,
+        <span style="color:#008000;font-weight:bold">&#34;VNI&#34;</span> : <span style="color:#666">4096</span>,
+        <span style="color:#008000;font-weight:bold">&#34;Port&#34;</span>: <span style="color:#666">4789</span>
+      }
+    }</code></pre></div>
+<blockquote class="note">
+<div><strong>참고:</strong> 리눅스의 플라넬과 윈도우의 플라넬이 상호운용하기 위해서 <code>VNI</code>는 반드시 4096이고, <code>Port</code>는 4789여야 한다. 다른 VNI는 곧 지원될 예정이다. <a href="https://github.com/coreos/flannel/blob/master/Documentation/backends.md#vxlan" target="_blank">VXLAN 문서</a>에서
+ 이 필드의 설명 부분을 보자.</div>
+</blockquote></li>
+
+<li><p><code>kube-flannel.yml</code>의 <code>net-conf.json</code> 부분을 거듭 확인하자.</p>
+
+<ol>
+<li>클러스터 서브넷(예, &ldquo;10.244.0.0/16&rdquo;)은 IP 주소 설계에 따라 설정되어야 한다.
+
+<ul>
+<li>VNI 4096 은 벡엔드에 설정한다.</li>
+<li>Port 4789 는 벡엔드에 설정한다.</li>
+</ul></li>
+<li><code>kube-flannel.yml</code>의 <code>cni-conf.json</code> 부분에서 네트워크 이름을 <code>vxlan0</code>로 바꾼다.</li>
+</ol>
+
+<p><code>cni-conf.json</code>는 다음과 같다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="">cni-conf.json:</span> <span style="">|</span>
+    {
+      <span style="color:#008000;font-weight:bold">&#34;name&#34;</span>: <span style="color:#b44">&#34;vxlan0&#34;</span>,
+      <span style="color:#008000;font-weight:bold">&#34;plugins&#34;</span>: [
+        {
+          <span style="color:#008000;font-weight:bold">&#34;type&#34;</span>: <span style="color:#b44">&#34;flannel&#34;</span>,
+          <span style="color:#008000;font-weight:bold">&#34;delegate&#34;</span>: {
+            <span style="color:#008000;font-weight:bold">&#34;hairpinMode&#34;</span>: <span style="color:#a2f;font-weight:bold">true</span>,
+            <span style="color:#008000;font-weight:bold">&#34;isDefaultGateway&#34;</span>: <span style="color:#a2f;font-weight:bold">true</span>
+          }
+        },
+        {
+          <span style="color:#008000;font-weight:bold">&#34;type&#34;</span>: <span style="color:#b44">&#34;portmap&#34;</span>,
+          <span style="color:#008000;font-weight:bold">&#34;capabilities&#34;</span>: {
+            <span style="color:#008000;font-weight:bold">&#34;portMappings&#34;</span>: <span style="color:#a2f;font-weight:bold">true</span>
+          }
+        }
+      ]
+    }</code></pre></div></li>
+
+<li><p>플라넬 매니페스트를 적용하고 확인하기</p>
+
+<p>플라넬 구성을 적용하자.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl apply -f kube-flannel.yml</code></pre></div>
+<p>몇 분 뒤에 플라넬 파드 네트워크가 배포되었다면, 모든 파드에서 운영 중인 것을 확인할 수 있다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get pods --all-namespaces</code></pre></div>
+<p>결과는 다음과 같다.</p>
+
+<pre><code>NAMESPACE     NAME                                      READY        STATUS    RESTARTS   AGE
+kube-system   etcd-flannel-master                       1/1          Running   0          1m
+kube-system   kube-apiserver-flannel-master             1/1          Running   0          1m
+kube-system   kube-controller-manager-flannel-master    1/1          Running   0          1m
+kube-system   kube-dns-86f4d74b45-hcx8x                 3/3          Running   0          12m
+kube-system   kube-flannel-ds-54954                     1/1          Running   0          1m
+kube-system   kube-proxy-Zjlxz                          1/1          Running   0          1m
+kube-system   kube-scheduler-flannel-master             1/1          Running   0          1m
+</code></pre>
+
+<p>플라넬 데몬셋에 노드 셀렉터가 적용되었음을 확인한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get ds -n kube-system</code></pre></div>
+<p>결과는 다음과 같다. 노드 셀렉터 <code>beta.kubernetes.io/os=linux</code>가 적용되었다.</p>
+
+<pre><code>NAME              DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR                                               AGE
+kube-flannel-ds   2         2         2       2            2           beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux   21d
+kube-proxy        2         2         2       2            2           beta.kubernetes.io/os=linux                                 26d
+</code></pre></li>
+</ol>
+
+<h3 id="윈도우-워커-노드-추가하기">윈도우 워커 노드 추가하기</h3>
+
+<p>이번 단원은 맨 땅에서부터 온프레미스 클러스터에 가입하기까지 윈도우 노드 구성을 다룬다. 클러스터가 클라우드상에 있다면, <a href="#퍼블릭-클라우드-제공자">퍼블릭 클라우드 제공자 단원</a>에 있는 클라우드에 특정한 가이드를 따르도록 된다.</p>
+
+<h4 id="윈도우-노드-준비하기">윈도우 노드 준비하기</h4>
+
+<blockquote class="note">
+  <div><strong>참고:</strong> 윈도우 단원에서 모든 코드 부분은 윈도우 워커 노드에서 높은 권한(Administrator)으로 파워쉘(PowerShell) 환경에서 구동한다.</div>
+</blockquote>
+
+<ol>
+<li><p>설치 및 참여(join) 스크립트가 포함된 <a href="https://github.com/kubernetes-sigs/sig-windows-tools" target="_blank">SIG Windows tools</a> 리포지터리를 내려받는다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell"><span style="color:#800">[Net.ServicePointManager]</span>::SecurityProtocol = <span style="color:#800">[Net.SecurityProtocolType]</span>::Tls12
+<span style="color:#a2f">Start-BitsTransfer</span> https<span style="">:</span>//github.com/kubernetes-sigs/sig-windows-tools/archive/master.zip
+tar -xvf .\master.zip --strip-components 3 sig-windows-tools-master/kubeadm/v1.15.0/*
+<span style="color:#a2f">Remove-Item</span> .\master.zip</code></pre></div></li>
+
+<li><p>쿠버네티스 <a href="https://github.com/kubernetes-sigs/sig-windows-tools/blob/master/kubeadm/v1.15.0/Kubeclustervxlan.json" target="_blank">구성 파일</a>을 커스터마이즈한다.</p>
+
+<pre><code>{
+&quot;Cri&quot; : {  // Contains values for container runtime and base container setup
+    &quot;Name&quot; : &quot;dockerd&quot;, // Container runtime name
+    &quot;Images&quot; : {
+        &quot;Pause&quot; : &quot;mcr.microsoft.com/k8s/core/pause:1.2.0&quot;,  // Infrastructure container image
+        &quot;Nanoserver&quot; : &quot;mcr.microsoft.com/windows/nanoserver:1809&quot;,  // Base Nanoserver container image
+        &quot;ServerCore&quot; : &quot;mcr.microsoft.com/windows/servercore:ltsc2019&quot;  // Base ServerCore container image
+    }
+},
+&quot;Cni&quot; : {  // Contains values for networking executables
+    &quot;Name&quot; : &quot;flannel&quot;,  // Name of network fabric
+    &quot;Source&quot; : [{ // Contains array of objects containing values for network daemon(s)
+        &quot;Name&quot; : &quot;flanneld&quot;,  // Name of network daemon
+        &quot;Url&quot; : &quot;https://github.com/coreos/flannel/releases/download/v0.11.0/flanneld.exe&quot;  // Direct URL pointing to network daemon executable
+        }
+    ],
+    &quot;Plugin&quot; : {  // Contains values for CNI network plugin
+        &quot;Name&quot;: &quot;vxlan&quot; // Backend network mechanism to use: [&quot;vxlan&quot; | &quot;bridge&quot;]
+    },
+    &quot;InterfaceName&quot; : &quot;Ethernet&quot;  // Designated network interface name on Windows node to use as container network
+},
+&quot;Kubernetes&quot; : {  // Contains values for Kubernetes node binaries
+    &quot;Source&quot; : {  // Contains values for Kubernetes node binaries 
+        &quot;Release&quot; : &quot;1.15.0&quot;,  // Version of Kubernetes node binaries
+        &quot;Url&quot; : &quot;https://dl.k8s.io/v1.15.0/kubernetes-node-windows-amd64.tar.gz&quot;  // Direct URL pointing to Kubernetes node binaries tarball
+    },
+    &quot;ControlPlane&quot; : {  // Contains values associated with Kubernetes control-plane (&quot;Master&quot;) node
+        &quot;IpAddress&quot; : &quot;kubemasterIP&quot;,  // IP address of control-plane (&quot;Master&quot;) node
+        &quot;Username&quot; : &quot;localadmin&quot;,  // Username on control-plane (&quot;Master&quot;) node with remote SSH access  
+        &quot;KubeadmToken&quot; : &quot;token&quot;,  // Kubeadm bootstrap token
+        &quot;KubeadmCAHash&quot; : &quot;discovery-token-ca-cert-hash&quot;  // Kubeadm CA key hash
+    },
+    &quot;KubeProxy&quot; : {  // Contains values for Kubernetes network proxy configuration
+        &quot;Gates&quot; : &quot;WinOverlay=true&quot;  // Comma-separated key-value pairs passed to kube-proxy feature gate flag
+    },
+    &quot;Network&quot; : {  // Contains values for IP ranges in CIDR notation for Kubernetes networking
+        &quot;ServiceCidr&quot; : &quot;10.96.0.0/12&quot;,  // Service IP subnet used by Services in CIDR notation
+        &quot;ClusterCidr&quot; : &quot;10.244.0.0/16&quot;  // Cluster IP subnet used by Pods in CIDR notation 
+    }
+},
+&quot;Install&quot; : {  // Contains values and configurations for Windows node installation
+    &quot;Destination&quot; : &quot;C:\\ProgramData\\Kubernetes&quot;  // Absolute DOS path where Kubernetes will be installed on the Windows node
+}
+}
+</code></pre></li>
+</ol>
+
+<blockquote class="note">
+  <div><strong>참고:</strong> 사용자는 쿠버네티스 컨트롤 플레인(&ldquo;마스터&rdquo;) 노드에서 <code>kubeadm token create --print-join-command</code>를 실행해서 <code>ControlPlane.KubeadmToken</code>과 <code>ControlPlane.KubeadmCAHash</code> 필드를 위한 값을 생성할 수 있다.</div>
+</blockquote>
+
+<ol>
+<li>컨테이너와 쿠버네티스를 설치 (시스템 재시작 필요)</li>
+</ol>
+
+<p>기존에 내려받은 <a href="https://github.com/kubernetes-sigs/sig-windows-tools/blob/master/kubeadm/KubeCluster.ps1" target="_blank">KubeCluster.ps1</a> 스크립트를 사용해서 쿠버네티스를 윈도우 서버 컨테이너 호스트에 설치한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">    .\KubeCluster.ps1 -ConfigFile .\Kubeclustervxlan.json -install </code></pre></div>
+<p>이 때 <code>-ConfigFile</code>는 쿠버네티스 구성 파일의 경로를 가리킨다.</p>
+
+<blockquote class="note">
+  <div><strong>참고:</strong> 아래 예제에서, 우리는 오버레이 네트워킹 모드를 사용한다. 이는 <a href="https://support.microsoft.com/help/4489899" target="_blank">KB4489899</a>를 포함한 윈도우 서버 버전 2019와 최소 쿠버네티스 v1.14 이상이 필요하다. 이 요구사항을 만족시키기 어려운 사용자는 구성 파일의 <a href="https://github.com/kubernetes-sigs/sig-windows-tools/blob/master/kubeadm/v1.15.0/Kubeclusterbridge.json#L18" target="_blank">플러그인</a>으로 <code>bridge</code>를 선택하지 말고 <code>L2bridge</code> 네트워킹을 사용해야만 한다.</div>
+</blockquote>
+
+<p><img src="../kubecluster.ps1-install.gif" alt="alt_text" title="KubeCluster.ps1 install output" /></p>
+
+<p>대상으로 하는 윈도우 노드에서, 본 단계는</p>
+
+<ol>
+<li>윈도우 서버 컨테이너 역할을 활성화(및 재시작) 한다.</li>
+<li>선택된 컨테이너 런타임을 내려받아 설치한다.</li>
+<li>필요한 컨테이너 이미지를 모두 내려받는다.</li>
+<li>쿠버네티스 바이너리를 내려받아서 <code>$PATH</code> 환경 변수에 추가한다.</li>
+<li>쿠버네티스 구성 파일에서 선택한 내용을 기반으로 CNI 플러그인을 내려받는다.</li>
+
+<li><p>(선택적으로) 참여(join) 중에 컨트롤 플레인(&ldquo;마스터&rdquo;) 노드에 접속하기 위한 새로운 SSH 키를 생성한다.</p>
+
+<p><blockquote class="note">
+<div><strong>참고:</strong> 또한, SSH 키 생성 단계에서 생성된 공개 SSH 키를 (리눅스) 컨트롤 플레인 노드의 <code>authorized_keys</code> 파일에 추가해야 한다. 이는 한 번만 수행하면 된다. 스크립트가 출력물의 마지막 부분에 이를 따라 할 수 있도록 단계를 출력해 준다.</div>
+</blockquote></p></li>
+</ol>
+
+<p>일단 설치가 완료되면, 생성된 모든 구성 파일이나 바이너리는 윈도우 노드가 참여하기 전에 수정될 수 있다.</p>
+
+<h4 id="윈도우-노드를-쿠버네티스-클러스터에-참여시키기">윈도우 노드를 쿠버네티스 클러스터에 참여시키기</h4>
+
+<p>이 섹션에서는 클러스터를 구성하기 위해서 <a href="#윈도우-노드-준비하기">쿠버네티스가 설치된 윈도우 노드</a>를 기존의 (리눅스) 컨트롤 플레인에 참여시키는 방법을 다룬다.</p>
+
+<p>앞서 내려받은 <a href="https://github.com/kubernetes-sigs/sig-windows-tools/blob/master/kubeadm/KubeCluster.ps1" target="_blank">KubeCluster.ps1</a> 스크립트를 사용해서 윈도우 노드를 클러스터에 참여시킨다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">    .\KubeCluster.ps1 -ConfigFile .\Kubeclustervxlan.json -join </code></pre></div>
+<p>이 때 <code>-ConfigFile</code> 쿠버네티스 구성 파일의 경로를 가리킨다.</p>
+
+<p><img src="../kubecluster.ps1-join.gif" alt="alt_text" title="KubeCluster.ps1 join output" /></p>
+
+<blockquote class="note">
+  <div><strong>참고:</strong> 어떤 이유에서든 부트스트랩 동안이나 참여 과정에서 스크립트가 실패하면, 뒤따르는 참여 시도를 시작하기 전에 신규 PowerShell 세션을 시작해야한다.</div>
+</blockquote>
+
+<p>본 단계는 다음의 행위를 수행한다.</p>
+
+<ol>
+<li>컨트롤 플레인(&ldquo;마스터&rdquo;) 노드에 SSH로 접속해서 <a href="/ko/docs/concepts/configuration/organize-cluster-access-kubeconfig/">Kubeconfig 파일</a>을 얻어온다.</li>
+<li>kubelet을 윈도우 서비스로 등록한다.</li>
+<li>CNI 네트워크 플러그인을 구성한다.</li>
+<li>선택된 네트워크 인터페이스 상에서 HNS 네트워크를 생성한다.
+<blockquote class="note">
+<div><strong>참고:</strong> 이는 vSwitch가 생성되는 동안 몇 초간의 네트워크 순단현상을 야기할 수 있다.</div>
+</blockquote></li>
+<li>(vxlan 플러그인을 선택한 경우) 오버레이 트래픽을 위해서 인바운드(inbound) 방화벽의 UDP 포트 4789를 열어준다.</li>
+<li>flanneld를 윈도우 서비스로 등록한다.</li>
+<li>kube-proxy를 윈도우 서비스로 등록한다.</li>
+</ol>
+
+<p>이제 클러스터에서 다음의 명령을 실행해서 윈도우 노드를 볼 수 있다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get nodes</code></pre></div>
+<h4 id="윈도우-노드를-쿠버네티스-클러스터에서-제거하기">윈도우 노드를 쿠버네티스 클러스터에서 제거하기</h4>
+
+<p>이 섹션에서는 윈도우 노드를 쿠버네티스 클러스터에서 제거하는 방법을 다룬다.</p>
+
+<p>앞서 내려받은 <a href="https://github.com/kubernetes-sigs/sig-windows-tools/blob/master/kubeadm/KubeCluster.ps1" target="_blank">KubeCluster.ps1</a> 스크립트를 사용해서 클러스터에서 윈도우 노드를 제거한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-PowerShell" data-lang="PowerShell">    .\KubeCluster.ps1 -ConfigFile .\Kubeclustervxlan.json -reset </code></pre></div>
+<p>이 때 <code>-ConfigFile</code> 쿠버네티스 구성 파일의 경로를 가리킨다.</p>
+
+<p><img src="../kubecluster.ps1-reset.gif" alt="alt_text" title="KubeCluster.ps1 reset output" /></p>
+
+<p>본 단계는 다음의 행위를 대상이되는 윈도우 노드에서 수행한다.</p>
+
+<ol>
+<li>윈도우 노드를 쿠버네티스 클러스터에서 삭제한다.</li>
+<li>구동 중인 모든 컨테이너를 중지시킨다.</li>
+<li>모든 컨테이너 네트워킹(HNS) 자원을 삭제한다.</li>
+<li>등록된 모든 쿠버네티스 서비스(flanneld, kubelet, kube-proxy)를 해지한다.</li>
+<li>쿠버네티스 바이너리(kube-proxy.exe, kubelet.exe, flanneld.exe, kubeadm.exe)를 모두 삭제한다.</li>
+<li>CNI 네트워크 플러그인 바이너리를 모두 삭제한다.</li>
+<li>쿠버네티스 클러스터에 접근하기 위한 <a href="/ko/docs/concepts/configuration/organize-cluster-access-kubeconfig/">Kubeconfig 파일</a>을 삭제한다.</li>
+</ol>
+
+<h3 id="퍼블릭-클라우드-제공자">퍼블릭 클라우드 제공자</h3>
+
+<h4 id="azure">Azure</h4>
+
+<p>AKS-Engine은 완전하고, 맞춤 설정이 가능한 쿠버네티스 클러스터를 리눅스와 윈도우 노드에 배포할 수 있다. 단계별 안내가 <a href="https://github.com/Azure/aks-engine/blob/master/docs/topics/windows.md" target="_blank">GitHub에 있는 문서</a>로 제공된다.</p>
+
+<h4 id="gcp">GCP</h4>
+
+<p>사용자가 <a href="https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/windows/README-GCE-Windows-kube-up.md" target="_blank">GitHub</a>에 있는 단계별 안내를 따라서 완전한 쿠버네티스 클러스터를 GCE 상에 쉽게 배포할 수 있다.</p>
+
+<h4 id="kubeadm과-클러스터-api로-배포하기">kubeadm과 클러스터 API로 배포하기</h4>
+
+<p>Kubeadm은 쿠버네티스 클러스터를 배포하는 사용자에게 산업 표준이 되었다. Kubeadm에서 윈도우 노드 지원은 쿠버네티스 v1.16 이후 부터 알파 기능이다. 또한 윈도우 노드가 올바르게 프로비저닝되도록 클러스터 API에 투자하고 있다. 보다 자세한 내용은, <a href="https://github.com/kubernetes/enhancements/blob/master/keps/sig-cluster-lifecycle/kubeadm/20190424-kubeadm-for-windows.md" target="_blank">Windows KEP를 위한 kubeadm</a>을 통해 상담하도록 하자.</p>
+
+<h3 id="다음-단계">다음 단계</h3>
+
+<p>이제 클러스터 내에 윈도우 컨테이너를 실행하도록 윈도우 워커를 구성했으니, 리눅스 컨테이너를 실행할 리눅스 노드를 1개 이상 추가할 수 있다. 이제 윈도우 컨테이너를 클러스터에 스케줄링할 준비가 됬다.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>피드백</h2>
+  <p class="feedback--prompt">이 페이지가 도움이 되었나요? </p>
+  <button class="button feedback--yes">네</button>
+  <button class="button feedback--no">아니요</button>
+  <p class="feedback--response feedback--response__hidden">
+    피드백 감사합니다. 쿠버네티스 사용 방법에 대해서 구체적이고 답변 가능한 질문이 있다면, 다음 링크에서 질문하십시오.
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    원한다면 GitHub 리포지터리에 이슈를 열어서
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      문제 리포트</a>
+    또는
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      개선 제안이 가능합니다.</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/production-environment/windows/user-guide-windows-nodes.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ko\/docs\/setup\/production-environment\/windows\/user-guide-windows-nodes\/",
+    "title" : "쿠버네티스에서 윈도우 노드 추가 가이드",
+    "permalink" : "https:\/\/kubernetes.io\/ko\/docs\/setup\/production-environment\/windows\/user-guide-windows-nodes\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">이슈 생성하기</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/setup/production-environment/windows/user-guide-windows-nodes.md" class="button issue">페이지 편집하기</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    최종 수정일시 March 26, 2020 at 10:58 PM PST , 다음 변경에 의해서:
+    <a href="https://github.com/kubernetes/website/commit/c38acbc4f65bf9ec02ba1eeff8bd339dfd5d0752/">Seventh Korean l10n Work For Release 1.17 (#19858)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/production-environment/windows/user-guide-windows-nodes.md">페이지 변경 이력</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ko/docs/home/">홈</a>
+            
+            
+            
+            <a href="/ko/training/">교육</a>
+            
+            
+            
+            
+            
+            <a href="/ko/case-studies/">사례 연구</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">기여하기</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

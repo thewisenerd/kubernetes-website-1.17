@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html id="docs" lang="fr" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Création d&#39;un Cluster a master unique avec kubeadm - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="Création d&#39;un Cluster a master unique avec kubeadm">
+<meta property="og:description" content="Création d&#39;un Cluster a master unique avec kubeadm">
+<meta name="twitter:description" content="Création d&#39;un Cluster a master unique avec kubeadm">
+<meta property="og:url" content="https://kubernetes.io/fr/docs/setup/independent/create-cluster-kubeadm/">
+<meta property="og:title" content="Création d&#39;un Cluster a master unique avec kubeadm">
+<meta name="twitter:title" content="Création d&#39;un Cluster a master unique avec kubeadm">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/fr/" class="logo" title="Solution professionnelle d’orchestration de conteneurs - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/fr/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/fr/blog/">Blog</a></li>
+            
+            
+            
+            <li><a href="/fr/partners/">Partenaires</a></li>
+            
+            <li><a href="/fr/community/">Communauté</a></li>
+            
+            <li><a href="/fr/case-studies/">Études de cas</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    Français <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/zh/docs/setup/independent/create-cluster-kubeadm/">中文 Chinese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/fr/docs/setup/independent/create-cluster-kubeadm/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/fr/docs/setup/independent/create-cluster-kubeadm/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/fr/docs/setup/independent/create-cluster-kubeadm/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/fr/docs/setup/independent/create-cluster-kubeadm/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/fr/docs/setup/independent/create-cluster-kubeadm/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/fr/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Apprendre les bases de Kubernetes</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/fr/docs/tutorials/hello-minikube/">Démarrer</a></h3>
+           <p>Prêt à mettre les mains dans le cambouis ? Créez un cluster Kubernetes simple qui exécute "Hello World" avec Node.js.</p>>.
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/fr/docs/home/">Documentation</a></h3>
+           <p>Apprenez à utiliser Kubernetes à l'aide d'une documentation conceptuelle, didactique et de référence. Vous pouvez même <a href="/editdocs/" data-auto-burger-exclude>aider en contribuant à la documentation</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/fr/blog/">Blog</a></h3>
+           <p>Lisez les dernières nouvelles à propos de Kubernetes et des conteneurs en général. Obtenez les derniers tutoriels techniques.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Souhaitez vous contribuer au code de Kubernetes ?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>Voir sur GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explorez la communauté</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendrier</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>Installation</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/fr/docs/home/">ACCUEIL</a></li>
+		
+		
+		<li><a href="/fr/docs/setup/" class="YAH">INSTALLATION</a></li>
+		
+		
+		<li><a href="/fr/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/fr/docs/tasks/">TÂCHES</a></li>
+		
+		
+		<li><a href="/fr/docs/tutorials/">TUTORIELS</a></li>
+		
+		
+		<li><a href="/fr/docs/reference/">RÉFÉRENCE</a></li>
+		
+		
+		<li><a href="/fr/docs/contribute/">CONTRIBUER</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Recherche" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation non maintenue. Vous consultez une version statique. Pour une documentation à jour, veuillez consulter: 
+	 <a href="https://kubernetes.io/docs/home/">dernière version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Installation" href="/fr/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Choisir la bonne solution" href="/fr/docs/setup/pick-right-solution/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Environnement d&#39;apprentissage">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installer Kubernetes avec Minikube" href="/fr/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Télécharger Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes version and version skew support policy <small>(EN)</small>" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Construire une release" href="/fr/docs/setup/release/building-from-source/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Déployer des clusters avec kubeadm">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installer kubeadm" href="/fr/docs/setup/independent/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Création d&#39;un Cluster a master unique avec kubeadm" href="/fr/docs/setup/independent/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Personnalisation de la configuration du control plane avec kubeadm" href="/fr/docs/setup/independent/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Options pour la topologie en haute disponibilité" href="/fr/docs/setup/independent/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Création de clusters hautement disponibles avec kubeadm" href="/fr/docs/setup/independent/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configurer un cluster etcd en haute disponibilité avec kubeadm" href="/fr/docs/setup/independent/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuration des kubelet de votre cluster avec kubeadm" href="/fr/docs/setup/independent/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Dépanner kubeadm" href="/fr/docs/setup/independent/troubleshooting-kubeadm/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Production environment">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container runtimes <small>(EN)</small>" href="/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Bootstrapping clusters with kubeadm">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Troubleshooting kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating a single control-plane cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Customizing control plane configuration with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Options for Highly Available topology <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating Highly Available clusters with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up a High Availability etcd cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring each kubelet in your cluster using kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring your kubernetes cluster to self-host the control plane <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with kops <small>(EN)</small>" href="/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with KRIB <small>(EN)</small>" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kubespray <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Turnkey Cloud Solutions">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Alibaba Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on AWS EC2 <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Azure <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on CenturyLink Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Google Compute Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Tencent Kubernetes Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="On-Premises VMs">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloudstack <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes on DC/OS <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="oVirt <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows in Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Intro to Windows support in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Guide for adding Windows Nodes in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Guide for scheduling Windows containers in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Best practices">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running in multiple zones <small>(EN)</small>" href="/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Building large clusters <small>(EN)</small>" href="/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Validate node setup <small>(EN)</small>" href="/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="PKI certificates and requirements <small>(EN)</small>" href="/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Solutions Cloud clés en main">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Solutions Cloud personnalisées">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="CoreOS sur AWS ou GCE" href="/fr/docs/setup/custom-cloud/coreos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installer Kubernetes avec Kubespray (on-premises et fournisseurs de cloud)" href="/fr/docs/setup/custom-cloud/kubespray/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installer Kubernetes sur AWS avec kops" href="/fr/docs/setup/custom-cloud/kops/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="On-Premises VMs">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows dans Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/fr/docs/setup/independent/create-cluster-kubeadm.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Création d&#39;un Cluster a master unique avec kubeadm</h1>
+
+
+
+
+<p><img src="https://raw.githubusercontent.com/cncf/artwork/master/projects/kubernetes/certified-kubernetes/versionless/color/certified-kubernetes-color.png" align="right" width="150px"><strong>kubeadm</strong> vous aide à démarrer un cluster Kubernetes minimum,
+viable et conforme aux meilleures pratiques. Avec kubeadm, votre cluster
+doit passer les <a href="https://kubernetes.io/blog/2017/10/software-conformance-certification" target="_blank">tests de Conformance Kubernetes</a>.
+ Kubeadm prend également en charge d&rsquo;autres fonctions du cycle de vie, telles que les mises
+ à niveau, la rétrogradation et la gestion des
+ <a href="/docs/reference/access-authn-authz/bootstrap-tokens/">bootstrap tokens</a>.</p>
+
+<p>Comme vous pouvez installer kubeadm sur différents types de machines (par exemple, un ordinateur
+portable, un serveur,
+Raspberry Pi, etc.), il est parfaitement adapté à l&rsquo;intégration avec des systèmes d&rsquo;approvisionnement
+comme Terraform ou Ansible.</p>
+
+<p>La simplicité de kubeadm lui permet d&rsquo;être utilisé dans une large gamme de cas d&rsquo;utilisation:</p>
+
+<ul>
+<li>Les nouveaux utilisateurs peuvent commencer par kubeadm pour essayer Kubernetes pour la première
+fois.</li>
+<li>Les utilisateurs familiarisés avec Kubernetes peuvent créer des clusters avec kubeadm et tester
+leurs applications.</li>
+<li>Les projets plus importants peuvent inclure kubeadm en tant que brique de base dans un système
+plus complexe pouvant également inclure d&rsquo;autres outils d&rsquo;installation.</li>
+</ul>
+
+<p>Kubeadm est conçu pour être un moyen simple pour les nouveaux utilisateurs de commencer à essayer
+Kubernetes, pour la première fois éventuellement. C&rsquo;est un moyen pour les utilisateurs avancés de
+tester leur application en même temps qu&rsquo;un cluster facilement, et aussi être
+une brique de base dans un autre écosystème et/ou un outil d’installation avec une plus grand
+portée.</p>
+
+<p>Vous pouvez installer très facilement <em>kubeadm</em> sur des systèmes d&rsquo;exploitation prenant en charge
+l&rsquo;installation des paquets deb ou rpm. Le SIG responsable de kubeadm,
+<a href="https://github.com/kubernetes/community/tree/master/sig-cluster-lifecycle" target="_blank">SIG Cluster Lifecycle</a>,
+fournit ces paquets pré-construits pour vous,
+mais vous pouvez également les construire à partir des sources pour d&rsquo;autres systèmes d&rsquo;exploitation.</p>
+
+<h3 id="maturité-de-kubeadm">Maturité de kubeadm</h3>
+
+<table>
+<thead>
+<tr>
+<th>Elément</th>
+<th>Niveau de maturité</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Command line UX</td>
+<td>GA</td>
+</tr>
+
+<tr>
+<td>Implementation</td>
+<td>GA</td>
+</tr>
+
+<tr>
+<td>Config file API</td>
+<td>beta</td>
+</tr>
+
+<tr>
+<td>CoreDNS</td>
+<td>GA</td>
+</tr>
+
+<tr>
+<td>kubeadm alpha subcommands</td>
+<td>alpha</td>
+</tr>
+
+<tr>
+<td>High availability</td>
+<td>alpha</td>
+</tr>
+
+<tr>
+<td>DynamicKubeletConfig</td>
+<td>alpha</td>
+</tr>
+
+<tr>
+<td>Self-hosting</td>
+<td>alpha</td>
+</tr>
+</tbody>
+</table>
+
+<p>Les fonctionnalités globales de kubeadm sont <strong>GA</strong>. Quelques sous-fonctionnalités, comme
+la configuration, les API de fichiers sont toujours en cours de développement. L&rsquo;implémentation de la création du cluster
+peut changer légèrement au fur et à mesure que l&rsquo;outil évolue, mais la mise en œuvre globale devrait être assez stable.
+Toutes les commandes sous <code>kubeadm alpha</code> sont par définition prises en charge au niveau alpha.</p>
+
+<h3 id="calendrier-de-support">Calendrier de support</h3>
+
+<p>Les versions de Kubernetes sont généralement prises en charge pendant neuf mois et pendant cette
+période, une version de correctif peut être publiée à partir de la branche de publication si un bug grave ou un
+problème de sécurité est trouvé. Voici les dernières versions de Kubernetes et le calendrier de support
+ qui s&rsquo;applique également à <code>kubeadm</code>.</p>
+
+<table>
+<thead>
+<tr>
+<th>Version de Kubernetes</th>
+<th>Date de sortie de la version</th>
+<th>Fin de vie</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>v1.6.x</td>
+<td>Mars 2017</td>
+<td>Décembre 2017</td>
+</tr>
+
+<tr>
+<td>v1.7.x</td>
+<td>Juin 2017</td>
+<td>Mars 2018</td>
+</tr>
+
+<tr>
+<td>v1.8.x</td>
+<td>Septembre 2017</td>
+<td>Juin 2018</td>
+</tr>
+
+<tr>
+<td>v1.9.x</td>
+<td>Décembre 2017</td>
+<td>Septembre 2018</td>
+</tr>
+
+<tr>
+<td>v1.10.x</td>
+<td>Mars 2018</td>
+<td>Décembre 2018</td>
+</tr>
+
+<tr>
+<td>v1.11.x</td>
+<td>Juin 2018</td>
+<td>Mars 2019</td>
+</tr>
+
+<tr>
+<td>v1.12.x</td>
+<td>Septembre 2018</td>
+<td>Juin 2019</td>
+</tr>
+
+<tr>
+<td>v1.13.x</td>
+<td>Décembre 2018</td>
+<td>Septembre 2019</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#pr%c3%a9-requis">Pré-requis</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#objectifs">Objectifs</a></li>
+
+
+
+
+<li><a href="#instructions">Instructions</a></li>
+
+
+
+
+<li><a href="#tear-down">Destruction</a></li>
+
+
+
+
+<li><a href="#lifecycle">Maintenir un cluster</a></li>
+
+
+
+
+<li><a href="#other-addons">Explorer les autres add-ons</a></li>
+
+
+
+
+<li><a href="#whats-next">Et après ?</a></li>
+
+
+
+
+<li><a href="#feedback">Feedback</a></li>
+
+
+
+
+<li><a href="#version-skew-policy">Politique de compatibilité de versions</a></li>
+
+
+
+
+<li><a href="#multi-platform">kubeadm fonctionne sur plusieurs plates-formes</a></li>
+
+
+
+
+<li><a href="#limitations">Limitations</a></li>
+
+
+
+
+<li><a href="#troubleshooting">Diagnostic</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+
+<h2 id="pré-requis">Pré-requis</h2>
+<ul>
+<li>Une ou plusieurs machines exécutant un système d&rsquo;exploitation compatible deb/rpm, par exemple Ubuntu ou CentOS</li>
+<li>2 Go ou plus de RAM par machine. Si vous essayez moins cela laissera trop peu de place pour vos applications.</li>
+<li>2 processeurs ou plus sur le master</li>
+<li>Connectivité réseau entre toutes les machines du cluster, qu&rsquo;il soit public ou privé.</li>
+</ul>
+
+
+
+
+<h2 id="objectifs">Objectifs</h2>
+
+<ul>
+<li>Installer un cluster Kubernetes à master unique ou un
+<a href="/docs/setup/independent/high-availability/">cluster à haute disponibilité</a></li>
+<li>Installez un réseau de pods sur le cluster afin que vos pods puissent se parler</li>
+</ul>
+
+<h2 id="instructions">Instructions</h2>
+
+<h3 id="installer-kubeadm-sur-vos-hôtes">Installer kubeadm sur vos hôtes</h3>
+
+<p>Voir <a href="/docs/setup/independent/install-kubeadm/">&ldquo;Installation de kubeadm&rdquo;</a>.</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> <p>Si vous avez déjà installé kubeadm, lancez <code>apt-get update &amp;&amp;
+apt-get upgrade</code> ou <code>yum update</code> pour obtenir la dernière version de kubeadm.</p>
+
+<p>Lorsque vous effectuez une mise à niveau, la kubelet redémarre plusieurs fois au bout de quelques
+secondes car elle attend dans une boucle de blocage
+kubeadm pour lui dire quoi faire. Ce fonctionnement est normal.
+Une fois que vous avez initialisé votre master, la kubelet s&rsquo;exécute normalement.</p>
+</div>
+</blockquote>
+
+<h3 id="initialiser-votre-master">Initialiser votre master</h3>
+
+<p>Le master est la machine sur laquelle s&rsquo;exécutent les composants du control plane, y compris
+etcd (la base de données du cluster) et l&rsquo;API serveur (avec lequel la CLI kubectl communique).</p>
+
+<ol>
+<li>Choisissez un add-on réseau pour les pods et vérifiez s’il nécessite des arguments à
+passer à l&rsquo;initialisation de kubeadm. Selon le
+fournisseur tiers que vous choisissez, vous devrez peut-être définir le <code>--pod-network-cidr</code> sur
+une valeur spécifique au fournisseur. Voir <a href="#pod-network">Installation d&rsquo;un add-on réseau de pod</a>.</li>
+<li>(Facultatif) Sauf indication contraire, kubeadm utilise l&rsquo;interface réseau associée
+avec la passerelle par défaut pour annoncer l’IP du master. Pour utiliser une autre
+interface réseau, spécifiez l&rsquo;option <code>--apiserver-advertise-address=&lt;ip-address&gt;</code>
+à <code>kubeadm init</code>. Pour déployer un cluster Kubernetes en utilisant l’adressage IPv6, vous devez
+spécifier une adresse IPv6, par exemple <code>--apiserver-advertise-address=fd00::101</code></li>
+<li>(Optional) Lancez <code>kubeadm config images pull</code> avant de faire <code>kubeadm init</code> pour vérifier la
+connectivité aux registres gcr.io.</li>
+</ol>
+
+<p>Maintenant, lancez:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubeadm init &lt;args&gt;</code></pre></div>
+<h3 id="plus-d-information">Plus d&rsquo;information</h3>
+
+<p>Pour plus d&rsquo;informations sur les arguments de <code>kubeadm init</code>, voir le
+<a href="/docs/reference/setup-tools/kubeadm/kubeadm/">guide de référence kubeadm</a>.</p>
+
+<p>Pour une liste complète des options de configuration, voir la
+<a href="/docs/reference/setup-tools/kubeadm/kubeadm-init/#config-file">documentation du fichier de configuration</a>.</p>
+
+<p>Pour personnaliser les composants du control plane, y compris l&rsquo;affectation facultative d&rsquo;IPv6
+à la sonde liveness, pour les composants du control plane et du serveur etcd, fournissez des arguments
+supplémentaires à chaque composant, comme indiqué dans les <a href="/docs/admin/kubeadm#custom-args">arguments personnalisés</a>.</p>
+
+<p>Pour lancer encore une fois <code>kubeadm init</code>, vous devez d&rsquo;abord <a href="#tear-down">détruire le cluster</a>.</p>
+
+<p>Si vous joignez un nœud avec une architecture différente par rapport à votre cluster, créez un
+Déploiement ou DaemonSet pour <code>kube-proxy</code> et<code>kube-dns</code> sur le nœud. C’est nécéssaire car les images Docker pour ces
+ composants ne prennent actuellement pas en charge la multi-architecture.</p>
+
+<p><code>kubeadm init</code> exécute d’abord une série de vérifications préalables pour s’assurer que la machine
+est prête à exécuter Kubernetes. Ces vérifications préalables exposent des avertissements et se terminent
+ en cas d&rsquo;erreur. Ensuite <code>kubeadm init</code> télécharge et installe les composants du control plane du cluster.
+Cela peut prendre plusieurs minutes. l&rsquo;output devrait ressembler à:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-none" data-lang="none">[init] Using Kubernetes version: vX.Y.Z
+[preflight] Running pre-flight checks
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using &#39;kubeadm config images pull&#39;
+[kubelet-start] Writing kubelet environment file with flags to file &#34;/var/lib/kubelet/kubeadm-flags.env&#34;
+[kubelet-start] Writing kubelet configuration to file &#34;/var/lib/kubelet/config.yaml&#34;
+[kubelet-start] Activating the kubelet service
+[certs] Using certificateDir folder &#34;/etc/kubernetes/pki&#34;
+[certs] Generating &#34;etcd/ca&#34; certificate and key
+[certs] Generating &#34;etcd/server&#34; certificate and key
+[certs] etcd/server serving cert is signed for DNS names [kubeadm-master localhost] and IPs [10.138.0.4 127.0.0.1 ::1]
+[certs] Generating &#34;etcd/healthcheck-client&#34; certificate and key
+[certs] Generating &#34;etcd/peer&#34; certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [kubeadm-master localhost] and IPs [10.138.0.4 127.0.0.1 ::1]
+[certs] Generating &#34;apiserver-etcd-client&#34; certificate and key
+[certs] Generating &#34;ca&#34; certificate and key
+[certs] Generating &#34;apiserver&#34; certificate and key
+[certs] apiserver serving cert is signed for DNS names [kubeadm-master kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 10.138.0.4]
+[certs] Generating &#34;apiserver-kubelet-client&#34; certificate and key
+[certs] Generating &#34;front-proxy-ca&#34; certificate and key
+[certs] Generating &#34;front-proxy-client&#34; certificate and key
+[certs] Generating &#34;sa&#34; key and public key
+[kubeconfig] Using kubeconfig folder &#34;/etc/kubernetes&#34;
+[kubeconfig] Writing &#34;admin.conf&#34; kubeconfig file
+[kubeconfig] Writing &#34;kubelet.conf&#34; kubeconfig file
+[kubeconfig] Writing &#34;controller-manager.conf&#34; kubeconfig file
+[kubeconfig] Writing &#34;scheduler.conf&#34; kubeconfig file
+[control-plane] Using manifest folder &#34;/etc/kubernetes/manifests&#34;
+[control-plane] Creating static Pod manifest for &#34;kube-apiserver&#34;
+[control-plane] Creating static Pod manifest for &#34;kube-controller-manager&#34;
+[control-plane] Creating static Pod manifest for &#34;kube-scheduler&#34;
+[etcd] Creating static Pod manifest for local etcd in &#34;/etc/kubernetes/manifests&#34;
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory &#34;/etc/kubernetes/manifests&#34;. This can take up to 4m0s
+[apiclient] All control plane components are healthy after 31.501735 seconds
+[uploadconfig] storing the configuration used in ConfigMap &#34;kubeadm-config&#34; in the &#34;kube-system&#34; Namespace
+[kubelet] Creating a ConfigMap &#34;kubelet-config-X.Y&#34; in namespace kube-system with the configuration for the kubelets in the cluster
+[patchnode] Uploading the CRI Socket information &#34;/var/run/dockershim.sock&#34; to the Node API object &#34;kubeadm-master&#34; as an annotation
+[mark-control-plane] Marking the node kubeadm-master as control-plane by adding the label &#34;node-role.kubernetes.io/master=&#39;&#39;&#34;
+[mark-control-plane] Marking the node kubeadm-master as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]
+[bootstrap-token] Using token: &lt;token&gt;
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstraptoken] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstraptoken] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstraptoken] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstraptoken] creating the &#34;cluster-info&#34; ConfigMap in the &#34;kube-public&#34; namespace
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes master has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run &#34;kubectl apply -f [podnetwork].yaml&#34; with one of the options listed at:
+  https://kubernetes.io/fr/docs/concepts/cluster-administration/addons/
+
+You can now join any number of machines by running the following on each node
+as root:
+
+  kubeadm join &lt;master-ip&gt;:&lt;master-port&gt; --token &lt;token&gt; --discovery-token-ca-cert-hash sha256:&lt;hash&gt;</code></pre></div>
+<p>Pour que kubectl fonctionne pour votre utilisateur non root, exécutez ces commandes, qui font
+ également partie du resultat de la commande <code>kubeadm init</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkdir -p <span style="color:#b8860b">$HOME</span>/.kube
+sudo cp -i /etc/kubernetes/admin.conf <span style="color:#b8860b">$HOME</span>/.kube/config
+sudo chown <span style="color:#a2f;font-weight:bold">$(</span>id -u<span style="color:#a2f;font-weight:bold">)</span>:<span style="color:#a2f;font-weight:bold">$(</span>id -g<span style="color:#a2f;font-weight:bold">)</span> <span style="color:#b8860b">$HOME</span>/.kube/config</code></pre></div>
+<p>Alternativement, si vous êtes <code>root</code>, vous pouvez exécuter:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#a2f">export</span> <span style="color:#b8860b">KUBECONFIG</span><span style="color:#666">=</span>/etc/kubernetes/admin.conf</code></pre></div>
+<p>Faites un enregistrement du retour de la commande <code>kubeadm join</code> que<code>kubeadm init</code> génère. Vous avez
+besoin de cette commande pour <a href="#join-nodes">joindre des noeuds à votre cluster</a>.</p>
+
+<p>Le jeton est utilisé pour l&rsquo;authentification mutuelle entre le master et les nœuds qui veulent le rejoindre.
+Le jeton est secret. Gardez-le en sécurité, parce que n&rsquo;importe qui avec ce
+jeton peut ajouter des nœuds authentifiés à votre cluster. Ces jetons peuvent être listés,
+créés et supprimés avec la commande <code>kubeadm token</code>. Voir le
+<a href="/docs/reference/setup-tools/kubeadm/kubeadm-token/">Guide de référence kubeadm</a>.</p>
+
+<h3 id="pod-network">Installation d&rsquo;un add-on réseau</h3>
+
+<blockquote class="caution">
+  <div><strong>Avertissement:</strong> Cette section contient des informations importantes sur l’ordre d’installation et de déploiement. Lisez-la attentivement avant de continuer.</div>
+</blockquote>
+
+<p>Vous devez installer un add-on réseau pour pod afin que vos pods puissent communiquer les uns
+avec les autres.</p>
+
+<p><strong>Le réseau doit être déployé avant toute application. De plus, CoreDNS ne démarrera pas avant
+l’installation d’un réseau.
+kubeadm ne prend en charge que les réseaux basés sur un CNI (et ne prend pas
+en charge kubenet).</strong></p>
+
+<p>Plusieurs projets fournissent des réseaux de pod Kubernetes utilisant CNI, dont certains
+supportent les <a href="/docs/concepts/services-networking/networkpolicies/">network policies</a>.
+Allez voir la <a href="/docs/concepts/cluster-administration/addons/">page des add-ons</a> pour une liste complète
+des add-ons réseau disponibles.
+- Le support IPv6 a été ajouté dans <a href="https://github.com/containernetworking/cni/releases/tag/v0.6.0" target="_blank">CNI v0.6.0</a>.
+- <a href="https://github.com/containernetworking/plugins/blob/master/plugins/main/bridge/README.md" target="_blank">CNI bridge</a> et
+<a href="https://github.com/containernetworking/plugins/blob/master/plugins/ipam/host-local/README.md" target="_blank">local-ipam</a>
+sont les seuls plug-ins de réseau IPv6 pris en charge dans Kubernetes version 1.9.</p>
+
+<p>Notez que kubeadm configure un cluster sécurisé par défaut et impose l’utilisation de
+<a href="/docs/reference/access-authn-authz/rbac/">RBAC</a>.
+Assurez-vous que votre manifeste de réseau prend en charge RBAC.</p>
+
+<p>Veuillez également à ce que votre réseau Pod ne se superpose à aucun des réseaux hôtes,
+car cela pourrait entraîner des problèmes.
+Si vous constatez une collision entre le réseau de pod de votre plug-in de réseau et certains
+de vos réseaux hôtes,
+vous devriez penser à un remplacement de CIDR approprié et l&rsquo;utiliser lors de <code>kubeadm init</code> avec
+<code>--pod-network-cidr</code> et en remplacement du YAML de votre plugin réseau.
+Vous pouvez installer un add-on réseau de pod avec la commande suivante:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl apply -f &lt;add-on.yaml&gt;</code></pre></div>
+<p>Vous ne pouvez installer qu&rsquo;un seul réseau de pod par cluster.</p>
+
+<div id="tabs-pod-install">
+<ul>
+    
+      
+  <li><a href="#tabs-pod-install-0">Choisissez-en un...</a></li>
+
+      
+  <li><a href="#tabs-pod-install-1">Calico</a></li>
+
+      
+  <li><a href="#tabs-pod-install-2">Canal</a></li>
+
+      
+  <li><a href="#tabs-pod-install-3">Cilium</a></li>
+
+      
+  <li><a href="#tabs-pod-install-4">Flannel</a></li>
+
+      
+  <li><a href="#tabs-pod-install-5">Kube-router</a></li>
+
+      
+  <li><a href="#tabs-pod-install-6">Romana</a></li>
+
+      
+  <li><a href="#tabs-pod-install-7">Weave Net</a></li>
+
+      
+  <li><a href="#tabs-pod-install-8">JuniperContrail/TungstenFabric</a></li>
+
+</ul>
+
+
+<div id="tabs-pod-install-0">
+    
+        <p>Sélectionnez l&rsquo;un des onglets pour consulter les instructions d&rsquo;installation du fournisseur
+de réseau de pods.</p>
+
+    
+</div>
+
+<div id="tabs-pod-install-1">
+    
+        <p>Pour plus d&rsquo;informations sur l&rsquo;utilisation de Calico, voir
+<a href="https://docs.projectcalico.org/latest/getting-started/kubernetes/" target="_blank">Guide de démarrage rapide de Calico sur Kubernetes</a>,
+<a href="https://docs.projectcalico.org/latest/getting-started/kubernetes/installation/calico" target="_blank">Installation de Calico pour les netpols ( network policies ) et le réseau</a>, ainsi que d&rsquo;autres resources liées à ce sujet.</p>
+
+<p>Pour que Calico fonctionne correctement, vous devez passer <code>--pod-network-cidr = 192.168.0.0 / 16</code>
+à<code>kubeadm init</code> ou mettre à jour le fichier <code>calico.yml</code> pour qu&rsquo;il corresponde à votre réseau de Pod.
+Notez que Calico fonctionne uniquement sur <code>amd64</code>,<code>arm64</code>, <code>ppc64le</code> et<code>s390x</code>.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f https://docs.projectcalico.org/v3.8/manifests/calico.yaml</code></pre></div>
+    
+
+<p></div></p>
+
+<div id="tabs-pod-install-2">
+    
+        <p>Canal utilise Calico pour les netpols et Flannel pour la mise en réseau. Reportez-vous à la
+documentation Calico pour obtenir le <a href="https://docs.projectcalico.org/latest/getting-started/kubernetes/installation/flannel" target="_blank">guide de démarrage officiel</a>.</p>
+
+<p>Pour que Canal fonctionne correctement, <code>--pod-network-cidr = 10.244.0.0 / 16</code> doit être passé à
+<code>kubeadm init</code>. Notez que Canal ne fonctionne que sur <code>amd64</code>.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f https://docs.projectcalico.org/v3.8/manifests/canal.yaml</code></pre></div>
+    
+
+<p></div></p>
+
+<div id="tabs-pod-install-3">
+    
+        <p>Pour plus d&rsquo;informations sur l&rsquo;utilisation de Cilium avec Kubernetes, voir
+<a href="https://docs.cilium.io/en/stable/kubernetes/" target="_blank">Guide d&rsquo;installation de Kubernetes pour Cilium</a>.</p>
+
+<p>Ces commandes déploieront Cilium avec son propre etcd géré par l&rsquo;opérateur etcd.</p>
+
+<p>Note: Si vous utilisez kubeadm dans un seul noeud, veuillez enlever sa marque (taint) pour que
+les pods etcd-operator puissent être déployés dans le nœud du control plane.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl taint nodes &lt;node-name&gt; node-role.kubernetes.io/master:NoSchedule-</code></pre></div>
+<p>Pour déployer Cilium, il vous suffit de lancer:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.4/examples/kubernetes/1.13/cilium.yaml</code></pre></div>
+<p>Une fois que tous les pods Cilium sont marqués «READY», vous commencez à utiliser votre cluster.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ kubectl get pods -n kube-system --selector<span style="color:#666">=</span>k8s-app<span style="color:#666">=</span>cilium
+NAME           READY   STATUS    RESTARTS   AGE
+cilium-drxkl   <span style="color:#666">1</span>/1     Running   <span style="color:#666">0</span>          18m</code></pre></div>
+    
+
+<p></div></p>
+
+<div id="tabs-pod-install-4">
+    
+        <p>Pour que <code>flannel</code> fonctionne correctement, vous devez passer<code>--pod-network-cidr = 10.244.0.0 / 16</code> à <code>kubeadm init</code>.
+Paramétrez <code>/proc/sys/net/bridge/bridge-nf-call-iptables</code> à «1» en exécutant
+<code>sysctl net.bridge.bridge-nf-call-iptables = 1</code>
+passez le trafic IPv4 bridged à iptables. Ceci est nécessaire pour que certains plugins CNI
+fonctionnent, pour plus d&rsquo;informations
+allez voir <a href="/docs/concepts/cluster-administration/network-plugins/#network-plugin-requirements">ici</a>.</p>
+
+<p>Notez que <code>flannel</code> fonctionne sur<code>amd64</code>, <code>arm</code>,<code>arm64</code>, <code>ppc64le</code> et<code>s390x</code> sous Linux.
+Windows (<code>amd64</code>) est annoncé comme supporté dans la v0.11.0 mais son utilisation n’est pas
+documentée.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml</code></pre></div>
+<p>Pour plus d’informations sur <code>flannel</code>, voir <a href="https://github.com/coreos/flannel" target="_blank">le dépôt CoreOS sur GitHub</a>.</p>
+
+    
+</div>
+
+<div id="tabs-pod-install-5">
+    
+        <p>Paramétrez <code>/proc/sys/net/bridge/bridge-nf-call-iptables</code> à «1» en exécutant
+<code>sysctl net.bridge.bridge-nf-call-iptables = 1</code>
+Cette commande indiquera de passer le trafic IPv4 bridgé à iptables.
+Ceci est nécessaire pour que certains plugins CNI fonctionnent, pour plus d&rsquo;informations
+s&rsquo;il vous plaît allez voir <a href="/docs/concepts/cluster-administration/network-plugins/#network-plugin-requirements">ici</a>.</p>
+
+<p>Kube-router s&rsquo;appuie sur kube-controller-manager pour allouer le pod CIDR aux nœuds. Par conséquent,
+utilisez <code>kubeadm init</code> avec l&rsquo;option<code>--pod-network-cidr</code>.</p>
+
+<p>Kube-router fournit un réseau de pod, une stratégie réseau et un proxy de service basé sur un
+IP Virtual Server (IPVS) / Linux Virtual Server (LVS) hautement performant.</p>
+
+<p>Pour plus d&rsquo;informations sur la configuration du cluster Kubernetes avec Kube-router à l&rsquo;aide de kubeadm,
+veuillez consulter le <a href="https://github.com/cloudnativelabs/kube-router/blob/master/docs/kubeadm.md" target="_blank">guide d&rsquo;installation</a>.</p>
+
+    
+</div>
+
+<div id="tabs-pod-install-6">
+    
+        <p>Paramétrez <code>/proc/sys/net/bridge/bridge-nf-call-iptables</code> à<code>1</code> en exécutant
+<code>sysctl net.bridge.bridge-nf-call-iptables = 1</code>
+Cette commande indiquera de passer le trafic IPv4 bridged à iptables. Ceci est nécessaire pour que certains plugins CNI fonctionnent,
+pour plus d&rsquo;informations
+veuillez consulter la documentation <a href="/docs/concepts/cluster-administration/network-plugins/#network-plugin-requirements">ici</a>.</p>
+
+<p>Le guide d&rsquo;installation officiel de Romana est <a href="https://github.com/romana/romana/tree/master/containerize#using-kubeadm" target="_blank">ici</a>.</p>
+
+<p>Romana ne fonctionne que sur <code>amd64</code>.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f https://raw.githubusercontent.com/romana/romana/master/containerize/specs/romana-kubeadm.yml</code></pre></div>
+    
+
+<p></div></p>
+
+<div id="tabs-pod-install-7">
+    
+        <p>Paramétrez <code>/proc/sys/net/bridge/bridge-nf-call-iptables</code> à «1» en exécutant<code>sysctl net.bridge.bridge-nf-call-iptables = 1</code>
+Cette commande indiquera de passer le trafic IPv4 bridged à iptables. Ceci est nécessaire pour que certains plugins CNI fonctionnent, pour plus d&rsquo;informations
+s&rsquo;il vous plaît allez voir <a href="/docs/concepts/cluster-administration/network-plugins/#network-plugin-requirements">ici</a>.</p>
+
+<p>Le guide de configuration officiel de Weave Net est <a href="https://www.weave.works/docs/net/latest/kube-addon/" target="_blank">ici</a>.</p>
+
+<p>Weave Net fonctionne sur <code>amd64</code>,<code>arm</code>, <code>arm64</code> et<code>ppc64le</code> sans aucune action supplémentaire requise.
+Weave Net paramètre le mode hairpin par défaut. Cela permet aux pods de se connecter via leur adresse IP de service
+s&rsquo;ils ne connaissent pas leur Pod IP.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f <span style="color:#b44">&#34;https://cloud.weave.works/k8s/net?k8s-version=</span><span style="color:#a2f;font-weight:bold">$(</span>kubectl version | base64 | tr -d <span style="color:#b44">&#39;\n&#39;</span><span style="color:#a2f;font-weight:bold">)</span><span style="color:#b44">&#34;</span></code></pre></div>
+    
+
+<p></div></p>
+
+<div id="tabs-pod-install-8">
+    
+        <p>Fournit une solution SDN superposée, offrant un réseau multicouches, un réseau de cloud hybride,
+prise en charge simultanée des couches superposées, application de la stratégie réseau, isolation du réseau,
+chaînage de service et équilibrage de charge flexible.</p>
+
+<p>Il existe de nombreuses manières flexibles d’installer JuniperContrail / TungstenFabric CNI.</p>
+
+<p>Veuillez vous référer à ce guide de démarrage rapide: <a href="https://tungstenfabric.github.io/website/" target="_blank">TungstenFabric</a></p>
+
+    
+</div>
+
+<p></div></p>
+
+<script>$(function(){$("#tabs-pod-install").tabs();});</script>
+
+<p>Une fois qu&rsquo;un réseau de pod a été installé, vous pouvez vérifier qu&rsquo;il fonctionne en
+vérifiant que le pod CoreDNS est en cours d’exécution dans l&rsquo;output de <code>kubectl get pods --all-namespaces</code>.
+Et une fois que le pod CoreDNS est opérationnel, vous pouvez continuer en joignant vos nœuds.</p>
+
+<p>Si votre réseau ne fonctionne pas ou si CoreDNS n&rsquo;est pas en cours d&rsquo;exécution, vérifiez
+notre <a href="/docs/setup/independent/troubleshooting-kubeadm/">documentation de dépannage</a>.</p>
+
+<h3 id="isolation-des-nœuds-du-control-plane">Isolation des nœuds du control plane</h3>
+
+<p>Par défaut, votre cluster ne déploie pas de pods sur le master pour des raisons de sécurité.
+Si vous souhaitez pouvoir déployer des pods sur le master, par exemple, pour un
+cluster Kubernetes mono-machine pour le développement, exécutez:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl taint nodes --all node-role.kubernetes.io/master-</code></pre></div>
+<p>Avec un resultat ressemblant à quelque chose comme:</p>
+
+<pre><code>node &quot;test-01&quot; untainted
+taint &quot;node-role.kubernetes.io/master:&quot; not found
+taint &quot;node-role.kubernetes.io/master:&quot; not found
+</code></pre>
+
+<p>Cela supprimera la marque <code>node-role.kubernetes.io/master</code> de tous les nœuds qui
+l&rsquo;ont, y compris du nœud master, ce qui signifie que le scheduler sera alors capable
+de déployer des pods partout.</p>
+
+<h3 id="join-nodes">Faire rejoindre vos nœuds</h3>
+
+<p>Les nœuds sont ceux sur lesquels vos workloads (conteneurs, pods, etc.) sont exécutées.
+ Pour ajouter de nouveaux nœuds à votre cluster, procédez comme suit pour chaque machine:</p>
+
+<ul>
+<li>SSH vers la machine</li>
+<li>Devenir root (par exemple, <code>sudo su-</code>)</li>
+
+<li><p>Exécutez la commande qui a été récupérée sur l&rsquo;output de <code>kubeadm init</code>. Par exemple:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubeadm join --token &lt;token&gt; &lt;master-ip&gt;:&lt;master-port&gt; --discovery-token-ca-cert-hash sha256:&lt;hash&gt;</code></pre></div></li>
+</ul>
+
+<p>Si vous n&rsquo;avez pas le jeton, vous pouvez l&rsquo;obtenir en exécutant la commande suivante sur le nœud master:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubeadm token list</code></pre></div>
+<p>L&rsquo;output est similaire à ceci:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">TOKEN                    TTL  EXPIRES              USAGES           DESCRIPTION            EXTRA GROUPS
+8ewj1p.9r9hcjoqgajrj4gi  23h  2018-06-12T02:51:28Z authentication,  The default bootstrap  system:
+                                                   signing          token generated by     bootstrappers:
+                                                                    &#39;kubeadm init&#39;.        kubeadm:
+                                                                                           default-node-token</code></pre></div>
+<p>Par défaut, les jetons expirent après 24 heures. Si vous joignez un nœud au cluster après
+l’expiration du jeton actuel,
+vous pouvez créer un nouveau jeton en exécutant la commande suivante sur le nœud maître:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubeadm token create</code></pre></div>
+<p>L&rsquo;output est similaire à ceci:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">5didvk.d09sbcov8ph2amjw</code></pre></div>
+<p>Si vous n&rsquo;avez pas la valeur <code>--discovery-token-ca-cert-hash</code>, vous pouvez l&rsquo;obtenir en
+exécutant la suite de commande suivante sur le nœud master:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der <span style="color:#666">2</span>&gt;/dev/null | <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>   openssl dgst -sha256 -hex | sed <span style="color:#b44">&#39;s/^.* //&#39;</span></code></pre></div>
+<p>L&rsquo;output est similaire à ceci:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-console" data-lang="console">8cb2de97839780a412b93877f8507ad6c94f73add17d5d7058e91741c9d5ec78</code></pre></div>
+<blockquote class="note">
+  <div><strong>Note:</strong> Pour spécifier un tuple IPv6 pour <code>&lt;maître-ip&gt;: &lt;maître-port&gt;</code>, l&rsquo;adresse IPv6 doit être placée
+entre crochets, par exemple: <code>[fd00 :: 101]: 2073</code>.</div>
+</blockquote>
+
+<p>Le resultat devrait ressembler à quelque chose comme:</p>
+
+<pre><code>[preflight] Running pre-flight checks
+
+... (log output of join workflow) ...
+
+Node join complete:
+* Certificate signing request sent to master and response
+  received.
+* Kubelet informed of new secure connection details.
+
+Run 'kubectl get nodes' on the master to see this machine join.
+</code></pre>
+
+<p>Quelques secondes plus tard, vous remarquerez ce nœud dans l&rsquo;output de <code>kubectl get
+node</code>.</p>
+
+<h3 id="optionnel-contrôler-votre-cluster-à-partir-de-machines-autres-que-le-master">(Optionnel) Contrôler votre cluster à partir de machines autres que le master</h3>
+
+<p>Afin d&rsquo;utiliser kubectl sur une autre machine (par exemple, un ordinateur portable) pour communiquer avec votre
+cluster, vous devez copier le fichier administrateur kubeconfig de votre master
+sur votre poste de travail comme ceci:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">scp root@&lt;master ip&gt;:/etc/kubernetes/admin.conf .
+kubectl --kubeconfig ./admin.conf get nodes</code></pre></div>
+<blockquote class="note">
+  <div><strong>Note:</strong> <p>L&rsquo;exemple ci-dessus suppose que l&rsquo;accès SSH est activé pour root. Si ce n&rsquo;est pas le cas,
+ vous pouvez copier le fichier <code>admin.conf</code> pour qu&rsquo;il soit accessible à un autre utilisateur.
+et <code>scp</code> en utilisant cet autre utilisateur à la place.</p>
+
+<p>Le fichier <code>admin.conf</code> donne à l&rsquo;utilisateur <em>superuser</em> des privilèges sur le cluster.
+Ce fichier doit être utilisé avec parcimonie. Pour les utilisateurs normaux, il est recommandé de
+générer une information d&rsquo;identification unique pour laquelle vous ajoutez des privilèges à la liste blanche
+ (whitelist).
+Vous pouvez faire ceci avec <code>kubeadm alpha kubeconfig utilisateur --nom-client &lt;CN&gt;</code>.
+Le resultat de cette commande génèrera un fichier KubeConfig qui sera envoyé sur STDOUT, que vous
+devrez enregistrer dans un fichier et donner à votre utilisateur. Après cela, créez la whitelist des
+privilèges en utilisant <code>kubectl create (cluster) rolebinding.</code></p>
+</div>
+</blockquote>
+
+<h3 id="facultatif-proxifier-l-api-server-vers-localhost">(Facultatif) Proxifier l&rsquo;API Server vers localhost</h3>
+
+<p>Si vous souhaitez vous connecter à l&rsquo;API server à partir de l&rsquo;éxterieur du cluster, vous pouvez utiliser
+<code>kubectl proxy</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">scp root@&lt;master ip&gt;:/etc/kubernetes/admin.conf .
+kubectl --kubeconfig ./admin.conf proxy</code></pre></div>
+<p>Vous pouvez maintenant accéder à l&rsquo;API server localement à <code>http://localhost:8001/api/v1</code></p>
+
+<h2 id="tear-down">Destruction</h2>
+
+<p>Pour annuler ce que kubeadm a fait, vous devez d’abord
+<a href="/docs/reference/generated/kubectl/kubectl-commands#drain">drainer le nœud</a>
+et assurez-vous que le nœud est vide avant de l&rsquo;arrêter.
+En communiquant avec le master en utilisant les informations d&rsquo;identification appropriées, exécutez:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl drain &lt;node name&gt; --delete-local-data --force --ignore-daemonsets
+kubectl delete node &lt;node name&gt;</code></pre></div>
+<p>Ensuite, sur le nœud en cours de suppression, réinitialisez l&rsquo;état de tout ce qui concerne kubeadm:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubeadm reset</code></pre></div>
+<p>Le processus de réinitialisation ne réinitialise pas et ne nettoie pas les règles iptables ni les
+tables IPVS. Si vous souhaitez réinitialiser iptables, vous devez le faire manuellement:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">iptables -F <span style="color:#666">&amp;&amp;</span> iptables -t nat -F <span style="color:#666">&amp;&amp;</span> iptables -t mangle -F <span style="color:#666">&amp;&amp;</span> iptables -X</code></pre></div>
+<p>Si vous souhaitez réinitialiser les tables IPVS, vous devez exécuter la commande suivante:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ipvsadm -C</code></pre></div>
+<p>Si vous souhaitez recommencer Il suffit de lancer <code>kubeadm init</code> ou<code>kubeadm join</code> avec les
+arguments appropriés.
+Plus d&rsquo;options et d&rsquo;informations sur la
+<a href="/docs/reference/setup-tools/kubeadm/kubeadm-reset/"><code>commande de réinitialisation de kubeadm</code></a>.</p>
+
+<h2 id="lifecycle">Maintenir un cluster</h2>
+
+<p>Vous trouverez des instructions pour la maintenance des clusters kubeadm (mises à niveau,
+rétrogradation, etc.) <a href="/docs/tasks/administer-cluster/kubeadm">ici</a></p>
+
+<h2 id="other-addons">Explorer les autres add-ons</h2>
+
+<p>Parcourez la <a href="/docs/concepts/cluster-administration/addons/">liste des add-ons</a>,
+y compris des outils pour la journalisation, la surveillance, la stratégie réseau, la visualisation
+et le contrôle de votre cluster Kubernetes.</p>
+
+<h2 id="whats-next">Et après ?</h2>
+
+<ul>
+<li>Vérifiez que votre cluster fonctionne correctement avec <a href="https://github.com/heptio/sonobuoy" target="_blank">Sonobuoy</a></li>
+<li>En savoir plus sur l&rsquo;utilisation avancée de kubeadm dans la
+<a href="/docs/reference/setup-tools/kubeadm/kubeadm">documentation de référence de kubeadm</a></li>
+<li>En savoir plus sur Kubernetes <a href="/docs/concepts/">concepts</a> et <a href="/docs/user-guide/kubectl-overview/"><code>kubectl</code></a>.</li>
+<li>Configurez la rotation des logs. Vous pouvez utiliser <strong>logrotate</strong> pour cela. Lorsque vous utilisez Docker,
+vous pouvez spécifier des options de rotation des logs pour le démon Docker, par exemple
+<code>--log-driver = fichier_json --log-opt = taille_max = 10m --log-opt = fichier_max = 5</code>.
+Consultez <a href="https://docs.docker.com/engine/admin/" target="_blank">Configurer et dépanner le démon Docker</a> pour plus de détails.</li>
+</ul>
+
+<h2 id="feedback">Feedback</h2>
+
+<ul>
+<li>Pour les bugs, visitez <a href="https://github.com/kubernetes/kubeadm/issues" target="_blank">kubeadm GitHub issue tracker</a></li>
+<li>Pour le support, rendez vous sur le Channel Slack kubeadm:
+<a href="https://kubernetes.slack.com/messages/kubeadm/" target="_blank">#kubeadm</a></li>
+<li>Le Channel Slack: General SIG Cluster Lifecycle Development:
+<a href="https://kubernetes.slack.com/messages/sig-cluster-lifecycle/" target="_blank">#sig-cluster-lifecycle</a></li>
+<li><a href="#TODO">SIG Cluster Lifecycle SIG information</a></li>
+<li>SIG Cluster Lifecycle Mailing List:
+<a href="https://groups.google.com/forum/#!forum/kubernetes-sig-cluster-lifecycle" target="_blank">kubernetes-sig-cluster-lifecycle</a></li>
+</ul>
+
+<h2 id="version-skew-policy">Politique de compatibilité de versions</h2>
+
+<p>L&rsquo;outil CLI kubeadm de la version vX.Y peut déployer des clusters avec un control
+plane de la version vX.Y ou vX. (Y-1).
+kubeadm CLI vX.Y peut également mettre à niveau un cluster existant créé par kubeadm
+ de la version vX. (Y-1).</p>
+
+<p>Pour cette raison, nous ne pouvons pas voir plus loin, kubeadm CLI vX.Y peut ou pas être
+en mesure de déployer des clusters vX. (Y + 1).</p>
+
+<p>Exemple: kubeadm v1.8 peut déployer des clusters v1.7 et v1.8 et mettre à niveau des
+clusters v1.7 créés par kubeadm vers
+v1.8.</p>
+
+<p>Ces ressources fournissent plus d&rsquo;informations sur le saut de version pris en
+charge entre les kubelets et le control plane, ainsi que sur d&rsquo;autres composants Kubernetes:</p>
+
+<ul>
+<li><a href="/docs/setup/version-skew-policy/">politique de compatibilité de versions</a> de Kubernetes</li>
+<li><a href="/docs/setup/independent/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl">Guide d&rsquo;installation</a>
+spécifique à Kubeadm</li>
+</ul>
+
+<h2 id="multi-platform">kubeadm fonctionne sur plusieurs plates-formes</h2>
+
+<p>Les packages et fichiers binaires de kubeadm deb/rpm sont conçus pour amd64, arm (32 bits), arm64, ppc64le et s390x
+suite à la <a href="https://github.com/kubernetes/community/blob/master/contributors/design-proposals/multi-platform.md" target="_blank">multiplateforme proposal</a>.</p>
+
+<p>Les images de conteneur multiplatform pour le control plane et les addons sont également pris en charge depuis la v1.12.</p>
+
+<p>Seuls certains fournisseurs de réseau proposent des solutions pour toutes les plateformes. Veuillez consulter la liste des
+fournisseurs de réseau ci-dessus ou la documentation de chaque fournisseur pour déterminer si le fournisseur
+prend en charge votre plate-forme.</p>
+
+<h2 id="limitations">Limitations</h2>
+
+<p>Remarque: kubeadm évolue continuellement et ces limitations seront résolues en temps voulu.</p>
+
+<ul>
+<li>Le cluster créé ici a un seul master, avec une seule base de données etcd. Cela signifie que
+si le master est irrécupérable, votre cluster peut perdre ses données et peut avoir besoin d&rsquo;être recréé à
+partir de zéro. L&rsquo;ajout du support HA (plusieurs serveurs etcd, plusieurs API servers, etc.)
+à kubeadm est encore en cours de developpement.</li>
+</ul>
+
+<p>   Contournement: régulièrement <a href="https://coreos.com/etcd/docs/latest/admin_guide.html" target="_blank">sauvegarder etcd</a>.
+le répertoire des données etcd configuré par kubeadm se trouve dans <code>/var/lib/etcd</code> sur le master.</p>
+
+<h2 id="troubleshooting">Diagnostic</h2>
+
+<p>Si vous rencontrez des difficultés avec kubeadm, veuillez consulter nos
+ <a href="/docs/setup/independent/troubleshooting-kubeadm/">troubleshooting docs</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Cette page est elle utile ? </p>
+  <button class="button feedback--yes">Oui</button>
+  <button class="button feedback--no">Non</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/independent/create-cluster-kubeadm.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/fr\/docs\/setup\/independent\/create-cluster-kubeadm\/",
+    "title" : "Création d\x27un Cluster a master unique avec kubeadm",
+    "permalink" : "https:\/\/kubernetes.io\/fr\/docs\/setup\/independent\/create-cluster-kubeadm\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Ouvrez un ticket</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/fr/docs/setup/independent/create-cluster-kubeadm.md" class="button issue">Editez cette page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Dernière modification le July 21, 2019 at 11:41 AM PST de
+    <a href="https://github.com/kubernetes/website/commit/6e153db6ac6b81c159095b66a974fca08e642b12/">Recommend installing calico 3.8 (#15418)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/independent/create-cluster-kubeadm.md">Historique</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/fr/docs/home/">Accueil</a>
+            
+            <a href="/fr/blog/">Blog</a>
+            
+            
+            
+            <a href="/fr/partners/">Partenaires</a>
+            
+            <a href="/fr/community/">Communauté</a>
+            
+            <a href="/fr/case-studies/">Études de cas</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendrier</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribuer</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

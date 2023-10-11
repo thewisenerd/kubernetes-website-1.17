@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html id="docs" lang="fr" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Création de clusters hautement disponibles avec kubeadm - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="Cluster Kubernetes haute-disponibilité kubeadm">
+<meta property="og:description" content="Cluster Kubernetes haute-disponibilité kubeadm">
+<meta name="twitter:description" content="Cluster Kubernetes haute-disponibilité kubeadm">
+<meta property="og:url" content="https://kubernetes.io/fr/docs/setup/independent/high-availability/">
+<meta property="og:title" content="Création de clusters hautement disponibles avec kubeadm">
+<meta name="twitter:title" content="Création de clusters hautement disponibles avec kubeadm">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/fr/" class="logo" title="Solution professionnelle d’orchestration de conteneurs - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/fr/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/fr/blog/">Blog</a></li>
+            
+            
+            
+            <li><a href="/fr/partners/">Partenaires</a></li>
+            
+            <li><a href="/fr/community/">Communauté</a></li>
+            
+            <li><a href="/fr/case-studies/">Études de cas</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    Français <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/">English</a></li>
+                
+                    <li><a href="/zh/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/">日本語 Japanese</a></li>
+                
+                    <li><a href="/de/">Deutsch</a></li>
+                
+                    <li><a href="/es/">Español</a></li>
+                
+                    <li><a href="/pt/">Português</a></li>
+                
+                    <li><a href="/id/">Bahasa Indonesia</a></li>
+                
+                    <li><a href="/vi/">Tiếng Việt</a></li>
+                
+                    <li><a href="/ru/">Русский</a></li>
+                
+                    <li><a href="/pl/">Polski</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/fr/docs/setup/independent/high-availability/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/fr/docs/setup/independent/high-availability/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/fr/docs/setup/independent/high-availability/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/fr/docs/setup/independent/high-availability/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/fr/docs/setup/independent/high-availability/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/fr/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Apprendre les bases de Kubernetes</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/fr/docs/tutorials/hello-minikube/">Démarrer</a></h3>
+           <p>Prêt à mettre les mains dans le cambouis ? Créez un cluster Kubernetes simple qui exécute "Hello World" avec Node.js.</p>>.
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/fr/docs/home/">Documentation</a></h3>
+           <p>Apprenez à utiliser Kubernetes à l'aide d'une documentation conceptuelle, didactique et de référence. Vous pouvez même <a href="/editdocs/" data-auto-burger-exclude>aider en contribuant à la documentation</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/fr/blog/">Blog</a></h3>
+           <p>Lisez les dernières nouvelles à propos de Kubernetes et des conteneurs en général. Obtenez les derniers tutoriels techniques.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Souhaitez vous contribuer au code de Kubernetes ?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>Voir sur GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explorez la communauté</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendrier</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>Installation</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/fr/docs/home/">ACCUEIL</a></li>
+		
+		
+		<li><a href="/fr/docs/setup/" class="YAH">INSTALLATION</a></li>
+		
+		
+		<li><a href="/fr/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/fr/docs/tasks/">TÂCHES</a></li>
+		
+		
+		<li><a href="/fr/docs/tutorials/">TUTORIELS</a></li>
+		
+		
+		<li><a href="/fr/docs/reference/">RÉFÉRENCE</a></li>
+		
+		
+		<li><a href="/fr/docs/contribute/">CONTRIBUER</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Recherche" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation non maintenue. Vous consultez une version statique. Pour une documentation à jour, veuillez consulter: 
+	 <a href="https://kubernetes.io/docs/home/">dernière version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Installation" href="/fr/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Choisir la bonne solution" href="/fr/docs/setup/pick-right-solution/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Environnement d&#39;apprentissage">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installer Kubernetes avec Minikube" href="/fr/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Télécharger Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes version and version skew support policy <small>(EN)</small>" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Construire une release" href="/fr/docs/setup/release/building-from-source/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Déployer des clusters avec kubeadm">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installer kubeadm" href="/fr/docs/setup/independent/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Création d&#39;un Cluster a master unique avec kubeadm" href="/fr/docs/setup/independent/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Personnalisation de la configuration du control plane avec kubeadm" href="/fr/docs/setup/independent/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Options pour la topologie en haute disponibilité" href="/fr/docs/setup/independent/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Création de clusters hautement disponibles avec kubeadm" href="/fr/docs/setup/independent/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configurer un cluster etcd en haute disponibilité avec kubeadm" href="/fr/docs/setup/independent/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuration des kubelet de votre cluster avec kubeadm" href="/fr/docs/setup/independent/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Dépanner kubeadm" href="/fr/docs/setup/independent/troubleshooting-kubeadm/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Production environment">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container runtimes <small>(EN)</small>" href="/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Bootstrapping clusters with kubeadm">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Troubleshooting kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating a single control-plane cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Customizing control plane configuration with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Options for Highly Available topology <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating Highly Available clusters with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up a High Availability etcd cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring each kubelet in your cluster using kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring your kubernetes cluster to self-host the control plane <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with kops <small>(EN)</small>" href="/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with KRIB <small>(EN)</small>" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kubespray <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Turnkey Cloud Solutions">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Alibaba Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on AWS EC2 <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Azure <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on CenturyLink Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Google Compute Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Tencent Kubernetes Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="On-Premises VMs">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloudstack <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes on DC/OS <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="oVirt <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows in Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Intro to Windows support in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Guide for adding Windows Nodes in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Guide for scheduling Windows containers in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Best practices">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running in multiple zones <small>(EN)</small>" href="/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Building large clusters <small>(EN)</small>" href="/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Validate node setup <small>(EN)</small>" href="/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="PKI certificates and requirements <small>(EN)</small>" href="/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Solutions Cloud clés en main">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Solutions Cloud personnalisées">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="CoreOS sur AWS ou GCE" href="/fr/docs/setup/custom-cloud/coreos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installer Kubernetes avec Kubespray (on-premises et fournisseurs de cloud)" href="/fr/docs/setup/custom-cloud/kubespray/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installer Kubernetes sur AWS avec kops" href="/fr/docs/setup/custom-cloud/kops/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="On-Premises VMs">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows dans Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/fr/docs/setup/independent/high-availability.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Création de clusters hautement disponibles avec kubeadm</h1>
+
+
+
+
+<p>Cette page explique deux approches différentes pour configurer un Kubernetes à haute disponibilité.
+cluster utilisant kubeadm:</p>
+
+<ul>
+<li>Avec des nœuds de control plane empilés. Cette approche nécessite moins d&rsquo;infrastructure.
+Les membres etcd et les nœuds du control plane sont co-localisés.</li>
+<li>Avec un cluster etcd externe cette approche nécessite plus d&rsquo;infrastructure.
+Les nœuds du control plane et les membres etcd sont séparés.</li>
+</ul>
+
+<p>Avant de poursuivre, vous devez déterminer avec soin quelle approche répond le mieux
+aux besoins de vos applications et de l&rsquo;environnement. <a href="/docs/setup/independent/ha-topology/">Cette comparaison</a>
+décrit les avantages et les inconvénients de chacune.</p>
+
+<p>Vos clusters doivent exécuter Kubernetes version 1.12 ou ultérieure. Vous devriez aussi savoir que
+la mise en place de clusters HA avec kubeadm est toujours expérimentale et sera simplifiée davantage
+dans les futures versions. Vous pouvez par exemple rencontrer des problèmes lors de la mise à niveau de vos clusters.
+Nous vous encourageons à essayer l’une ou l’autre approche et à nous faire part de vos commentaires dans
+<a href="https://github.com/kubernetes/kubeadm/issues/new" target="_blank">Suivi des problèmes Kubeadm</a>.</p>
+
+<p>Notez que la fonctionnalité alpha <code>HighAvailability</code> est obsolète dans la version 1.12 et supprimée dans la version 1.13</p>
+
+<p>Voir aussi <a href="/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade-ha-1-13">La documentation de mise à niveau HA</a>.</p>
+
+<blockquote class="caution">
+  <div><strong>Avertissement:</strong> Cette page ne traite pas de l&rsquo;exécution de votre cluster sur un fournisseur de cloud. Dans un
+environnement Cloud, les approches documentées ici ne fonctionne ni avec des objets de type
+load balancer, ni avec des volumes persistants dynamiques.</div>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#pr%c3%a9-requis">Pré-requis</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#premi%c3%a8res-%c3%a9tapes-pour-les-deux-m%c3%a9thodes">Premières étapes pour les deux méthodes</a></li>
+
+
+
+
+<li><a href="#control-plane-empil%c3%a9-et-n%c5%93uds-etcd">Control plane empilé et nœuds etcd</a></li>
+
+
+
+
+<li><a href="#noeuds-etcd-externes">Noeuds etcd externes</a></li>
+
+
+
+
+<li><a href="#t%c3%a2ches-courantes-apr%c3%a8s-l-amor%c3%a7age-du-control-plane">Tâches courantes après l’amorçage du control plane</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+
+<h2 id="pré-requis">Pré-requis</h2>
+<p>Pour les deux méthodes, vous avez besoin de cette infrastructure:</p>
+
+<ul>
+<li>Trois machines qui répondent aux pré-requis des <a href="/docs/setup/independent/install-kubeadm/#before-you-begin">exigences de kubeadm</a> pour les maîtres (masters)</li>
+<li>Trois machines qui répondent aux pré-requis des <a href="/docs/setup/independent/install-kubeadm/#before-you-begin">exigences de kubeadm</a> pour les workers</li>
+<li>Connectivité réseau complète entre toutes les machines du cluster (public ou réseau privé)</li>
+<li>Privilèges sudo sur toutes les machines</li>
+<li>Accès SSH d&rsquo;une machine à tous les nœuds du cluster</li>
+<li><code>kubeadm</code> et une <code>kubelet</code> installés sur toutes les machines. <code>kubectl</code> est optionnel.</li>
+</ul>
+
+<p>Pour le cluster etcd externe uniquement, vous avez besoin également de:</p>
+
+<ul>
+<li>Trois machines supplémentaires pour les membres etcd</li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Les exemples suivants utilisent Calico en tant que fournisseur de réseau de Pod. Si vous utilisez un autre
+CNI, pensez à remplacer les valeurs par défaut si nécessaire.</div>
+</blockquote>
+
+
+
+
+<h2 id="premières-étapes-pour-les-deux-méthodes">Premières étapes pour les deux méthodes</h2>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Toutes les commandes d&rsquo;un control plane ou d&rsquo;un noeud etcd doivent être
+éxecutées en tant que root.</div>
+</blockquote>
+
+<ul>
+<li>Certains plugins réseau CNI tels que Calico nécessitent un CIDR tel que <code>192.168.0.0 / 16</code> et 
+certains comme Weave n&rsquo;en ont pas besoin. Voir la
+<a href="/docs/setup/independent/create-cluster-kubeadm/#pod-network">Documentation du CNI réseau</a>.
+Pour ajouter un CIDR de pod, définissez le champ <code>podSubnet: 192.168.0.0 / 16</code> sous
+  l&rsquo;objet <code>networking</code> de<code>ClusterConfiguration</code>.</li>
+</ul>
+
+<h3 id="créez-un-load-balancer-pour-kube-apiserver">Créez un load balancer pour kube-apiserver</h3>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Il existe de nombreuses configurations pour les équilibreurs de charge (load balancer).
+L&rsquo;exemple suivant n&rsquo;est qu&rsquo;un exemple. Vos exigences pour votre cluster peuvent nécessiter une configuration différente.</div>
+</blockquote>
+
+<ol>
+<li><p>Créez un load balancer kube-apiserver avec un nom résolu en DNS.</p>
+
+<ul>
+<li><p>Dans un environnement cloud, placez vos nœuds du control plane derrière un load balancer TCP.
+Ce load balancer distribue le trafic à tous les nœuds du control plane sains dans sa liste.
+La vérification de la bonne santé d&rsquo;un apiserver est une vérification TCP sur le port que
+kube-apiserver écoute (valeur par défaut: <code>6443</code>).</p></li>
+
+<li><p>Il n&rsquo;est pas recommandé d&rsquo;utiliser une adresse IP directement dans un environnement cloud.</p></li>
+
+<li><p>Le load balancer doit pouvoir communiquer avec tous les nœuds du control plane sur le
+port apiserver. Il doit également autoriser le trafic entrant sur son réseau de port d&rsquo;écoute.</p></li>
+
+<li><p><a href="http://www.haproxy.org/" target="_blank">HAProxy</a> peut être utilisé comme load balancer.</p></li>
+
+<li><p>Assurez-vous que l&rsquo;adresse du load balancer correspond toujours à
+      l&rsquo;adresse de <code>ControlPlaneEndpoint</code> de kubeadm.</p></li>
+</ul></li>
+
+<li><p>Ajoutez les premiers nœuds du control plane au load balancer et testez la connexion:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">nc -v LOAD_BALANCER_IP PORT</code></pre></div>
+<ul>
+<li>Une erreur <code>connection refused</code> est attendue car l&rsquo;apiserver n&rsquo;est pas encore en fonctionnement.
+Cependant, un timeout signifie que le load balancer ne peut pas communiquer avec le nœud du
+control plane. Si un timeout survient, reconfigurez le load balancer pour communiquer avec le nœud du control plane.</li>
+</ul></li>
+
+<li><p>Ajouter les nœuds du control plane restants au groupe cible du load balancer.</p></li>
+</ol>
+
+<h3 id="configurer-ssh">Configurer SSH</h3>
+
+<p>SSH est requis si vous souhaitez contrôler tous les nœuds à partir d&rsquo;une seule machine.</p>
+
+<ol>
+<li><p>Activer ssh-agent sur votre machine ayant accès à tous les autres nœuds du cluster:</p>
+
+<pre><code>eval $(ssh-agent)
+</code></pre></li>
+
+<li><p>Ajoutez votre clé SSH à la session:</p>
+
+<pre><code>ssh-add ~/.ssh/path_to_private_key
+</code></pre></li>
+
+<li><p>SSH entre les nœuds pour vérifier que la connexion fonctionne correctement.</p>
+
+<ul>
+<li><p>Lorsque vous faites un SSH sur un noeud, assurez-vous d’ajouter l’option <code>-A</code>:</p>
+
+<pre><code>ssh -A 10.0.0.7
+</code></pre></li>
+
+<li><p>Lorsque vous utilisez sudo sur n’importe quel nœud, veillez à préserver l’environnement afin que le SSH forwarding fonctionne:</p>
+
+<pre><code>sudo -E -s
+</code></pre></li>
+</ul></li>
+</ol>
+
+<h2 id="control-plane-empilé-et-nœuds-etcd">Control plane empilé et nœuds etcd</h2>
+
+<h3 id="étapes-pour-le-premier-nœud-du-control-plane">Étapes pour le premier nœud du control plane</h3>
+
+<ol>
+<li><p>Sur le premier nœud du control plane, créez un fichier de configuration appelé <code>kubeadm-config.yaml</code>:</p>
+
+<pre><code>apiVersion: kubeadm.k8s.io/v1beta1
+kind: ClusterConfiguration
+kubernetesVersion: stable
+apiServer:
+  certSANs:
+  - &quot;LOAD_BALANCER_DNS&quot;
+controlPlaneEndpoint: &quot;LOAD_BALANCER_DNS:LOAD_BALANCER_PORT&quot;
+</code></pre>
+
+<ul>
+<li><code>kubernetesVersion</code> doit représenter la version de Kubernetes à utiliser. Cet exemple utilise <code>stable</code>.</li>
+<li><code>controlPlaneEndpoint</code> doit correspondre à l&rsquo;adresse ou au DNS et au port du load balancer.</li>
+<li>Il est recommandé que les versions de kubeadm, kubelet, kubectl et kubernetes correspondent.</li>
+</ul></li>
+
+<li><p>Assurez-vous que le nœud est dans un état sain:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">sudo kubeadm init --config<span style="color:#666">=</span>kubeadm-config.yaml</code></pre></div>
+<p>Vous devriez voir quelque chose comme:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">...
+Vous pouvez à présent joindre n<span style="">&#39;</span>importe quelle machine au cluster en lancant la commande suivante sur
+chaque nœeud en tant que root:
+
+kubeadm join <span style="color:#666">192</span>.168.0.200:6443 --token j04n3m.octy8zely83cy2ts --discovery-token-ca-cert-hash    sha256:84938d2a22203a8e56a787ec0c6ddad7bc7dbd52ebabc62fd5f4dbea72b14d1f</code></pre></div></li>
+
+<li><p>Copiez ce jeton dans un fichier texte. Vous en aurez besoin plus tard pour joindre
+d’autres nœuds du control plane au cluster.</p></li>
+
+<li><p>Activez l&rsquo;extension CNI Weave:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl apply -f <span style="color:#b44">&#34;https://cloud.weave.works/k8s/net?k8s-version=</span><span style="color:#a2f;font-weight:bold">$(</span>kubectl version | base64 | tr -d <span style="color:#b44">&#39;\n&#39;</span><span style="color:#a2f;font-weight:bold">)</span><span style="color:#b44">&#34;</span></code></pre></div></li>
+
+<li><p>Tapez ce qui suit et observez les pods des composants démarrer:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl get pod -n kube-system -w</code></pre></div>
+<ul>
+<li>Il est recommandé de ne joindre les nouveaux nœuds du control plane qu&rsquo;après l&rsquo;initialisation du premier nœud.</li>
+</ul></li>
+
+<li><p>Copiez les fichiers de certificat du premier nœud du control plane dans les autres:</p>
+
+<p>Dans l&rsquo;exemple suivant, remplacez <code>CONTROL_PLANE_IPS</code> par les adresses IP des autres nœuds du control plane.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#b8860b">USER</span><span style="color:#666">=</span>ubuntu <span style="color:#080;font-style:italic"># customizable</span>
+<span style="color:#b8860b">CONTROL_PLANE_IPS</span><span style="color:#666">=</span><span style="color:#b44">&#34;10.0.0.7 10.0.0.8&#34;</span>
+<span style="color:#a2f;font-weight:bold">for</span> host in <span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">CONTROL_PLANE_IPS</span><span style="color:#b68;font-weight:bold">}</span>; <span style="color:#a2f;font-weight:bold">do</span>
+    scp /etc/kubernetes/pki/ca.crt <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>@<span style="color:#b8860b">$host</span>:
+    scp /etc/kubernetes/pki/ca.key <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>@<span style="color:#b8860b">$host</span>:
+    scp /etc/kubernetes/pki/sa.key <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>@<span style="color:#b8860b">$host</span>:
+    scp /etc/kubernetes/pki/sa.pub <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>@<span style="color:#b8860b">$host</span>:
+    scp /etc/kubernetes/pki/front-proxy-ca.crt <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>@<span style="color:#b8860b">$host</span>:
+    scp /etc/kubernetes/pki/front-proxy-ca.key <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>@<span style="color:#b8860b">$host</span>:
+    scp /etc/kubernetes/pki/etcd/ca.crt <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>@<span style="color:#b8860b">$host</span>:etcd-ca.crt
+    scp /etc/kubernetes/pki/etcd/ca.key <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>@<span style="color:#b8860b">$host</span>:etcd-ca.key
+    scp /etc/kubernetes/admin.conf <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>@<span style="color:#b8860b">$host</span>:
+<span style="color:#a2f;font-weight:bold">done</span></code></pre></div></li>
+</ol>
+
+<blockquote class="caution">
+  <div><strong>Avertissement:</strong> N&rsquo;utilisez que les certificats de la liste ci-dessus. kubeadm se chargera de générer le reste des certificats avec les SANs requis pour les instances du control plane qui se joignent.
+Si vous copiez tous les certificats par erreur, la création de noeuds supplémentaires pourrait
+ échouer en raison d&rsquo;un manque de SANs requis.</div>
+</blockquote>
+
+<h3 id="étapes-pour-le-reste-des-nœuds-du-control-plane">Étapes pour le reste des nœuds du control plane</h3>
+
+<ol>
+<li><p>Déplacer les fichiers créés à l&rsquo;étape précédente où <code>scp</code> était utilisé:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#b8860b">USER</span><span style="color:#666">=</span>ubuntu <span style="color:#080;font-style:italic"># customizable</span>
+mkdir -p /etc/kubernetes/pki/etcd
+mv /home/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span>/ca.crt /etc/kubernetes/pki/
+mv /home/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span>/ca.key /etc/kubernetes/pki/
+mv /home/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span>/sa.pub /etc/kubernetes/pki/
+mv /home/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span>/sa.key /etc/kubernetes/pki/
+mv /home/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span>/front-proxy-ca.crt /etc/kubernetes/pki/
+mv /home/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span>/front-proxy-ca.key /etc/kubernetes/pki/
+mv /home/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span>/etcd-ca.crt /etc/kubernetes/pki/etcd/ca.crt
+mv /home/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span>/etcd-ca.key /etc/kubernetes/pki/etcd/ca.key
+mv /home/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span>/admin.conf /etc/kubernetes/admin.conf</code></pre></div>
+<p>Ce processus écrit tous les fichiers demandés dans le dossier <code>/etc/kubernetes</code>.</p></li>
+
+<li><p>Lancez <code>kubeadm join</code> sur ce nœud en utilisant la commande de join qui vous avait été précédemment
+donnée par<code>kubeadm init</code> sur le premier noeud. Ça devrait ressembler a quelque chose
+comme ça:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">sudo kubeadm join <span style="color:#666">192</span>.168.0.200:6443 --token j04n3m.octy8zely83cy2ts --discovery-token-ca-cert-hash sha256:84938d2a22203a8e56a787ec0c6ddad7bc7dbd52ebabc62fd5f4dbea72b14d1f --experimental-control-plane</code></pre></div>
+<ul>
+<li>Remarquez l&rsquo;ajout de l&rsquo;option <code>--experimental-control-plane</code>. Ce paramètre automatise l&rsquo;adhésion au
+control plane du cluster.</li>
+</ul></li>
+
+<li><p>Tapez ce qui suit et observez les pods des composants démarrer:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl get pod -n kube-system -w</code></pre></div></li>
+
+<li><p>Répétez ces étapes pour le reste des nœuds du control plane.</p></li>
+</ol>
+
+<h2 id="noeuds-etcd-externes">Noeuds etcd externes</h2>
+
+<h3 id="configurer-le-cluster-etcd">Configurer le cluster etcd</h3>
+
+<ul>
+<li>Suivez ces <a href="/docs/setup/independent/setup-ha-etcd-with-kubeadm/">instructions</a>
+pour configurer le cluster etcd.</li>
+</ul>
+
+<h3 id="configurer-le-premier-nœud-du-control-plane">Configurer le premier nœud du control plane</h3>
+
+<ol>
+<li><p>Copiez les fichiers suivants de n’importe quel nœud du cluster etcd vers ce nœud.:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#a2f">export</span> <span style="color:#b8860b">CONTROL_PLANE</span><span style="color:#666">=</span><span style="color:#b44">&#34;ubuntu@10.0.0.7&#34;</span>
++scp /etc/kubernetes/pki/etcd/ca.crt <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">CONTROL_PLANE</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>:
++scp /etc/kubernetes/pki/apiserver-etcd-client.crt <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">CONTROL_PLANE</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>:
++scp /etc/kubernetes/pki/apiserver-etcd-client.key <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">CONTROL_PLANE</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>:</code></pre></div>
+<ul>
+<li>Remplacez la valeur de <code>CONTROL_PLANE</code> par l&rsquo;<code>utilisateur@hostname</code> de cette machine.</li>
+</ul></li>
+
+<li><p>Créez un fichier YAML appelé <code>kubeadm-config.yaml</code> avec le contenu suivant:</p>
+
+<pre><code>apiVersion: kubeadm.k8s.io/v1beta1
+kind: ClusterConfiguration
+kubernetesVersion: stable
+apiServer:
+  certSANs:
+  - &quot;LOAD_BALANCER_DNS&quot;
+controlPlaneEndpoint: &quot;LOAD_BALANCER_DNS:LOAD_BALANCER_PORT&quot;
+etcd:
+    external:
+        endpoints:
+        - https://ETCD_0_IP:2379
+        - https://ETCD_1_IP:2379
+        - https://ETCD_2_IP:2379
+        caFile: /etc/kubernetes/pki/etcd/ca.crt
+        certFile: /etc/kubernetes/pki/apiserver-etcd-client.crt
+        keyFile: /etc/kubernetes/pki/apiserver-etcd-client.key
+</code></pre>
+
+<ul>
+<li><p>La différence entre etcd empilé et externe, c’est que nous utilisons le champ <code>external</code>
+pour <code>etcd</code> dans la configuration de kubeadm. Dans le cas de la topologie etcd empilée,
+c&rsquo;est géré automatiquement.</p></li>
+
+<li><p>Remplacez les variables suivantes dans le modèle (template) par les valeurs appropriées
+pour votre cluster:</p>
+
+<ul>
+<li><code>LOAD_BALANCER_DNS</code></li>
+<li><code>LOAD_BALANCER_PORT</code></li>
+<li><code>ETCD_0_IP</code></li>
+<li><code>ETCD_1_IP</code></li>
+<li><code>ETCD_2_IP</code></li>
+</ul></li>
+</ul></li>
+
+<li><p>Lancez <code>kubeadm init --config kubeadm-config.yaml</code> sur ce nœud.</p></li>
+
+<li><p>Ecrivez le résultat de la commande de join dans un fichier texte pour une utilisation ultérieure.</p></li>
+
+<li><p>Appliquer le plugin CNI Weave:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl apply -f <span style="color:#b44">&#34;https://cloud.weave.works/k8s/net?k8s-version=</span><span style="color:#a2f;font-weight:bold">$(</span>kubectl version | base64 | tr -d <span style="color:#b44">&#39;\n&#39;</span><span style="color:#a2f;font-weight:bold">)</span><span style="color:#b44">&#34;</span></code></pre></div></li>
+</ol>
+
+<h3 id="étapes-pour-le-reste-des-nœuds-du-control-plane-1">Étapes pour le reste des nœuds du control plane</h3>
+
+<p>Pour ajouter le reste des nœuds du control plane, suivez <a href="#étapes-pour-le-reste-des-nœuds-du-control-plane">ces instructions</a>.
+Les étapes sont les mêmes que pour la configuration etcd empilée, à l’exception du fait qu&rsquo;un membre
+ etcd local n&rsquo;est pas créé.</p>
+
+<p>Pour résumer:</p>
+
+<ul>
+<li>Assurez-vous que le premier nœud du control plane soit complètement initialisé.</li>
+<li>Copier les certificats entre le premier nœud du control plane et les autres nœuds du control plane.</li>
+<li>Joignez chaque nœud du control plane à l&rsquo;aide de la commande de join que vous avez enregistrée dans
+un fichier texte, puis ajoutez l&rsquo;option <code>--experimental-control-plane</code>.</li>
+</ul>
+
+<h2 id="tâches-courantes-après-l-amorçage-du-control-plane">Tâches courantes après l&rsquo;amorçage du control plane</h2>
+
+<h3 id="installer-un-réseau-de-pod">Installer un réseau de pod</h3>
+
+<p><a href="/docs/setup/independent/create-cluster-kubeadm/#pod-network">Suivez ces instructions</a> afin
+ d&rsquo;installer le réseau de pod. Assurez-vous que cela correspond au pod CIDR que vous avez fourni
+ dans le fichier de configuration principal.</p>
+
+<h3 id="installer-les-workers">Installer les workers</h3>
+
+<p>Chaque nœud worker peut maintenant être joint au cluster avec la commande renvoyée à partir du resultat
+ de n’importe quelle commande <code>kubeadm init</code>. L&rsquo;option <code>--experimental-control-plane</code> ne doit pas
+ être ajouté aux nœuds workers.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Cette page est elle utile ? </p>
+  <button class="button feedback--yes">Oui</button>
+  <button class="button feedback--no">Non</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/independent/high-availability.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/fr\/docs\/setup\/independent\/high-availability\/",
+    "title" : "Création de clusters hautement disponibles avec kubeadm",
+    "permalink" : "https:\/\/kubernetes.io\/fr\/docs\/setup\/independent\/high-availability\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Ouvrez un ticket</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/fr/docs/setup/independent/high-availability.md" class="button issue">Editez cette page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Dernière modification le October 10, 2019 at 6:02 PM PST de
+    <a href="https://github.com/kubernetes/website/commit/2a120450ebc0c2a20f975426313e926ea04a1f1b/">Remove trailing spaces from FR documents(#16742) (#16788)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/independent/high-availability.md">Historique</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/fr/docs/home/">Accueil</a>
+            
+            <a href="/fr/blog/">Blog</a>
+            
+            
+            
+            <a href="/fr/partners/">Partenaires</a>
+            
+            <a href="/fr/community/">Communauté</a>
+            
+            <a href="/fr/case-studies/">Études de cas</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendrier</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribuer</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

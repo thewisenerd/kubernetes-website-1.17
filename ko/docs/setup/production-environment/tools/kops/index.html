@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html id="docs" lang="ko" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Kops로 쿠버네티스 설치하기 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/ko/docs/setup/production-environment/tools/kops/">
+<meta property="og:title" content="Kops로 쿠버네티스 설치하기">
+<meta name="twitter:title" content="Kops로 쿠버네티스 설치하기">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ko/" class="logo" title="운영 수준의 컨테이너 오케스트레이션 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ko/docs/" class="active">문서</a></li>
+            
+            
+            
+            <li><a href="/ko/training/">교육</a></li>
+            
+            
+            
+            
+            
+            <li><a href="/ko/case-studies/">사례 연구</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    한국어 Korean <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/setup/production-environment/tools/kops/">English</a></li>
+                
+                    <li><a href="/zh/docs/setup/production-environment/tools/kops/">中文 Chinese</a></li>
+                
+                    <li><a href="/ja/docs/setup/production-environment/tools/kops/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ko/docs/setup/production-environment/tools/kops/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ko/docs/setup/production-environment/tools/kops/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ko/docs/setup/production-environment/tools/kops/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ko/docs/setup/production-environment/tools/kops/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ko/docs/setup/production-environment/tools/kops/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ko/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>쿠버네티스 기초 학습</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/home/">문서</a></h3>
+           <p>개념, 튜토리얼 및 참조 문서와 함께 쿠버네티스 사용하는 방법을 익힐 수 있다. 또한, <a href="/editdocs/" data-auto-burger-exclude>문서에 기여하는 것도 도움을 줄 수 있다</a>!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">코어 쿠버네티스 코드 베이스를 살펴보는데 관심이 있으십니까?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHub에서 보기</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">커뮤니티 둘러보기</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>시작하기</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ko/docs/home/">홈</a></li>
+		
+		
+		<li><a href="/ko/docs/setup/" class="YAH">시작하기</a></li>
+		
+		
+		<li><a href="/ko/docs/concepts/">개념</a></li>
+		
+		
+		<li><a href="/ko/docs/tasks/">태스크</a></li>
+		
+		
+		<li><a href="/ko/docs/tutorials/">튜토리얼</a></li>
+		
+		
+		<li><a href="/ko/docs/reference/">레퍼런스</a></li>
+		
+		
+		<li><a href="/ko/docs/contribute/">기여</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="검색하기" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  문서는 더 이상 적극적으로 관리되지 않음. 현재 보고있는 문서는 정적 스냅샷임. 최신 문서를 위해서는, 다음을 참고. 
+	 <a href="https://kubernetes.io/docs/home/">최신 버전.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="시작하기" href="/ko/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="릴리스 노트와 버전 차이 지원(skew)">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes version and version skew support policy <small>(EN)</small>" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="학습 환경">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Minikube로 쿠버네티스 설치" href="/ko/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="운영 환경">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="컨테이너 런타임" href="/ko/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="kubeadm으로 클러스터 구성하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Troubleshooting kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating a single control-plane cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm으로 컨트롤 플레인 사용자 정의하기" href="/ko/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="고가용성 토폴로지 선택" href="/ko/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating Highly Available clusters with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up a High Availability etcd cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring each kubelet in your cluster using kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring your kubernetes cluster to self-host the control plane <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with KRIB <small>(EN)</small>" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kops로 쿠버네티스 설치하기" href="/ko/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kubespray <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="턴키 클라우드 솔루션">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Alibaba Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on AWS EC2 <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Azure <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on CenturyLink Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Google Compute Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Tencent Kubernetes Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="온-프레미스 VM">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloudstack <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes on DC/OS <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="oVirt <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="쿠버네티스에서 윈도우">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Intro to Windows support in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스에서 윈도우 노드 추가 가이드" href="/ko/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스에서 윈도우 컨테이너 스케줄링을 위한 가이드" href="/ko/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="모범 사례">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="여러 영역에서 구동" href="/ko/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="대형 클러스터 구축" href="/ko/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="노드 구성 검증하기" href="/ko/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI 인증서 및 요구 조건" href="/ko/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/setup/production-environment/tools/kops.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Kops로 쿠버네티스 설치하기</h1>
+
+
+
+
+<p>이곳 빠른 시작에서는 사용자가 얼마나 쉽게 AWS에 쿠버네티스 클러스터를 설치할 수 있는지 보여준다.
+<a href="https://github.com/kubernetes/kops" target="_blank"><code>kops</code></a>라는 이름의 툴을 이용할 것이다.</p>
+
+<p>kops는 자동화된 프로비저닝 시스템인데,</p>
+
+<ul>
+<li>완전 자동화된 설치</li>
+<li>DNS를 통해 클러스터들의 신원 확인</li>
+<li>자체 복구: 모든 자원이 Auto-Scaling Groups에서 실행</li>
+<li>다양한 OS 지원(Debian, Ubuntu 16.04 supported, CentOS &amp; RHEL, Amazon Linux and CoreOS) - <a href="https://github.com/kubernetes/kops/blob/master/docs/operations/images.md" target="_blank">images.md</a> 보기</li>
+<li>고가용성 지원 - <a href="https://github.com/kubernetes/kops/blob/master/docs/operations/high_availability.md" target="_blank">high_availability.md</a> 보기</li>
+<li>직접 프로비저닝 하거나 또는 할 수 있도록 terraform 매니페스트를 생성 - <a href="https://github.com/kubernetes/kops/blob/master/docs/terraform.md" target="_blank">terraform.md</a> 보기</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%ec%8b%9c%ec%9e%91%ed%95%98%ea%b8%b0-%ec%a0%84%ec%97%90">시작하기 전에</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%ed%81%b4%eb%9f%ac%ec%8a%a4%ed%84%b0-%ea%b5%ac%ec%b6%95">클러스터 구축</a></li>
+
+
+
+
+<li><a href="#%ec%a0%95%eb%a6%ac%ed%95%98%ea%b8%b0">정리하기</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%eb%8b%a4%ec%9d%8c-%eb%82%b4%ec%9a%a9">다음 내용</a></li>
+
+
+
+</ul>
+
+
+
+<h2 id="시작하기-전에">시작하기 전에</h2>
+<ul>
+<li><p><a href="/docs/tasks/tools/install-kubectl/">kubectl</a>을 반드시 설치해야 한다.</p></li>
+
+<li><p>반드시 64-bit (AMD64 그리고 Intel 64)디바이스 아키텍쳐 위에서 <code>kops</code> 를 <a href="https://github.com/kubernetes/kops#installing" target="_blank">설치</a> 한다.</p></li>
+
+<li><p><a href="https://docs.aws.amazon.com/polly/latest/dg/setting-up.html" target="_blank">AWS 계정</a>이 있고 <a href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys" target="_blank">IAM 키</a>를 생성하고 <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html#cli-quick-configuration" target="_blank">구성</a> 해야 한다.</p></li>
+</ul>
+
+
+
+
+<h2 id="클러스터-구축">클러스터 구축</h2>
+
+<h3 id="1-5-kops-설치">(1/5) kops 설치</h3>
+
+<h4 id="설치">설치</h4>
+
+<p><a href="https://github.com/kubernetes/kops/releases" target="_blank">releases page</a>에서 kops를 다운로드 한다(소스코드로부터 빌드하는것도 역시 어렵지 않다).</p>
+
+<div id="kops-installation">
+<ul>
+    
+      
+  <li><a href="#kops-installation-0">macOS</a></li>
+
+      
+  <li><a href="#kops-installation-1">Linux</a></li>
+
+</ul>
+
+
+<div id="kops-installation-0">
+    
+        <p>최신 버전의 릴리즈를 다운받는 명령어:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -LO https://github.com/kubernetes/kops/releases/download/<span style="color:#a2f;font-weight:bold">$(</span>curl -s https://api.github.com/repos/kubernetes/kops/releases/latest
+| grep tag_name | cut -d <span style="color:#b44">&#39;&#34;&#39;</span> -f <span style="color:#666">4</span><span style="color:#a2f;font-weight:bold">)</span>/kops-darwin-amd64</code></pre></div>
+<p>특정 버전을 다운로드 받는다면 명령의 다음부분을 특정 kops 버전으로 변경한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#a2f;font-weight:bold">$(</span>curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d <span style="color:#b44">&#39;&#34;&#39;</span> -f <span style="color:#666">4</span><span style="color:#a2f;font-weight:bold">)</span></code></pre></div>
+<p>예를 들어 kops 버전을 v1.15.0을 다운로드 하려면 다음을 입력한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -LO  https://github.com/kubernetes/kops/releases/download/1.15.0/kops-darwin-amd64</code></pre></div>
+<p>kops 바이너리를 실행 가능하게 만든다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">chmod +x kops-darwin-amd64</code></pre></div>
+<p>kops 바이너리를 사용자의 PATH로 이동한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo mv kops-darwin-amd64 /usr/local/bin/kops</code></pre></div>
+<p>사용자는 <a href="https://brew.sh/" target="_blank">Homebrew</a>를 이용해서 kops를 설치할 수 있다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">brew update <span style="color:#666">&amp;&amp;</span> brew install kops</code></pre></div>
+    
+
+<p></div></p>
+
+<div id="kops-installation-1">
+    
+        <p>최신 릴리즈를 다운로드 받는 명령어:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -LO https://github.com/kubernetes/kops/releases/download/<span style="color:#a2f;font-weight:bold">$(</span>curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d <span style="color:#b44">&#39;&#34;&#39;</span> -f <span style="color:#666">4</span><span style="color:#a2f;font-weight:bold">)</span>/kops-linux-amd64</code></pre></div>
+<p>특정 버전의 kops를 다운로드하려면 명령의 다음 부분을 특정 kops 버전으로 변경한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#a2f;font-weight:bold">$(</span>curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d <span style="color:#b44">&#39;&#34;&#39;</span> -f <span style="color:#666">4</span><span style="color:#a2f;font-weight:bold">)</span></code></pre></div>
+<p>예를 들어 kops 버전을 v1.15.0을 다운로드 하려면 다음을 입력한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -LO  https://github.com/kubernetes/kops/releases/download/1.15.0/kops-linux-amd64</code></pre></div>
+<p>kops 바이너리를 실행 가능하게 만든다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">chmod +x kops-linux-amd64</code></pre></div>
+<p>kops 바이너리를 사용자의 PATH로 이동한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo mv kops-linux-amd64 /usr/local/bin/kops</code></pre></div>
+<p>사용자는 <a href="https://docs.brew.sh/Homebrew-on-Linux" target="_blank">Homebrew</a>를 이용해서 kops를 설치할 수 있다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">brew update <span style="color:#666">&amp;&amp;</span> brew install kops</code></pre></div>
+    
+
+<p></div></p>
+
+<p></div></p>
+
+<script>$(function(){$("#kops-installation").tabs();});</script>
+
+<h3 id="2-5-클러스터에-사용할-route53-domain-생성">(2/5) 클러스터에 사용할 route53 domain 생성</h3>
+
+<p>kops는 클러스터 내부와 외부 모두에서 검색을 위해 DNS을 사용하기에 클라이언트에서 쿠버네티스 API 서버에 연결할
+수 있다.</p>
+
+<p>이런 클러스터 이름에 kops는 명확한 견해을 가지는데: 반드시 유효한 DNS 이름이어야 한다. 이렇게 함으로써
+사용자는 클러스터를 헷갈리지 않을것이고, 동료들과 혼선없이 공유할 수 있으며,
+IP를 기억할 필요없이 접근할 수 있다.</p>
+
+<p>그렇게 하고 있겠지만, 클러스터를 구분하기 위해 서브도메인을 활용할 수 있다. 예를 들어
+<code>useast1.dev.example.com</code>을 이용한다면, API 서버 엔드포인트는 <code>api.useast1.dev.example.com</code>가 될 것이다.</p>
+
+<p>Route53 hosted zone은 서브도메인도 지원한다. 여러분의 hosted zone은 <code>useast1.dev.example.com</code>,
+<code>dev.example.com</code> 그리고 <code>example.com</code> 같은 것도 될 수 있다. kops는 이것들 모두와 잘 동작하며,
+사용자는 보통 조직적인 부분을 고려해 결정한다(예를 들어, 사용자가 <code>dev.example.com</code>하위에 레코드를 생성하는것은 허용되지만,
+<code>example.com</code>하위에는 그렇지 않을 수 있다).</p>
+
+<p><code>dev.example.com</code>을 hosted zone으로 사용하고 있다고 가정해보자.
+보통 사용자는 <a href="http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/CreatingNewSubdomain.html" target="_blank">일반적인 방법</a> 에 따라 생성하거나
+<code>aws route53 create-hosted-zone --name dev.example.com --caller-reference 1</code> 와 같은 커맨드를 이용한다.</p>
+
+<p>그 후 도메인 내 레코드들을 확인할 수 있도록 상위 도메인내에 NS 레코드를 생성해야 한다. 여기서는,
+<code>dev</code> NS 레코드를 <code>example.com</code>에 생성한다. 만약 이것이 루트 도메인 네임이라면 이 NS 레코드들은
+도메인 등록기관을 통해서 생성해야 한다(예를 들어, <code>example.com</code>는 <code>example.com</code>를 구매한 곳에서 설정 할 수 있다).</p>
+
+<p>이 단계에서 문제가 되기 쉽다.(문제를 만드는 가장 큰 이유이다!) dig 툴을 실행해서
+클러스터 설정이 정확한지 한번 더 확인 한다.</p>
+
+<p><code>dig NS dev.example.com</code></p>
+
+<p>당신의 hosted zone용으로 할당된 3~4개의 NS 레코드를 Route53에서 확인할 수 있어야 한다.</p>
+
+<h3 id="3-5-클러스터-상태-저장용-s3-버킷-생성">(3/5) 클러스터 상태 저장용 S3 버킷 생성</h3>
+
+<p>kops는 설치 이후에도 클러스터를 관리할 수 있다. 이를 위해 사용자가 생성한 클러스터의 상태나
+사용하는 키 정보들을 지속적으로 추적해야 한다. 이 정보가 S3에 저장된다.
+이 버킷의 접근은 S3 권한으로 제어한다.</p>
+
+<p>다수의 클러스터는 동일한 S3 버킷을 이용할 수 있고, 사용자는 이 S3 버킷을 같은 클러스트를
+운영하는 동료에게 공유할 수 있다. 하지만 이 S3 버킷에 접근 가능한 사람은 사용자의
+모든 클러스터에 관리자 접근이 가능하게 되니, 운영팀 이외로
+공유되지 않도록 해야 한다.</p>
+
+<p>그래서 보통 한 운영팀 당 하나의 S3 버킷을 가지도록 하기도 한다.(그리고 종종 운영팀
+이름은 위에서 언급한 hosted zone과 동일하게 짓기도 한다!)</p>
+
+<p>우리 예제에서는, <code>dev.example.com</code>를 hosted zone으로 했으니 <code>clusters.dev.example.com</code>를
+S3 버킷 이름으로 정하자.</p>
+
+<ul>
+<li><p><code>AWS_PROFILE</code>를 선언한다. (AWS CLI 동작을 위해 다른 profile을 선택해야 할 경우)</p></li>
+
+<li><p><code>aws s3 mb s3://clusters.dev.example.com</code>를 이용해 S3 버킷을 생성한다.</p></li>
+
+<li><p><code>export KOPS_STATE_STORE=s3://clusters.dev.example.com</code> 하면, kops는 이 위치를 기본값으로 인식할 것이다.
+이 부분을 bash profile등에 넣어두는것을 권장한다.</p></li>
+</ul>
+
+<h3 id="4-5-클러스터-설정-구성">(4/5) 클러스터 설정 구성</h3>
+
+<p>클러스터 설정하려면, <code>kops create cluster</code> 를 실행한다:</p>
+
+<p><code>kops create cluster --zones=us-east-1c useast1.dev.example.com</code></p>
+
+<p>kops는 클러스터에 사용될 설정을 생성할것이다. 여기서 주의할 점은 실제 클러스트 리소스가 아닌 <em>설정</em>
+만을 생성한다는 것에 주의하자 - 이 부분은 다음 단계에서 <code>kops update cluster</code> 으로
+구성해볼 것이다. 그 때 만들어진 설정을 점검하거나 변경할 수 있다.</p>
+
+<p>더 자세한 내용을 알아보기 위한 커맨드가 출력된다.</p>
+
+<ul>
+<li>클러스터 조회: <code>kops get cluster</code></li>
+<li>클러스트 수정: <code>kops edit cluster useast1.dev.example.com</code></li>
+<li>인스턴스 그룹 수정: <code>kops edit ig --name=useast1.dev.example.com nodes</code></li>
+<li>마스터 인스턴스 그룹 수정: <code>kops edit ig --name=useast1.dev.example.com master-us-east-1c</code></li>
+</ul>
+
+<p>만약 kops사용이 처음이라면, 얼마 걸리지 않으니 이들을 시험해 본다. 인스턴스 그룹은
+쿠버네티스 노드로 등록된 인스턴스의 집합을 말한다. AWS상에서는 auto-scaling-groups를
+통해 만들어진다. 사용자는 여러개의 인스턴스 그룹을 관리할 수 있는데,
+예를 들어, spot과 on-demand 인스턴스 조합 또는 GPU 와 non-GPU 인스턴스의 조합으로 구성할 수 있다.</p>
+
+<h3 id="5-5-aws에-클러스터-생성">(5/5) AWS에 클러스터 생성</h3>
+
+<p><code>kops update cluster</code>를 실행해 AWS에 클러스터를 생성한다.</p>
+
+<p><code>kops update cluster useast1.dev.example.com --yes</code></p>
+
+<p>실행은 수 초 만에 되지만, 실제로 클러스터가 준비되기 전까지 수 분이 걸릴 수 있다.
+언제든 <code>kops update cluster</code>로 클러스터 설정을 변경할 수 있다. 사용자가
+변경한 클러스터 설정을 그대로 반영해 줄 것이며, 필요다하면 AWS 나 쿠버네티스를 재설정 해 줄것이다.</p>
+
+<p>예를 들면, <code>kops edit ig nodes</code> 뒤에 <code>kops update cluster --yes</code>를 실행해 설정을 반영한다.
+그리고 <code>kops rolling-update cluster</code>로 설정을 즉시 원복시킬 수 있다.</p>
+
+<p><code>--yes</code>를 명시하지 않으면 <code>kops update cluster</code> 커맨드 후 어떤 설정이 변경될지가 표시된다.
+운영계 클러스터 관리할 때 사용하기 좋다!</p>
+
+<h3 id="다른-애드온-탐험">다른 애드온 탐험</h3>
+
+<p><a href="/docs/concepts/cluster-administration/addons/">애드온 리스트</a> 에서 쿠버네티스 클러스터용 로깅, 모니터링, 네트워크 정책, 시각화 &amp; 제어 등을 포함한 다른 애드온을 확인해본다.</p>
+
+<h2 id="정리하기">정리하기</h2>
+
+<ul>
+<li><code>kops delete cluster useast1.dev.example.com --yes</code> 로 클러스터를 삭제한다.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="다음-내용">다음 내용</h2>
+<ul>
+<li>쿠버네티스 <a href="/docs/concepts/">개념</a> 과 <a href="/docs/user-guide/kubectl-overview/"><code>kubectl</code></a>에 대해 더 알아보기.</li>
+<li>튜토리얼, 모범사례 및 고급 구성 옵션에 대한 <code>kops</code> <a href="https://kops.sigs.k8s.io/" target="_blank">고급 사용법</a>에 대해 더 자세히 알아본다.</li>
+<li>슬랙(Slack)에서 <code>kops</code> 커뮤니티 토론을 할 수 있다: <a href="https://github.com/kubernetes/kops#other-ways-to-communicate-with-the-contributors" target="_blank">커뮤니티 토론</a></li>
+<li>문제를 해결하거나 이슈를 제기하여 <code>kops</code> 에 기여한다. <a href="https://github.com/kubernetes/kops/issues" target="_blank">깃헙 이슈</a></li>
+</ul>
+
+
+
+
+
+
+
+    
+            
+  <h2>피드백</h2>
+  <p class="feedback--prompt">이 페이지가 도움이 되었나요? </p>
+  <button class="button feedback--yes">네</button>
+  <button class="button feedback--no">아니요</button>
+  <p class="feedback--response feedback--response__hidden">
+    피드백 감사합니다. 쿠버네티스 사용 방법에 대해서 구체적이고 답변 가능한 질문이 있다면, 다음 링크에서 질문하십시오.
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    원한다면 GitHub 리포지터리에 이슈를 열어서
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      문제 리포트</a>
+    또는
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      개선 제안이 가능합니다.</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/production-environment/tools/kops.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ko\/docs\/setup\/production-environment\/tools\/kops\/",
+    "title" : "Kops로 쿠버네티스 설치하기",
+    "permalink" : "https:\/\/kubernetes.io\/ko\/docs\/setup\/production-environment\/tools\/kops\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">이슈 생성하기</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/setup/production-environment/tools/kops.md" class="button issue">페이지 편집하기</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    최종 수정일시 March 26, 2020 at 10:58 PM PST , 다음 변경에 의해서:
+    <a href="https://github.com/kubernetes/website/commit/c38acbc4f65bf9ec02ba1eeff8bd339dfd5d0752/">Seventh Korean l10n Work For Release 1.17 (#19858)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/production-environment/tools/kops.md">페이지 변경 이력</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ko/docs/home/">홈</a>
+            
+            
+            
+            <a href="/ko/training/">교육</a>
+            
+            
+            
+            
+            
+            <a href="/ko/case-studies/">사례 연구</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">기여하기</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

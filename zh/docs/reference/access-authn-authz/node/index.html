@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>使用 Node 鉴权 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/reference/access-authn-authz/node/">
+<meta property="og:title" content="使用 Node 鉴权">
+<meta name="twitter:title" content="使用 Node 鉴权">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/reference/access-authn-authz/node/">English</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/reference/access-authn-authz/node/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/reference/access-authn-authz/node/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/reference/access-authn-authz/node/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/reference/access-authn-authz/node/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/reference/access-authn-authz/node/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1>参考</h1>
+<h5></h5>
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/" class="YAH">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="参考" href="/zh/docs/reference/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="标准化词汇表" href="/zh/docs/reference/glossary/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes 问题和安全">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 问题和安全" href="/zh/docs/reference/issues-security/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 问题追踪" href="/zh/docs/reference/issues-security/issues/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 安全和信息披露" href="/zh/docs/reference/issues-security/security/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="使用 Kubernetes API">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 Kubernetes API" href="/zh/docs/reference/using-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API 总览" href="/zh/docs/reference/using-api/api-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes API Concepts <small>(EN)</small>" href="/docs/reference/using-api/api-concepts/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="客户端库" href="/zh/docs/reference/using-api/client-libraries/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes Deprecation Policy <small>(EN)</small>" href="/docs/reference/using-api/deprecation-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="访问 API">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Authenticating <small>(EN)</small>" href="/docs/reference/access-authn-authz/authentication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用准入控制器" href="/zh/docs/reference/access-authn-authz/admission-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="动态准入控制" href="/zh/docs/reference/access-authn-authz/extensible-admission-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="授权概述" href="/zh/docs/reference/access-authn-authz/authorization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 RBAC 鉴权" href="/zh/docs/reference/access-authn-authz/rbac/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Node 鉴权" href="/zh/docs/reference/access-authn-authz/node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Webhook 模式" href="/zh/docs/reference/access-authn-authz/webhook/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API 访问控制" href="/zh/docs/reference/access-authn-authz/controlling-access/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ABAC 鉴权" href="/zh/docs/reference/access-authn-authz/abac/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用启动引导令牌（Bootstrap Tokens）认证" href="/zh/docs/reference/access-authn-authz/bootstrap-tokens/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理 Service Accounts" href="/zh/docs/reference/access-authn-authz/service-accounts-admin/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="API 参考">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="API 参考" href="/zh/docs/reference/kubernetes-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="v1.17" href="/zh/docs/reference/kubernetes-api/api-index/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="知名标签（Label）、注解（Annotation）和 Taints" href="/zh/docs/reference/kubernetes-api/labels-annotations-taints/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安装工具">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Kubeadm">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="kubeadm 概述" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm init" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-init/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm join" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-join/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm upgrade" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm config" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm reset" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-reset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm 令牌" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-token/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm version" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-version/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm alpha" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-alpha/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm init phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm join phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-join-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm reset phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-reset-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm upgrade phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-upgrade-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Implementation details <small>(EN)</small>" href="/docs/reference/setup-tools/kubeadm/implementation-details/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="kubectl 命令行界面">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="kubectl 命令行界面" href="/zh/docs/reference/kubectl/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="kubectl 概述" href="/zh/docs/reference/kubectl/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="JSONPath 支持" href="/zh/docs/reference/kubectl/jsonpath/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl" href="/zh/docs/reference/kubectl/kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl 命令" href="/zh/docs/reference/kubectl/kubectl-cmds/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl 备忘单" href="/zh/docs/reference/kubectl/cheatsheet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl 的用法约定" href="/zh/docs/reference/kubectl/conventions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="适用于 Docker 用户的 kubectl" href="/zh/docs/reference/kubectl/docker-cli-to-kubectl/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="命令行工具参考">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="命令行工具参考" href="/zh/docs/reference/command-line-tools-reference/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="特性门控" href="/zh/docs/reference/command-line-tools-reference/feature-gates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="cloud-controller-manager <small>(EN)</small>" href="/docs/reference/command-line-tools-reference/cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-proxy" href="/zh/docs/reference/command-line-tools-reference/kube-proxy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-scheduler" href="/zh/docs/reference/command-line-tools-reference/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubelet" href="/zh/docs/reference/command-line-tools-reference/kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-apiserver" href="/zh/docs/reference/command-line-tools-reference/kube-apiserver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-controller-manager" href="/zh/docs/reference/command-line-tools-reference/kube-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubelet authentication/authorization" href="/zh/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="TLS bootstrapping" href="/zh/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="工具" href="/zh/docs/reference/tools/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/reference/access-authn-authz/node.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>使用 Node 鉴权</h1>
+
+
+
+<p>节点鉴权是一种特殊用途的鉴权模式，专门对 kubelet 发出的 API 请求进行鉴权。
+<!-- 
+Node authorization is a special-purpose authorization mode that specifically authorizes API requests made by kubelets.
+--></p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e6%a6%82%e8%bf%b0">概述</a></li>
+
+
+
+
+<li><a href="#%e8%bf%81%e7%a7%bb%e8%80%83%e8%99%91%e5%9b%a0%e7%b4%a0">迁移考虑因素</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<h2 id="概述">概述</h2>
+
+<!-- 
+## Overview 
+-->
+
+<p>节点鉴权器允许 kubelet 执行 API 操作。包括：
+<!-- 
+The Node authorizer allows a kubelet to perform API operations. This includes: 
+--></p>
+
+<p>读取操作：
+<!-- 
+Read operations: 
+--></p>
+
+<ul>
+<li>services</li>
+<li>endpoints</li>
+<li>nodes</li>
+<li>pods</li>
+<li>secrets、configmaps、以及绑定到 kubelet 的节点的 pod 的持久卷申领和持久卷</li>
+</ul>
+
+<!-- 
+* services
+* endpoints
+* nodes
+* pods
+* secrets, configmaps, persistent volume claims and persistent volumes related to pods bound to the kubelet's node 
+-->
+
+<p>写入操作：
+<!-- 
+Write operations: 
+--></p>
+
+<ul>
+<li>节点和节点状态（启用 <code>NodeRestriction</code> 准入插件以限制 kubelet 只能修改自己的节点）</li>
+<li>Pod 和 Pod 状态 (启用 <code>NodeRestriction</code> 准入插件以限制 kubelet 只能修改绑定到自身的 Pod)</li>
+<li>事件</li>
+</ul>
+
+<!-- 
+* nodes and node status (enable the `NodeRestriction` admission plugin to limit a kubelet to modify its own node)
+* pods and pod status (enable the `NodeRestriction` admission plugin to limit a kubelet to modify pods bound to itself)
+* events 
+-->
+
+<p>鉴权相关操作：
+<!-- 
+Auth-related operations: 
+--></p>
+
+<ul>
+<li>对于基于 TLS 的启动引导过程时使用的 certificationsigningrequests API 的读/写权限</li>
+<li>为委派的身份验证/授权检查创建 tokenreviews 和 subjectaccessreviews 的能力</li>
+</ul>
+
+<!-- 
+* read/write access to the certificationsigningrequests API for TLS bootstrapping
+* the ability to create tokenreviews and subjectaccessreviews for delegated authentication/authorization checks 
+-->
+
+<p>在将来的版本中，节点鉴权器可能会添加或删除权限，以确保 kubelet 具有正确操作所需的最小权限集。
+<!-- 
+In future releases, the node authorizer may add or remove permissions to ensure kubelets
+have the minimal set of permissions required to operate correctly. 
+--></p>
+
+<p>为了获得节点鉴权器的授权，kubelet 必须使用一个凭证以表示它在 <code>system:nodes</code> 组中，用户名为 <code>system:node:&lt;nodeName&gt;</code>。
+上述的组名和用户名格式要与 <a href="/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/">kubelet TLS 启动引导</a>过程中为每个 kubelet 创建的标识相匹配。
+<!-- 
+In order to be authorized by the Node authorizer, kubelets must use a credential that identifies them as 
+being in the `system:nodes` group, with a username of `system:node:<nodeName>`.
+This group and user name format match the identity created for each kubelet as part of 
+[kubelet TLS bootstrapping](/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/). 
+--></p>
+
+<p>要启用节点授权器，请使用 <code>--authorization-mode = Node</code> 启动 apiserver。
+<!-- 
+To enable the Node authorizer, start the apiserver with `--authorization-mode=Node`. 
+--></p>
+
+<p>要限制 kubelet 具有写入权限的 API 对象，请使用 <code>--enable-admission-plugins=...,NodeRestriction,...</code> 启动 apiserver，从而启用 <a href="/docs/reference/access-authn-authz/admission-controllers#NodeRestriction">NodeRestriction</a> 准入插件。
+<!-- 
+To limit the API objects kubelets are able to write, enable the [NodeRestriction](/docs/reference/access-authn-authz/admission-controllers#NodeRestriction) admission plugin by starting the apiserver with `--enable-admission-plugins=...,NodeRestriction,...`
+ --></p>
+
+<h2 id="迁移考虑因素">迁移考虑因素</h2>
+
+<!-- 
+## Migration considerations 
+-->
+
+<h3 id="在-system-nodes-组之外的-kubelet">在 <code>system:nodes</code> 组之外的 Kubelet</h3>
+
+<!-- 
+### Kubelets outside the `system:nodes` group 
+-->
+
+<p><code>system:nodes</code> 组之外的 kubelet 不会被 <code>Node</code> 鉴权模式授权，并且需要继续通过当前授权它们的机制来授权。
+节点准入插件不会限制来自这些 kubelet 的请求。
+<!-- 
+Kubelets outside the `system:nodes` group would not be authorized by the `Node` authorization mode,
+and would need to continue to be authorized via whatever mechanism currently authorizes them.
+The node admission plugin would not restrict requests from these kubelets. 
+--></p>
+
+<h3 id="具有无差别用户名的-kubelet">具有无差别用户名的 Kubelet</h3>
+
+<!-- 
+### Kubelets with undifferentiated usernames 
+-->
+
+<p>在一些部署中，kubelet 具有 <code>system:nodes</code> 组的凭证，但是无法给出它们所关联的节点的标识，因为它们没有 <code>system:node:...</code> 格式的用户名。
+这些 kubelet 不会被 <code>Node</code> 授权模式授权，并且需要继续通过当前授权它们的任何机制来授权。
+<!-- 
+In some deployments, kubelets have credentials that place them in the `system:nodes` group,
+but do not identify the particular node they are associated with,
+because they do not have a username in the `system:node:...` format.
+These kubelets would not be authorized by the `Node` authorization mode,
+and would need to continue to be authorized via whatever mechanism currently authorizes them. 
+--></p>
+
+<p>因为默认的节点标识符实现不会把它当作节点身份标识，<code>NodeRestriction</code> 准入插件会忽略来自这些 kubelet 的请求。
+<!-- 
+The `NodeRestriction` admission plugin would ignore requests from these kubelets,
+since the default node identifier implementation would not consider that a node identity. 
+--></p>
+
+<h3 id="相对于以前使用-rbac-的版本的更新">相对于以前使用 RBAC 的版本的更新</h3>
+
+<!-- 
+### Upgrades from previous versions using RBAC 
+-->
+
+<p>升级的 1.7 之前的使用 <a href="/docs/reference/access-authn-authz/rbac/">RBAC</a> 的集群将继续按原样运行，因为 <code>system:nodes</code> 组绑定已经存在。
+<!-- 
+Upgraded pre-1.7 clusters using [RBAC](/docs/reference/access-authn-authz/rbac/) will continue functioning as-is because the `system:nodes` group binding will already exist.
+--></p>
+
+<p>如果集群管理员希望开始使用 <code>Node</code> 鉴权器和 <code>NodeRestriction</code> 准入插件来限制节点对 API 的访问，这一需求可以通过下列操作来完成且不会影响已部署的应用：
+<!-- 
+If a cluster admin wishes to start using the `Node` authorizer and `NodeRestriction` admission plugin
+to limit node access to the API, that can be done non-disruptively:
+ --></p>
+
+<ol>
+<li>启用 <code>Node</code> 鉴权模式 (<code>--authorization-mode=Node,RBAC</code>) 和 <code>NodeRestriction</code> 准入插件</li>
+<li>确保所有 kubelet 的凭据符合组/用户名要求</li>
+<li>审核 apiserver 日志以确保 <code>Node</code> 鉴权器不会拒绝来自 kubelet 的请求（日志中没有持续的 <code>NODE DENY</code> 消息）</li>
+<li>删除 <code>system:node</code> 集群角色绑定
+&lt;!&ndash;</li>
+<li>Enable the <code>Node</code> authorization mode (<code>--authorization-mode=Node,RBAC</code>) and the <code>NodeRestriction</code> admission plugin</li>
+<li>Ensure all kubelets&rsquo; credentials conform to the group/username requirements</li>
+<li>Audit apiserver logs to ensure the <code>Node</code> authorizer is not rejecting requests from kubelets (no persistent <code>NODE DENY</code> messages logged)</li>
+<li>Delete the <code>system:node</code> cluster role binding
+&ndash;&gt;</li>
+</ol>
+
+<h3 id="rbac-节点权限">RBAC 节点权限</h3>
+
+<!-- 
+### RBAC Node Permissions 
+-->
+
+<p>在 1.6 版本中，当使用 <a href="/docs/reference/access-authn-authz/rbac/">RBAC 鉴权模式</a> 时，<code>system:nodes</code> 集群角色会被自动绑定到 <code>system:node</code> 组。
+<!-- 
+In 1.6, the `system:node` cluster role was automatically bound to the `system:nodes` group when using the [RBAC Authorization mode](/docs/reference/access-authn-authz/rbac/). 
+--></p>
+
+<p>在 1.7 版本中，不再推荐将 <code>system:nodes</code> 组自动绑定到 <code>system:node</code> 角色，因为节点鉴权器通过对 secret 和 configmap 访问的额外限制完成了相同的任务。
+如果同时启用了 <code>Node</code> 和 <code>RBAC</code> 授权模式，1.7 版本则不会创建 <code>system:nodes</code> 组到 <code>system:node</code> 角色的自动绑定。
+<!-- 
+In 1.7, the automatic binding of the `system:nodes` group to the `system:node` role is deprecated
+because the node authorizer accomplishes the same purpose with the benefit of additional restrictions
+on secret and configmap access. If the `Node` and `RBAC` authorization modes are both enabled,
+the automatic binding of the `system:nodes` group to the `system:node` role is not created in 1.7. 
+--></p>
+
+<p>在 1.8 版本中，绑定将根本不会被创建。
+<!-- 
+In 1.8, the binding will not be created at all. 
+--></p>
+
+<p>使用 RBAC 时，将继续创建 <code>system:node</code> 集群角色，以便与将其他用户或组绑定到该角色的部署方法兼容。
+<!-- 
+When using RBAC, the `system:node` cluster role will continue to be created,
+for compatibility with deployment methods that bind other users or groups to that role. 
+--></p>
+
+
+
+<!-- 
+---
+reviewers:
+- timstclair
+- deads2k
+- liggitt
+- ericchiang
+title: Using Node Authorization
+content_template: templates/concept
+weight: 90
+---
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/reference/access-authn-authz/node.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/reference\/access-authn-authz\/node\/",
+    "title" : "使用 Node 鉴权",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/reference\/access-authn-authz\/node\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/reference/access-authn-authz/node.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 February 06, 2020 at 2:49 PM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/67ca8d8e2251c89057b3ee4f80d6e89a57930769/">hide some original comments in translate docs (#18986)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/reference/access-authn-authz/node.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

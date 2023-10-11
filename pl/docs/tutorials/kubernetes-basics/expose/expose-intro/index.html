@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html id="docs" lang="pl" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Jak używać Service do udostępniania aplikacji - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="Cele  Poznać Serwis w Kubernetes Zrozumieć, jak obiekty Label i LabelSelector są powiązane z Serwisem Udostępnić aplikację na zewnątrz klastra Kubernetes korzystając z Serwisu   Kubernetes Services - przegląd Pody Kubernetes są nietrwałe. Pody mają swój cykl życia. Jeśli węzeł roboczy ulegnie awarii, tracone są wszystkie pody działające na węźle. ReplicaSet będzie próbował automatycznie doprowadzić klaster z powrotem do pożądanego stanu tworząc nowe pody i w ten sposób zapewnić działanie aplikacji.">
+<meta property="og:description" content="Cele  Poznać Serwis w Kubernetes Zrozumieć, jak obiekty Label i LabelSelector są powiązane z Serwisem Udostępnić aplikację na zewnątrz klastra Kubernetes korzystając z Serwisu   Kubernetes Services - przegląd Pody Kubernetes są nietrwałe. Pody mają swój cykl życia. Jeśli węzeł roboczy ulegnie awarii, tracone są wszystkie pody działające na węźle. ReplicaSet będzie próbował automatycznie doprowadzić klaster z powrotem do pożądanego stanu tworząc nowe pody i w ten sposób zapewnić działanie aplikacji.">
+<meta name="twitter:description" content="Cele  Poznać Serwis w Kubernetes Zrozumieć, jak obiekty Label i LabelSelector są powiązane z Serwisem Udostępnić aplikację na zewnątrz klastra Kubernetes korzystając z Serwisu   Kubernetes Services - przegląd Pody Kubernetes są nietrwałe. Pody mają swój cykl życia. Jeśli węzeł roboczy ulegnie awarii, tracone są wszystkie pody działające na węźle. ReplicaSet będzie próbował automatycznie doprowadzić klaster z powrotem do pożądanego stanu tworząc nowe pody i w ten sposób zapewnić działanie aplikacji.">
+<meta property="og:url" content="https://kubernetes.io/pl/docs/tutorials/kubernetes-basics/expose/expose-intro/">
+<meta property="og:title" content="Jak używać Service do udostępniania aplikacji">
+<meta name="twitter:title" content="Jak używać Service do udostępniania aplikacji">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/pl/" class="logo" title="Produkcyjny system zarządzania kontenerami - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/pl/docs/" class="active">Dokumentacja</a></li>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+             <li>
+                <a href="#">
+                    Polski <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/tutorials/kubernetes-basics/expose/expose-intro/">English</a></li>
+                
+                    <li><a href="/zh/docs/tutorials/kubernetes-basics/expose/expose-intro/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/docs/tutorials/kubernetes-basics/expose/expose-intro/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/docs/tutorials/kubernetes-basics/expose/expose-intro/">日本語 Japanese</a></li>
+                
+                    <li><a href="/de/docs/tutorials/kubernetes-basics/expose/expose-intro/">Deutsch</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/pl/docs/tutorials/kubernetes-basics/expose/expose-intro/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/pl/docs/tutorials/kubernetes-basics/expose/expose-intro/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/pl/docs/tutorials/kubernetes-basics/expose/expose-intro/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/pl/docs/tutorials/kubernetes-basics/expose/expose-intro/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/pl/docs/tutorials/kubernetes-basics/expose/expose-intro/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/pl/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Podstawy Kubernetes</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/pl/docs/tutorials/hello-minikube/">Jak zacząć?</a></h3>
+           <p>Jesteś gotowy ubrudzić ręce? Zbuduj własny klaster kubernetes z działającą na nim aplikacją "Hello World" w Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/pl/docs/home/">Dokumentacja</a></h3>
+           <p>Naucz się, jak korzystać z Kubernetesa z pomocą dokumentacji, która opisuje pojęcia, zawiera samouczki i informacje źródłowe. Możesz także <a href="/editdocs/" data-auto-burger-exclude>pomóc w jej tworzeniu</a>!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Chcesz zacząć współtworzyć kod Kubernetesa?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>Zajrzyj na GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Poznaj społeczność</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Kalendarz wydarzeń</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1>Samouczki</h1>
+<h5></h5>
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/pl/docs/home/">STRONA GŁÓWNA</a></li>
+		
+		
+		<li><a href="/pl/docs/setup/">OD CZEGO ZACZĄĆ</a></li>
+		
+		
+		<li><a href="/pl/docs/concepts/">POJĘCIA</a></li>
+		
+		
+		<li><a href="/pl/docs/tasks/">ZADANIA</a></li>
+		
+		
+		<li><a href="/pl/docs/tutorials/" class="YAH">SAMOUCZKI</a></li>
+		
+		
+		<li><a href="/pl/docs/reference/">MATERIAŁY ŹRÓDŁOWE</a></li>
+		
+		
+		<li><a href="/pl/docs/contribute/">WEŹ UDZIAŁ</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Szukaj" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  dokumentacja nie jest już aktualizowana. Wyświetlona jest wersja archiwalna. Po aktualną dokumentację zajrzyj na
+	 <a href="https://kubernetes.io/docs/home/">to najnowsza wersja.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Samouczki" href="/pl/docs/tutorials/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Hello Minikube" href="/pl/docs/tutorials/hello-minikube/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Podstawy Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Podstawy Kubernetes" href="/pl/docs/tutorials/kubernetes-basics/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Tworzenie klastra">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Jak użyć Minikube do stworzenia klastra" href="/pl/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interaktywny samouczek - Tworzenie klastra" href="/pl/docs/tutorials/kubernetes-basics/create-cluster/cluster-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Instalowanie aplikacji">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Jak użyć kubectl do tworzenia Deploymentu" href="/pl/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interaktywny samouczek - Instalacja aplikacji" href="/pl/docs/tutorials/kubernetes-basics/deploy-app/deploy-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Poznawanie aplikacji">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Pody i Węzły" href="/pl/docs/tutorials/kubernetes-basics/explore/explore-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interaktywny samouczek - Poznaj swoją aplikację" href="/pl/docs/tutorials/kubernetes-basics/explore/explore-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Udostępnianie aplikacji">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Jak używać Service do udostępniania aplikacji" href="/pl/docs/tutorials/kubernetes-basics/expose/expose-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interaktywny samouczek - Udostępnianie aplikacji" href="/pl/docs/tutorials/kubernetes-basics/expose/expose-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Skalowanie aplikacji">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Uruchamianie wielu instancji aplikacji" href="/pl/docs/tutorials/kubernetes-basics/scale/scale-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interaktywny samouczek - Skalowanie aplikacji" href="/pl/docs/tutorials/kubernetes-basics/scale/scale-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Aktualizowanie aplikacji">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Aktualizacje Rolling Update" href="/pl/docs/tutorials/kubernetes-basics/update/update-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interaktywny samouczek - Aktualizowanie aplikacji" href="/pl/docs/tutorials/kubernetes-basics/update/update-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Configuration">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring Redis using a ConfigMap <small>(EN)</small>" href="/docs/tutorials/configuration/configure-redis-using-configmap/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Stateless Applications">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Exposing an External IP Address to Access an Application in a Cluster <small>(EN)</small>" href="/docs/tutorials/stateless-application/expose-external-ip-address/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Example: Deploying PHP Guestbook application with Redis <small>(EN)</small>" href="/docs/tutorials/stateless-application/guestbook/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Example: Add logging and metrics to the PHP / Redis Guestbook example <small>(EN)</small>" href="/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Stateful Applications">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="StatefulSet Basics <small>(EN)</small>" href="/docs/tutorials/stateful-application/basic-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Example: Deploying WordPress and MySQL with Persistent Volumes <small>(EN)</small>" href="/docs/tutorials/stateful-application/mysql-wordpress-persistent-volume/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Example: Deploying Cassandra with Stateful Sets <small>(EN)</small>" href="/docs/tutorials/stateful-application/cassandra/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running ZooKeeper, A Distributed System Coordinator <small>(EN)</small>" href="/docs/tutorials/stateful-application/zookeeper/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Clusters">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="AppArmor <small>(EN)</small>" href="/docs/tutorials/clusters/apparmor/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Services">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Using Source IP <small>(EN)</small>" href="/docs/tutorials/services/source-ip/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/pl/docs/tutorials/kubernetes-basics/expose/expose-intro.html" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Jak używać Service do udostępniania aplikacji</h1>
+
+
+
+
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<body>
+
+<link href="/docs/tutorials/kubernetes-basics/public/css/styles.css" rel="stylesheet">
+
+<div class="layout" id="top">
+
+	<main class="content">
+
+		<div class="row">
+			<div class="col-md-8">
+    		<h3>Cele</h3>
+				<ul>
+					<li>Poznać Serwis w Kubernetes</li>
+					<li>Zrozumieć, jak obiekty Label i LabelSelector są powiązane z Serwisem</li>
+					<li>Udostępnić aplikację na zewnątrz klastra Kubernetes korzystając z Serwisu</li>
+				</ul>
+			</div>
+
+			<div class="col-md-8">
+			<h3>Kubernetes Services - przegląd</h3>
+
+			<p><a href="/docs/concepts/workloads/pods/pod-overview/">Pody</a> Kubernetes są nietrwałe. Pody mają swój <a href="/docs/concepts/workloads/pods/pod-lifecycle/">cykl życia</a>. Jeśli węzeł roboczy ulegnie awarii, tracone są wszystkie pody działające na węźle. <a href="/docs/concepts/workloads/controllers/replicaset/">ReplicaSet</a> będzie próbował automatycznie doprowadzić klaster z powrotem do pożądanego stanu tworząc nowe pody i w ten sposób zapewnić działanie aplikacji. Innym przykładem może być system na back-endzie przetwarzania obrazów posiadający 3 repliki. Każda z tych replik jest wymienna - system front-endu nie powinien musieć pilnować replik back-endu ani tego, czy któryś z podów przestał działać i został odtworzony na nowo. Nie należy jednak zapominać o tym, że każdy Pod w klastrze Kubernetes ma swój unikatowy adres IP, nawet pody w obrębie tego samego węzła, zatem powinna istnieć metoda automatycznego uzgadniania zmian pomiędzy podami, aby aplikacja mogła dalej funkcjonować.</p>
+
+			<p>Serwis w Kubernetes jest abstrakcyjnym obiektem, która definiuje logiczny zbiór podów oraz politykę dostępu do nich. Serwisy pozwalają na swobodne łączenie zależnych podów. Serwis jest zdefiniowany w YAMLu <a href="/docs/concepts/configuration/overview/#general-configuration-tips">(zalecane)</a> lub w JSONie - tak, jak wszystkie obiekty Kubernetes. Zbiór podów, które obsługuje Serwis, jest zazwyczaj określany przez <i>LabelSelector</i> (poniżej opisane jest, w jakich przypadkach możesz potrzebować zdefiniować Serwis bez specyfikowania <code>selektora</code>).</p>
+
+			<p>Mimo, że każdy pod ma swój unikatowy adres IP, te adresy nie są dostępne poza klastrem, o ile nie zostaną wystawione za pomocą Serwisu. Serwis umożliwia aplikacji przyjmować ruch przychodzący. Serwisy mogą być wystawiane na zewnątrz na kilka różnych sposobów, poprzez określenie <code>typu</code> w ServiceSpec:</p>
+			<ul>
+				<li><i>ClusterIP</i> (domyślnie) - Wystawia serwis poprzez wewnętrzny adres IP w klastrze. W ten sposób serwis jest dostępny tylko wewnątrz klastra.</li>
+				<li><i>NodePort</i> - Wystawia serwis na tym samym porcie na każdym z wybranych węzłów klastra przy pomocy NAT. W ten sposób serwis jest dostępny z zewnątrz klastra poprzez <code>&lt;NodeIP&gt;:&lt;NodePort&gt;</code>. Nadzbiór ClusterIP.</li>
+				<li><i>LoadBalancer</i> - Tworzy zewnętrzny load balancer u bieżącego dostawcy usług chmurowych (o ile jest taka możliwość) i przypisuje serwisowi stały, zewnętrzny adres IP. Nadzbiór NodePort.</li>
+				<li><i>ExternalName</i> - Wystawia Service przy pomocy wybranej nazwy (wyspecyfikowanej jako <code>externalName</code>) poprzez zwracanie wartości rekordu CNAME przypisanego w usłudze DNS. W tym przypadku nie jest wykorzystywany proces przekierowania ruchu metodą proxy. Ten typ wymaga wersji v1.7 lub wyższej usługi <code>kube-dns</code>.</li>
+			</ul>
+			<p>Więcej informacji na temat różnych typów serwisów znajduje się w  samouczku <a href="/docs/tutorials/services/source-ip/">Używanie adresu źródłowego (Source IP)</a>. Warto też zapoznać się z <a href="/docs/concepts/services-networking/connect-applications-service">Łączeniem Aplikacji z Serwisami</a>.</p>
+			<p>W pewnych przypadkach w serwisie nie specyfikuje się <code>selector</code>. Serwis, który został stworzony bez pola <code>selector</code>, nie utworzy odpowiedniego obiektu Endpoints. W ten sposób użytkownik ma możliwość ręcznego przyporządkowania serwisu do konkretnych endpoints. Inny przypadek, kiedy nie używa się selektora, ma miejsce, kiedy stosujemy <code>type: ExternalName</code>.</p>
+			</div>
+			<div class="col-md-4">
+				<div class="content__box content__box_lined">
+					<h3>Podsumowanie</h3>
+					<ul>
+						<li>Otwarcie Poda na ruch z zewnątrz</li>
+						<li>Rozkładanie ruchu pomiędzy poszczególne Pody</li>
+						<li>Używanie etykiet</li>
+					</ul>
+				</div>
+				<div class="content__box content__box_fill">
+						<p><i>Serwis Kubernetes to warstwa abstrakcji, która definiuje logiczny zbiór Podów i umożliwia kierowanie ruchu przychodzącego do Podów, jego równoważenie oraz service discovery.</i></p>
+				</div>
+			</div>
+		</div>
+		<br>
+
+		<div class="row">
+			<div class="col-md-8">
+				<h3>Sewisy i Etykiety <em>(Labels)</em></h3>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-8">
+				<p><img src="/docs/tutorials/kubernetes-basics/public/images/module_04_services.svg" width="150%" height="150%"></p>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-8">
+				<p>Serwis kieruje przychodzący ruch do grupy Podów. Serwisy są obiektami abstrakcyjnymi, dzięki którym pody mogą się psuć i być zastępowane przez Kubernetes nowymi bez ujemnego wpływu na działanie twoich aplikacji. Detekcją nowych podów i kierowaniem ruchu pomiędzy zależnymi podami (takimi, jak składowe front-end i back-end w aplikacji) zajmują się Serwisy Kubernetes.</p>
+				<p>Serwis znajduje zestaw odpowiednich Podów przy pomocy <a href="/docs/concepts/overview/working-with-objects/labels">etykiet i selektorów</a>, podstawowych jednostek grupujących, które umożliwiają operacje logiczne na obiektach Kubernetes. Etykiety to pary klucz/wartość przypisane do obiektów. Mogą być używane na różne sposoby:</p>
+				<ul>
+					<li>Dzielić obiekty na deweloperskie, testowe i produkcyjne</li>
+					<li>Osadzać znaczniki <em>(tags)</em>określające wersje</li>
+					<li>Klasyfikować obiekty przy użyciu znaczników</li>
+				</ul>
+
+			</div>
+		</div>
+
+		<br>
+
+		<div class="row">
+			<div class="col-md-8">
+				<p><img src="/docs/tutorials/kubernetes-basics/public/images/module_04_labels.svg"></p>
+			</div>
+		</div>
+		<br>
+		<div class="row">
+			<div class="col-md-8">
+				<p>Obiekty mogą być oznaczane etykietami w momencie tworzenia lub później. Etykiety mogą być zmienianie w dowolnej chwili. Udostępnijmy teraz naszą aplikację przy użyciu Serwisu i oznaczmy ją odpowiednimi etykietami.</p>
+			</div>
+		</div>
+		<br>
+		<div class="row">
+			<div class="col-md-12">
+				<a class="btn btn-lg btn-success" href="/pl/docs/tutorials/kubernetes-basics/expose/expose-interactive/" role="button">Rozpocznij interaktywny samouczek<span class="btn__next">›</span></a>
+			</div>
+		</div>
+	</main>
+</div>
+
+</body>
+</html>
+
+
+
+
+    
+            
+  <h2>Twoja opinia</h2>
+  <p class="feedback--prompt">Czy ta strona była przydatna? </p>
+  <button class="button feedback--yes">Tak</button>
+  <button class="button feedback--no">Nie</button>
+  <p class="feedback--response feedback--response__hidden">
+    Dziękujemy za informację zwrotną. Jeśli masz konkretne pytanie dotyczące użycia Kubernetesa, odwiedź
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Otwórz zgłoszenie w repozytorium GitHub, jeśli chcesz 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      zgłosić problem</a>
+    lub
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      zaproponować poprawkę</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/tutorials/kubernetes-basics/expose/expose-intro.html?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/pl\/docs\/tutorials\/kubernetes-basics\/expose\/expose-intro\/",
+    "title" : "Jak używać Service do udostępniania aplikacji",
+    "permalink" : "https:\/\/kubernetes.io\/pl\/docs\/tutorials\/kubernetes-basics\/expose\/expose-intro\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Zgłoś problem</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/pl/docs/tutorials/kubernetes-basics/expose/expose-intro.html" class="button issue">Edytuj stronę</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Ostatnia modyfikacja strony March 20, 2020 at 11:14 AM PST przez
+    <a href="https://github.com/kubernetes/website/commit/3b241356e50f05003bee139e6eb7b3376c17eeb1/">Synchronize Polish translation with master (#19681)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/tutorials/kubernetes-basics/expose/expose-intro.html">Historia strony</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/pl/docs/home/">Strona główna</a>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Kalendarz wydarzeń</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Wnieś swój wkład</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

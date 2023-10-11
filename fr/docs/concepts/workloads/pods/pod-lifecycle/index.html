@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html id="docs" lang="fr" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Cycle de vie d&#39;un Pod - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/fr/docs/concepts/workloads/pods/pod-lifecycle/">
+<meta property="og:title" content="Cycle de vie d&#39;un Pod">
+<meta name="twitter:title" content="Cycle de vie d&#39;un Pod">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/fr/" class="logo" title="Solution professionnelle d’orchestration de conteneurs - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/fr/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/fr/blog/">Blog</a></li>
+            
+            
+            
+            <li><a href="/fr/partners/">Partenaires</a></li>
+            
+            <li><a href="/fr/community/">Communauté</a></li>
+            
+            <li><a href="/fr/case-studies/">Études de cas</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    Français <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/workloads/pods/pod-lifecycle/">English</a></li>
+                
+                    <li><a href="/zh/docs/concepts/workloads/pods/pod-lifecycle/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/docs/concepts/workloads/pods/pod-lifecycle/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/docs/concepts/workloads/pods/pod-lifecycle/">日本語 Japanese</a></li>
+                
+                    <li><a href="/id/docs/concepts/workloads/pods/pod-lifecycle/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/fr/docs/concepts/workloads/pods/pod-lifecycle/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/fr/docs/concepts/workloads/pods/pod-lifecycle/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/fr/docs/concepts/workloads/pods/pod-lifecycle/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/fr/docs/concepts/workloads/pods/pod-lifecycle/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/fr/docs/concepts/workloads/pods/pod-lifecycle/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/fr/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Apprendre les bases de Kubernetes</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/fr/docs/tutorials/hello-minikube/">Démarrer</a></h3>
+           <p>Prêt à mettre les mains dans le cambouis ? Créez un cluster Kubernetes simple qui exécute "Hello World" avec Node.js.</p>>.
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/fr/docs/home/">Documentation</a></h3>
+           <p>Apprenez à utiliser Kubernetes à l'aide d'une documentation conceptuelle, didactique et de référence. Vous pouvez même <a href="/editdocs/" data-auto-burger-exclude>aider en contribuant à la documentation</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/fr/blog/">Blog</a></h3>
+           <p>Lisez les dernières nouvelles à propos de Kubernetes et des conteneurs en général. Obtenez les derniers tutoriels techniques.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Souhaitez vous contribuer au code de Kubernetes ?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>Voir sur GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explorez la communauté</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendrier</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>Concepts</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/fr/docs/home/">ACCUEIL</a></li>
+		
+		
+		<li><a href="/fr/docs/setup/">INSTALLATION</a></li>
+		
+		
+		<li><a href="/fr/docs/concepts/" class="YAH">CONCEPTS</a></li>
+		
+		
+		<li><a href="/fr/docs/tasks/">TÂCHES</a></li>
+		
+		
+		<li><a href="/fr/docs/tutorials/">TUTORIELS</a></li>
+		
+		
+		<li><a href="/fr/docs/reference/">RÉFÉRENCE</a></li>
+		
+		
+		<li><a href="/fr/docs/contribute/">CONTRIBUER</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Recherche" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation non maintenue. Vous consultez une version statique. Pour une documentation à jour, veuillez consulter: 
+	 <a href="https://kubernetes.io/docs/home/">dernière version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Concepts" href="/fr/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Vue d&#39;ensemble">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Qu&#39;est-ce-que Kubernetes ?" href="/fr/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Composants de Kubernetes" href="/fr/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="The Kubernetes API <small>(EN)</small>" href="/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Utilisation des objets Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Understanding Kubernetes Objects <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes Object Management <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Object Names and IDs <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Namespaces <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Labels and Selectors <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Annotations <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Field Selectors <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Recommended Labels <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Architecture de Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Noeuds" href="/fr/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Communication Master-Node" href="/fr/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Concepts sous-jacents au Cloud Controller Manager" href="/fr/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Controllers <small>(EN)</small>" href="/docs/concepts/architecture/controller/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Les conteneurs">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Images" href="/fr/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Classe d&#39;exécution (Runtime Class)" href="/fr/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Les variables d’environnement du conteneur" href="/fr/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Hooks de cycle de vie de conteneurs" href="/fr/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Workloads">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pods">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Aperçu du Pod" href="/fr/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pods" href="/fr/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Cycle de vie d&#39;un Pod" href="/fr/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Init Containers" href="/fr/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Preset <small>(EN)</small>" href="/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Topology Spread Constraints <small>(EN)</small>" href="/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Disruptions <small>(EN)</small>" href="/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ephemeral Containers <small>(EN)</small>" href="/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Contrôleurs">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/fr/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="ReplicationController <small>(EN)</small>" href="/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Déploiements" href="/fr/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="StatefulSets <small>(EN)</small>" href="/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="DaemonSet <small>(EN)</small>" href="/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Garbage Collection <small>(EN)</small>" href="/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="TTL Controller for Finished Resources <small>(EN)</small>" href="/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Jobs - Run to Completion <small>(EN)</small>" href="/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="CronJob <small>(EN)</small>" href="/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Services, Equilibreur de charge, et Réseau">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="EndpointSlices <small>(EN)</small>" href="/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service" href="/fr/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Topology <small>(EN)</small>" href="/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DNS pour les services et les pods" href="/fr/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Connecting Applications with Services <small>(EN)</small>" href="/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/fr/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ingress Controllers <small>(EN)</small>" href="/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Network Policies <small>(EN)</small>" href="/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Adding entries to Pod /etc/hosts with HostAliases <small>(EN)</small>" href="/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="IPv4/IPv6 dual-stack <small>(EN)</small>" href="/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Stockage">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Volumes" href="/fr/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Volume Snapshots <small>(EN)</small>" href="/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Volumes persistants" href="/fr/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="CSI Volume Cloning <small>(EN)</small>" href="/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Storage Classes <small>(EN)</small>" href="/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Volume Snapshot Classes <small>(EN)</small>" href="/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Dynamic Volume Provisioning <small>(EN)</small>" href="/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Node-specific Volume Limits <small>(EN)</small>" href="/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Configuration">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuration Best Practices <small>(EN)</small>" href="/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Bin Packing for Extended Resources <small>(EN)</small>" href="/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Compute Resources for Containers <small>(EN)</small>" href="/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Overhead <small>(EN)</small>" href="/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Assigning Pods to Nodes <small>(EN)</small>" href="/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Taints and Tolerations <small>(EN)</small>" href="/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Secrets" href="/fr/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Organizing Cluster Access Using kubeconfig Files <small>(EN)</small>" href="/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduling Framework <small>(EN)</small>" href="/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Sécurité">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Overview of Cloud Native Security <small>(EN)</small>" href="/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Politiques">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Quotas <small>(EN)</small>" href="/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Security Policies <small>(EN)</small>" href="/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Scheduling">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes Scheduler <small>(EN)</small>" href="/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduler Performance Tuning <small>(EN)</small>" href="/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Administration d&#39;un cluster">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Vue d&#39;ensemble de l&#39;administration d&#39;un cluster" href="/fr/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Certificats" href="/fr/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloud Providers <small>(EN)</small>" href="/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Resources <small>(EN)</small>" href="/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Architecture de Journalisation d&#39;évènements (logging)" href="/fr/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Metrics For The Kubernetes Control Plane <small>(EN)</small>" href="/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring kubelet Garbage Collection <small>(EN)</small>" href="/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Proxies in Kubernetes <small>(EN)</small>" href="/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Addons <small>(EN)</small>" href="/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Extensions Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Extending your Kubernetes Cluster <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Extensions de l&#39;API Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Custom Resources <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Extending the Kubernetes API with the aggregation layer <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Extensions compute, stockage et réseau">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Network Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Operator pattern <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Catalog <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/fr/docs/concepts/workloads/pods/pod-lifecycle.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Cycle de vie d&#39;un Pod</h1>
+
+
+
+<p>Cette page décrit le cycle de vie d&rsquo;un Pod.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#phase-du-pod">Phase du Pod</a></li>
+
+
+
+
+<li><a href="#conditions-du-pod">Conditions du Pod</a></li>
+
+
+
+
+<li><a href="#sondes-du-conteneur">Sondes du Conteneur</a></li>
+
+
+
+
+<li><a href="#statut-d-un-pod-et-d-un-conteneur">Statut d’un Pod et d’un Conteneur</a></li>
+
+
+
+
+<li><a href="#%c3%a9tats-d-un-conteneur">États d’un Conteneur</a></li>
+
+
+
+
+<li><a href="#pod-readiness-gate">Pod readiness gate</a></li>
+
+
+
+
+<li><a href="#restart-policy">Restart policy</a></li>
+
+
+
+
+<li><a href="#dur%c3%a9e-de-vie-d-un-pod">Durée de vie d’un Pod</a></li>
+
+
+
+
+<li><a href="#exemples">Exemples</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#a-suivre">A suivre</a></li>
+
+
+
+</ul>
+
+
+<h2 id="phase-du-pod">Phase du Pod</h2>
+
+<p>Le champ <code>status</code> d&rsquo;un Pod est un objet
+<a href="/docs/reference/generated/kubernetes-api/v1.17/#podstatus-v1-core">PodStatus</a>,
+contenant un champ <code>phase</code>.</p>
+
+<p>La phase d&rsquo;un Pod est un résumé simple et de haut niveau de l&rsquo;étape à laquelle le Pod se trouve
+dans son cycle de vie.
+La phase n&rsquo;est pas faite pour être un cumul complet d&rsquo;observations de l&rsquo;état
+du conteneur ou du Pod, ni pour être une machine à état compréhensible.</p>
+
+<p>Le nombre et la signification des valeurs de phase d&rsquo;un pod sont soigneusement gardés.
+Hormis ce qui est documenté ici, rien ne doit être supposé sur des Pods
+ayant une valeur de <code>phase</code> donnée.</p>
+
+<p>Voici les valeurs possibles pour <code>phase</code> :</p>
+
+<table>
+<thead>
+<tr>
+<th align="left">Valeur</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="left"><code>Pending</code></td>
+<td align="left">Le Pod a été accepté par Kubernetes, mais une ou plusieurs images de conteneurs n&rsquo;ont pas encore été créées. Ceci inclut le temps avant d&rsquo;être affecté ainsi que le temps à télécharger les images à travers le réseau, ce qui peut prendre un certain temps.</td>
+</tr>
+
+<tr>
+<td align="left"><code>Running</code></td>
+<td align="left">Le pod a été affecté à un nœud et tous les conteneurs ont été créés. Au moins un conteneur est toujours en cours d&rsquo;exécution, ou est en train de démarrer ou redémarrer.</td>
+</tr>
+
+<tr>
+<td align="left"><code>Succeeded</code></td>
+<td align="left">Tous les conteneurs du pod ont terminé avec succès et ne seront pas redémarrés.</td>
+</tr>
+
+<tr>
+<td align="left"><code>Failed</code></td>
+<td align="left">Tous les conteneurs d&rsquo;un pod ont terminé, et au moins un conteneur a terminé en échec : soit le conteneur a terminé avec un status non zéro, soit il a été arrêté par le système.</td>
+</tr>
+
+<tr>
+<td align="left"><code>Unknown</code></td>
+<td align="left">Pour quelque raison l&rsquo;état du pod ne peut pas être obtenu, en général en cas d&rsquo;erreur de communication avec l&rsquo;hôte du Pod.</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="conditions-du-pod">Conditions du Pod</h2>
+
+<p>Un Pod a un PodStatus, qui contient un tableau de
+<a href="/docs/reference/generated/kubernetes-api/v1.17/#podcondition-v1-core">PodConditions</a>
+à travers lesquelles le Pod est ou non passé. Chaque élément
+du tableau de PodCondition a six champs possibles :</p>
+
+<ul>
+<li><p>Le champ <code>lastProbeTime</code> fournit un timestamp auquel la condition du Pod
+a été sondée pour la dernière fois.</p></li>
+
+<li><p>Le champ <code>lastTransitionTime</code> fournit un timestamp auquel le Pod a changé de statut
+pour la dernière fois.</p></li>
+
+<li><p>Le champ <code>message</code> est un message lisible indiquant les détails de la transition.</p></li>
+
+<li><p>Le champ <code>reason</code> est une raison unique, en un seul mot et en CamelCase de la transition
+vers la dernière condition.</p></li>
+
+<li><p>Le champ <code>status</code> est une chaîne de caractères  avec les valeurs possibles &ldquo;<code>True</code>&rdquo;, &ldquo;<code>False</code>&rdquo;, et &ldquo;<code>Unknown</code>&rdquo;.</p></li>
+
+<li><p>Le champ <code>type</code> est une chaîne de caractères ayant une des valeurs suivantes :</p>
+
+<ul>
+<li><code>PodScheduled</code> : le Pod a été affecté à un nœud ;</li>
+<li><code>Ready</code> : le Pod est prêt à servir des requêtes et doit être rajouté aux équilibreurs
+de charge de tous les Services correspondants ;</li>
+<li><code>Initialized</code> : tous les <a href="/docs/concepts/workloads/pods/init-containers">init containers</a>
+ont démarré correctement ;</li>
+<li><code>Unschedulable</code> : le scheduler ne peut pas affecter le Pod pour l&rsquo;instant, par exemple
+par manque de ressources ou en raison d&rsquo;autres contraintes ;</li>
+<li><code>ContainersReady</code> : tous les conteneurs du Pod sont prêts.</li>
+</ul></li>
+</ul>
+
+<h2 id="sondes-du-conteneur">Sondes du Conteneur</h2>
+
+<p>Une <a href="/docs/reference/generated/kubernetes-api/v1.17/#probe-v1-core">Sonde</a> (Probe) est un diagnostic
+exécuté périodiquement par <a href="/docs/admin/kubelet/">kubelet</a>
+sur un Conteneur. Pour exécuter un diagnostic, kubelet appelle un
+<a href="https://godoc.org/k8s.io/kubernetes/pkg/api/v1#Handler" target="_blank">Handler</a> implémenté par
+le Conteneur. Il existe trois types de handlers :</p>
+
+<ul>
+<li><p><a href="/docs/reference/generated/kubernetes-api/v1.17/#execaction-v1-core">ExecAction</a>:
+Exécute la commande spécifiée à l&rsquo;intérieur du Conteneur. Le diagnostic
+est considéré réussi si la commande se termine avec un code de retour de 0.</p></li>
+
+<li><p><a href="/docs/reference/generated/kubernetes-api/v1.17/#tcpsocketaction-v1-core">TCPSocketAction</a>:
+Exécute un contrôle TCP sur l&rsquo;adresse IP du Conteneur et sur un port spécifié.
+Le diagnostic est considéré réussi si le port est ouvert.</p></li>
+
+<li><p><a href="/docs/reference/generated/kubernetes-api/v1.17/#httpgetaction-v1-core">HTTPGetAction</a>:
+Exécute une requête HTTP Get sur l&rsquo;adresse IP du Conteneur et sur un port et
+un chemin spécifiés. Le diagnostic est considéré réussi si la réponse a un code
+de retour supérieur ou égal à 200 et inférieur à 400.</p></li>
+</ul>
+
+<p>Chaque sonde a un résultat parmi ces trois :</p>
+
+<ul>
+<li>Success: Le Conteneur a réussi le diagnostic.</li>
+<li>Failure: Le Conteneur a échoué au diagnostic.</li>
+<li>Unknown: L&rsquo;exécution du diagnostic a échoué, et donc aucune action ne peut être prise.</li>
+</ul>
+
+<p>kubelet peut optionnellement exécuter et réagir à deux types de sondes sur des conteneurs
+en cours d&rsquo;exécution :</p>
+
+<ul>
+<li><p><code>livenessProbe</code> : Indique si le Conteneur est en cours d&rsquo;exécution. Si
+la liveness probe échoue, kubelet tue le Conteneur et le Conteneur
+est soumis à sa <a href="#restart-policy">politique de redémarrage</a> (restart policy).
+Si un Conteneur ne fournit pas de liveness probe, l&rsquo;état par défaut est <code>Success</code>.</p></li>
+
+<li><p><code>readinessProbe</code> : Indique si le Conteneur est prêt à servir des requêtes.
+Si la readiness probe échoue, le contrôleur de points de terminaison (Endpoints)
+retire l&rsquo;adresse IP du Pod des points de terminaison de tous les Services
+correspodant au Pod. L&rsquo;état par défaut avant le délai initial est
+<code>Failure</code>. Si le Conteneur ne fournit pas de readiness probe, l&rsquo;état par
+défaut est <code>Success</code>.</p></li>
+</ul>
+
+<h3 id="quand-devez-vous-utiliser-une-liveness-ou-une-readiness-probe">Quand devez-vous utiliser une liveness ou une readiness probe ?</h3>
+
+<p>Si le process de votre Conteneur est capable de crasher de lui-même lorsqu&rsquo;il
+rencontre un problème ou devient inopérant, vous n&rsquo;avez pas forcément besoin
+d&rsquo;une liveness probe ; kubelet va automatiquement exécuter l&rsquo;action correcte
+en accord avec la politique de redémarrage (<code>restartPolicy</code>) du Pod.</p>
+
+<p>Si vous désirez que votre Conteneur soit tué et redémarré si une sonde échoue, alors
+spécifiez une liveness probe et indiquez une valeur pour <code>restartPolicy</code> à Always
+ou OnFailure.</p>
+
+<p>Si vous voulez commencer à envoyer du trafic à un Pod seulement lorsqu&rsquo;une sonde
+réussit, spécifiez une readiness probe. Dans ce cas, la readiness probe peut être
+la même que la liveness probe, mais l&rsquo;existence de la readiness probe dans la spec
+veut dire que le Pod va démarrer sans recevoir aucun trafic et va commencer
+à recevoir du trafic après que la sonde réussisse.
+Si votre Conteneur doit charger une grande quantité de données, des fichiers de
+configuration ou exécuter des migrations au démarrage, spécifiez une readiness probe.</p>
+
+<p>Si vous désirez que le Conteneur soit capable de se mettre en maintenance tout seul, vous
+pouvez spécifier une readiness probe qui vérifie un point de terminaison spécifique au
+readiness et différent de la liveness probe.</p>
+
+<p>Notez que si vous voulez uniquement être capable de dérouter les requêtes lorsque
+le Pod est supprimé, vous n&rsquo;avez pas forcément besoin d&rsquo;une readiness probe; lors
+de sa suppression, le Pod se met automatiquement dans un état non prêt, que la
+readiness probe existe ou non.
+Le Pod reste dans le statut non prêt le temps que les Conteneurs du Pod s&rsquo;arrêtent.</p>
+
+<p>Pour plus d&rsquo;informations sur la manière de mettre en place une liveness ou readiness probe,
+voir <a href="/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/">Configurer des Liveness et Readiness Probes</a>.</p>
+
+<h2 id="statut-d-un-pod-et-d-un-conteneur">Statut d&rsquo;un Pod et d&rsquo;un Conteneur</h2>
+
+<p>Pour des informations détaillées sur le statut d&rsquo;un Pod et d&rsquo;un Conteneur, voir
+<a href="/docs/reference/generated/kubernetes-api/v1.17/#podstatus-v1-core">PodStatus</a>
+et
+<a href="/docs/reference/generated/kubernetes-api/v1.17/#containerstatus-v1-core">ContainerStatus</a>.
+Notez que l&rsquo;information rapportée comme statut d&rsquo;un Pod dépend du
+<a href="/docs/reference/generated/kubernetes-api/v1.17/#containerstatus-v1-core">ContainerState</a> actuel.</p>
+
+<h2 id="états-d-un-conteneur">États d&rsquo;un Conteneur</h2>
+
+<p>Une fois que le Pod est assigné à un nœud par le scheduler, kubelet commence
+à créer les conteneurs en utilisant le runtime de conteneurs. Il existe trois états possibles
+pour les conteneurs : en attente (Waiting), en cours d&rsquo;exécution (Running) et terminé (Terminated). Pour vérifier l&rsquo;état d&rsquo;un conteneur, vous pouvez utiliser <code>kubectl describe pod [POD_NAME]</code>. L&rsquo;état est affiché pour chaque conteneur du Pod.</p>
+
+<ul>
+<li><p><code>Waiting</code> : état du conteneur par défaut. Si le conteneur n&rsquo;est pas dans un état Running ou Terminated, il est dans l&rsquo;état Waiting. Un conteneur dans l&rsquo;état Waiting exécute
+les opérations nécessaires, comme télécharger les images, appliquer des Secrets, etc. À côté
+de cet état, un message et une raison sur l&rsquo;état sont affichés pour vous fournir plus
+d&rsquo;informations.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">...<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>State:<span style="color:#bbb">          </span>Waiting<span style="color:#bbb">
+</span><span style="color:#bbb">   </span>Reason:<span style="color:#bbb">       </span>ErrImagePull<span style="color:#bbb">
+</span><span style="color:#bbb"></span>...</code></pre></div></li>
+
+<li><p><code>Running</code> : Indique que le conteneur s&rsquo;exécute sans problème. Une fois qu&rsquo;un centeneur est
+dans l&rsquo;état Running, le hook <code>postStart</code> est exécuté (s&rsquo;il existe). Cet état affiche aussi
+le moment auquel le conteneur est entré dans l&rsquo;état Running.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">...<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>State:<span style="color:#bbb">          </span>Running<span style="color:#bbb">
+</span><span style="color:#bbb">   </span>Started:<span style="color:#bbb">      </span>Wed,<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb"> </span>Jan<span style="color:#bbb"> </span><span style="color:#666">2019</span><span style="color:#bbb"> </span><span style="color:#666">16</span>:<span style="color:#666">46</span>:<span style="color:#666">38</span><span style="color:#bbb"> </span>+<span style="color:#666">0530</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>...</code></pre></div></li>
+
+<li><p><code>Terminated</code>:  Indique que le conteneur a terminé son exécution et s&rsquo;est arrêté.
+Un conteneur entre dans cet état lorsqu&rsquo;il s&rsquo;est exécuté avec succès ou lorsqu&rsquo;il a
+échoué pour une raison quelconque. De plus, une raison et un code de retour sont affichés,
+ainsi que les moments de démarrage et d&rsquo;arrêt du conteneur. Avant qu&rsquo;un conteneur entre
+dans l&rsquo;état Terminated, le hook <code>preStop</code> est exécuté (s&rsquo;il existe).</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">...<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>State:<span style="color:#bbb">          </span>Terminated<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>Reason:<span style="color:#bbb">       </span>Completed<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>Exit<span style="color:#bbb"> </span>Code:<span style="color:#bbb">    </span><span style="color:#666">0</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>Started:<span style="color:#bbb">      </span>Wed,<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb"> </span>Jan<span style="color:#bbb"> </span><span style="color:#666">2019</span><span style="color:#bbb"> </span><span style="color:#666">11</span>:<span style="color:#666">45</span>:<span style="color:#666">26</span><span style="color:#bbb"> </span>+<span style="color:#666">0530</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>Finished:<span style="color:#bbb">     </span>Wed,<span style="color:#bbb"> </span><span style="color:#666">30</span><span style="color:#bbb"> </span>Jan<span style="color:#bbb"> </span><span style="color:#666">2019</span><span style="color:#bbb"> </span><span style="color:#666">11</span>:<span style="color:#666">45</span>:<span style="color:#666">26</span><span style="color:#bbb"> </span>+<span style="color:#666">0530</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>...</code></pre></div></li>
+</ul>
+
+<h2 id="pod-readiness-gate">Pod readiness gate</h2>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.14</code>
+
+
+
+
+	
+	
+	
+	
+	
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>stable</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="stable">
+Cette fonctionnalité est <em>stable</em>, ce qui signifie :</p>
+
+<ul>
+<li>Le nom de version est vX où X est un entier.</li>
+<li>Les versions stables des fonctionnalités seront maintenues pour de nombreuses versions ultérieures.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+	
+
+</div>
+
+<p>Afin d&rsquo;étendre la readiness d&rsquo;un Pod en autorisant l&rsquo;injection de données
+supplémentaires ou des signaux dans <code>PodStatus</code>, Kubernetes 1.11 a introduit
+une fonctionnalité appelée <a href="https://github.com/kubernetes/enhancements/blob/master/keps/sig-network/0007-pod-ready%2B%2B.md" target="_blank">Pod ready++</a>.
+Vous pouvez utiliser le nouveau champ <code>ReadinessGate</code> dans <code>PodSpec</code>
+pour spécifier des conditions additionnelles à évaluer pour la readiness d&rsquo;un Pod.
+Si Kubernetes ne peut pas trouver une telle condition dans le champ <code>status.conditions</code>
+d&rsquo;un Pod, le statut de la condition est &ldquo;<code>False</code>&rdquo; par défaut. Voici un exemple :</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">Kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>...<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>readinessGates:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>conditionType:<span style="color:#bbb"> </span><span style="color:#b44">&#34;www.example.com/feature-1&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>status:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>conditions:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>Ready<span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># ceci est une builtin PodCondition</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>status:<span style="color:#bbb"> </span><span style="color:#b44">&#34;False&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>lastProbeTime:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">null</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>lastTransitionTime:<span style="color:#bbb"> </span>2018-01-01T00:00:00Z<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span><span style="color:#b44">&#34;www.example.com/feature-1&#34;</span><span style="color:#bbb">   </span><span style="color:#080;font-style:italic"># une PodCondition supplémentaire</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>status:<span style="color:#bbb"> </span><span style="color:#b44">&#34;False&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>lastProbeTime:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">null</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>lastTransitionTime:<span style="color:#bbb"> </span>2018-01-01T00:00:00Z<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containerStatuses:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>containerID:<span style="color:#bbb"> </span>docker://abcd...<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>ready:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>...</code></pre></div>
+<p>Les nouvelles conditions du Pod doivent être conformes au <a href="/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set">format des étiquettes</a> de Kubernetes.
+La commande <code>kubectl patch</code> ne prenant pas encore en charge la modifictaion du statut
+des objets, les nouvelles conditions du Pod doivent être injectées avec
+l&rsquo;action <code>PATCH</code> en utilisant une des <a href="/docs/reference/using-api/client-libraries/">bibliothèques KubeClient</a>.</p>
+
+<p>Avec l&rsquo;introduction de nouvelles conditions d&rsquo;un Pod, un Pod est considéré comme prêt
+<strong>seulement</strong> lorsque les deux déclarations suivantes sont vraies :</p>
+
+<ul>
+<li>Tous les conteneurs du Pod sont prêts.</li>
+<li>Toutes les conditions spécifiées dans <code>ReadinessGates</code> sont à &ldquo;<code>True</code>&rdquo;.</li>
+</ul>
+
+<p>Pour faciliter le changement de l&rsquo;évaluation de la readiness d&rsquo;un Pod,
+une nouvelle condition de Pod <code>ContainersReady</code> est introduite pour capturer
+l&rsquo;ancienne condition <code>Ready</code> d&rsquo;un Pod.</p>
+
+<p>Avec K8s 1.11, en tant que fonctionnalité alpha, &ldquo;Pod Ready++&rdquo; doit être explicitement activé en mettant la <a href="/docs/reference/command-line-tools-reference/feature-gates/">feature gate</a> <code>PodReadinessGates</code>
+à true.</p>
+
+<p>Avec K8s 1.12, la fonctionnalité est activée par défaut.</p>
+
+<h2 id="restart-policy">Restart policy</h2>
+
+<p>La structure PodSpec a un champ <code>restartPolicy</code> avec comme valeur possible
+Always, OnFailure et Never. La valeur par défaut est Always.
+<code>restartPolicy</code> s&rsquo;applique à tous les Conteneurs du Pod. <code>restartPolicy</code> s&rsquo;applique
+seulement aux redémarrages des Conteneurs par kubelet sur le même nœud. Des conteneurs
+terminés qui sont redémarrés par kubelet sont redémarrés avec un délai exponentiel
+(10s, 20s, 40s &hellip;) plafonné à cinq minutes, qui est réinitialisé après dix minutes
+d&rsquo;exécution normale. Comme discuté dans le
+<a href="/docs/user-guide/pods/#durability-of-pods-or-lack-thereof">document sur les Pods</a>,
+une fois attaché à un nœud, un Pod ne sera jamais rattaché à un autre nœud.</p>
+
+<h2 id="durée-de-vie-d-un-pod">Durée de vie d&rsquo;un Pod</h2>
+
+<p>En général, un Pod ne disparaît pas avant que quelqu&rsquo;un le détruise. Ceci peut être
+un humain ou un contrôleur. La seule exception à cette règle est pour les Pods ayant
+une <code>phase</code> Succeeded ou Failed depuis une durée donnée (déterminée
+par <code>terminated-pod-gc-threshold</code> sur le master), qui expireront et seront
+automatiquement détruits.</p>
+
+<p>Trois types de contrôleurs sont disponibles :</p>
+
+<ul>
+<li><p>Utilisez un <a href="/docs/concepts/jobs/run-to-completion-finite-workloads/">Job</a> pour des
+Pods qui doivent se terminer, par exemple des calculs par batch. Les Jobs sont appropriés
+seulement pour des Pods ayant <code>restartPolicy</code> égal à OnFailure ou Never.</p></li>
+
+<li><p>Utilisez un <a href="/docs/concepts/workloads/controllers/replicationcontroller/">ReplicationController</a>,
+<a href="/docs/concepts/workloads/controllers/replicaset/">ReplicaSet</a> ou
+<a href="/docs/concepts/workloads/controllers/deployment/">Deployment</a>
+pour des Pods qui ne doivent pas s&rsquo;arrêter, par exemple des serveurs web.
+ReplicationControllers sont appropriés pour des Pods ayant <code>restartPolicy</code> égal à
+Always.</p></li>
+
+<li><p>Utilisez un <a href="/docs/concepts/workloads/controllers/daemonset/">DaemonSet</a> pour des Pods
+qui doivent s&rsquo;exécuter une fois par machine, car ils fournissent un service système
+au niveau de la machine.</p></li>
+</ul>
+
+<p>Les trois types de contrôleurs contiennent un PodTemplate. Il est recommandé
+de créer le contrôleur approprié et de le laisser créer les Pods, plutôt que de
+créer directement les Pods vous-même. Ceci car les Pods seuls ne sont pas résilients
+aux pannes machines, alors que les contrôleurs le sont.</p>
+
+<p>Si un nœud meurt ou est déconnecté du reste du cluster, Kubernetes applique
+une politique pour mettre la <code>phase</code> de tous les Pods du nœud perdu à Failed.</p>
+
+<h2 id="exemples">Exemples</h2>
+
+<h3 id="exemple-avancé-de-liveness-probe">Exemple avancé de liveness probe</h3>
+
+<p>Les Liveness probes sont exécutées par kubelet, toutes les requêtes sont donc faites
+dans l&rsquo;espace réseau de kubelet.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>test:<span style="color:#bbb"> </span>liveness<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>liveness-http<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>/server<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/liveness<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>livenessProbe:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>httpGet:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#080;font-style:italic"># lorsque &#34;host&#34; n&#39;est pas défini, &#34;PodIP&#34; sera utilisé</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#080;font-style:italic"># host: my-host</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#080;font-style:italic"># lorsque &#34;scheme&#34; n&#39;est pas défini, &#34;HTTP&#34; sera utilisé. &#34;HTTP&#34; et &#34;HTTPS&#34; sont les seules valeurs possibles</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span><span style="color:#080;font-style:italic"># scheme: HTTPS</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>path:<span style="color:#bbb"> </span>/healthz<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>port:<span style="color:#bbb"> </span><span style="color:#666">8080</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>httpHeaders:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>X-Custom-Header<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>value:<span style="color:#bbb"> </span>Awesome<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>initialDelaySeconds:<span style="color:#bbb"> </span><span style="color:#666">15</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>timeoutSeconds:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>liveness</code></pre></div>
+<h3 id="exemples-d-états">Exemples d&rsquo;états</h3>
+
+<ul>
+<li><p>Un Pod est en cours d&rsquo;exécution et a un Conteneur. Le conteneur se termine avec succès.</p>
+
+<ul>
+<li>Écriture d&rsquo;un événement de complétion.</li>
+<li>Si <code>restartPolicy</code> est :
+
+<ul>
+<li>Always : Redémarrage du Conteneur ; la <code>phase</code> du Pod reste à Running.</li>
+<li>OnFailure : la <code>phase</code> du Pod passe à Succeeded.</li>
+<li>Never : la <code>phase</code> du Pod passe à Succeeded.</li>
+</ul></li>
+</ul></li>
+
+<li><p>Un Pod est en cours d&rsquo;exécution et a un Conteneur. Le conteneur se termine en erreur.</p>
+
+<ul>
+<li>Écriture d&rsquo;un événement d&rsquo;échec.</li>
+<li>Si <code>restartPolicy</code> est :
+
+<ul>
+<li>Always : Redémarrage du Conteneur ; la <code>phase</code> du Pod reste à Running.</li>
+<li>OnFailure : Redémarrage du Conteneur ; la <code>phase</code> du Pod reste à Running.</li>
+<li>Never : la <code>phase</code> du Pod passe à Failed.</li>
+</ul></li>
+</ul></li>
+
+<li><p>Un Pod est en cours d&rsquo;exécution et a deux Conteneurs. Le conteneur 1 termine en erreur.</p>
+
+<ul>
+<li>Écriture d&rsquo;un événement d&rsquo;échec.</li>
+<li>Si <code>restartPolicy</code> est :
+
+<ul>
+<li>Always : Redémarrage du Conteneur ; la <code>phase</code> du Pod reste à Running.</li>
+<li>OnFailure : Redémarrage du Conteneur ; la <code>phase</code> du Pod reste à Running.</li>
+<li>Never : Le Conteneur n&rsquo;est pas redémarré ; la <code>phase</code> du Pod reste à Running.</li>
+</ul></li>
+<li>Si Container 1 est arrêté, et Conteneur 2 se termine :
+
+<ul>
+<li>Écriture d&rsquo;un événement d&rsquo;échec.</li>
+<li>Si <code>restartPolicy</code> est :
+
+<ul>
+<li>Always : Redémarrage du Conteneur ; la <code>phase</code> du Pod reste à Running.</li>
+<li>OnFailure : Redémarrage du Conteneur ; la <code>phase</code> du Pod reste à Running.</li>
+<li>Never : la <code>phase</code> du Pod passe à Failed.</li>
+</ul></li>
+</ul></li>
+</ul></li>
+
+<li><p>Un Pod est en cours d&rsquo;exécution et a un Conteneur. Le Conteneur n&rsquo;a plus assez de mémoire.</p>
+
+<ul>
+<li>Le Conteneur se termine en erreur.</li>
+<li>Écriture d&rsquo;un événement OOM.</li>
+<li>Si <code>restartPolicy</code> est :
+
+<ul>
+<li>Always : Redémarrage du Conteneur ; la <code>phase</code> du Pod reste à Running.</li>
+<li>OnFailure : Redémarrage du Conteneur ; la <code>phase</code> du Pod reste à Running.</li>
+<li>Never : Écriture d&rsquo;un événement d&rsquo;erreur ; la <code>phase</code> du Pod passe à Failed.</li>
+</ul></li>
+</ul></li>
+
+<li><p>Le Pod est en cours d&rsquo;exécution, et un disque meurt.</p>
+
+<ul>
+<li>Tous les conteneurs sont tués.</li>
+<li>Écriture d&rsquo;un événement approprié.</li>
+<li>La <code>phase</code> du Pod devient Failed.</li>
+<li>Si le Pod s&rsquo;exécute sous un contrôleur, le Pod est recréé ailleurs.</li>
+</ul></li>
+
+<li><p>Le Pod est en cours d&rsquo;exécution et son nœud est segmenté.</p>
+
+<ul>
+<li>Le contrôleur de Nœud attend un certain temps.</li>
+<li>Le contrôleur de Nœud passe la <code>phase</code> du Pod à Failed.</li>
+<li>Si le Pod s&rsquo;exécute sous un contrôleur, le Pod est recréé ailleurs.</li>
+</ul></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="a-suivre">A suivre</h2>
+<ul>
+<li><p>Apprenez par la pratique
+<a href="/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/">attacher des handlers à des événements de cycle de vie d&rsquo;un conteneur</a>.</p></li>
+
+<li><p>Apprenez par la pratique
+<a href="/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/">configurer des liveness et readiness probes</a>.</p></li>
+
+<li><p>En apprendre plus sur les <a href="/docs/concepts/containers/container-lifecycle-hooks/">hooks de cycle de vie d&rsquo;un Conteneur</a>.</p></li>
+</ul>
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Cette page est elle utile ? </p>
+  <button class="button feedback--yes">Oui</button>
+  <button class="button feedback--no">Non</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/workloads/pods/pod-lifecycle.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/fr\/docs\/concepts\/workloads\/pods\/pod-lifecycle\/",
+    "title" : "Cycle de vie d\x27un Pod",
+    "permalink" : "https:\/\/kubernetes.io\/fr\/docs\/concepts\/workloads\/pods\/pod-lifecycle\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Ouvrez un ticket</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/fr/docs/concepts/workloads/pods/pod-lifecycle.md" class="button issue">Editez cette page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Dernière modification le January 20, 2020 at 11:01 PM PST de
+    <a href="https://github.com/kubernetes/website/commit/3da672600e87d1a0eeb35f6c4de71937f165d053/">Fix French typo in &#34;when&#34; section (#18786)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/workloads/pods/pod-lifecycle.md">Historique</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/fr/docs/home/">Accueil</a>
+            
+            <a href="/fr/blog/">Blog</a>
+            
+            
+            
+            <a href="/fr/partners/">Partenaires</a>
+            
+            <a href="/fr/community/">Communauté</a>
+            
+            <a href="/fr/case-studies/">Études de cas</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendrier</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribuer</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

@@ -1,0 +1,2983 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>监控、日志和排错 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/tasks/debug-application-cluster/">
+<meta property="og:title" content="监控、日志和排错">
+<meta name="twitter:title" content="监控、日志和排错">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/tasks/debug-application-cluster/">English</a></li>
+                
+                    <li><a href="/ko/docs/tasks/debug-application-cluster/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/docs/tasks/debug-application-cluster/">日本語 Japanese</a></li>
+                
+                    <li><a href="/fr/docs/tasks/debug-application-cluster/">Français</a></li>
+                
+                    <li><a href="/de/docs/tasks/debug-application-cluster/">Deutsch</a></li>
+                
+                    <li><a href="/es/docs/tasks/debug-application-cluster/">Español</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/tasks/debug-application-cluster/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/tasks/debug-application-cluster/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/tasks/debug-application-cluster/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/tasks/debug-application-cluster/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/tasks/debug-application-cluster/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+<h1>任务</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/" class="YAH">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="任务" href="/zh/docs/tasks/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="安装工具">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装工具" href="/zh/docs/tasks/tools/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="安装并设置 kubectl" href="/zh/docs/tasks/tools/install-kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装 Minikube" href="/zh/docs/tasks/tools/install-minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群" href="/zh/docs/tasks/administer-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="用 kubeadm 进行管理">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="用 kubeadm 进行管理" href="/zh/docs/tasks/administer-cluster/kubeadm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 进行证书管理" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="升级 kubeadm 集群" href="/zh/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理内存，CPU 和 API 资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理内存，CPU 和 API 资源" href="/zh/docs/tasks/administer-cluster/manage-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的内存请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置默认的CPU请求和限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-default-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间的最小和最大内存约束" href="/zh/docs/tasks/administer-cluster/manage-resources/memory-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置CPU最小和最大限制" href="/zh/docs/tasks/administer-cluster/manage-resources/cpu-constraint-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为命名空间配置内存和 CPU 配额" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置命名空间下pod总数" href="/zh/docs/tasks/administer-cluster/manage-resources/quota-pod-namespace/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Install a Network Policy Provider">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Install a Network Policy Provider" href="/zh/docs/tasks/administer-cluster/network-policy-provider/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Calico 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/calico-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Cilium 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/cilium-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kube-router 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/kube-router-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Romana 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/romana-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Weave Net 作为 NetworkPolicy" href="/zh/docs/tasks/administer-cluster/network-policy-provider/weave-network-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Debug DNS 方案" href="/zh/docs/tasks/administer-cluster/dns-debugging-resolution/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Enabling Service Topology <small>(EN)</small>" href="/docs/tasks/administer-cluster/enabling-service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IP Masquerade Agent 用户指南" href="/zh/docs/tasks/administer-cluster/ip-masq-agent/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 云管理控制器" href="/zh/docs/tasks/administer-cluster/running-cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Safely Drain a Node while Respecting the PodDisruptionBudget <small>(EN)</small>" href="/docs/tasks/administer-cluster/safely-drain-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Kubernetes 运行 etcd 集群" href="/zh/docs/tasks/administer-cluster/configure-upgrade-etcd/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为系统守护进程预留计算资源" href="/zh/docs/tasks/administer-cluster/reserve-compute-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为节点发布扩展资源" href="/zh/docs/tasks/administer-cluster/extended-resource-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 CoreDNS 进行服务发现" href="/zh/docs/tasks/administer-cluster/coredns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 KMS 提供商进行数据加密" href="/zh/docs/tasks/administer-cluster/kms-provider/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kubernetes API 访问集群" href="/zh/docs/tasks/administer-cluster/access-cluster-api/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="关键插件 Pod 的调度保证" href="/zh/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="启用端点切片" href="/zh/docs/tasks/administer-cluster/enabling-endpointslices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间演练" href="/zh/docs/tasks/administer-cluster/namespaces-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 NodeLocal DNSCache" href="/zh/docs/tasks/administer-cluster/nodelocaldns/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Kubernetes 集群中使用 sysctl" href="/zh/docs/tasks/administer-cluster/sysctl-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在实时集群上重新配置节点的 Kubelet" href="/zh/docs/tasks/administer-cluster/reconfigure-kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="声明网络策略" href="/zh/docs/tasks/administer-cluster/declare-network-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="开发云控制器管理器" href="/zh/docs/tasks/administer-cluster/developing-cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的 CPU 管理策略" href="/zh/docs/tasks/administer-cluster/cpu-management-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制节点上的拓扑管理策略" href="/zh/docs/tasks/administer-cluster/topology-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="搭建高可用的 Kubernetes Masters" href="/zh/docs/tasks/administer-cluster/highly-available-master/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="改变默认 StorageClass" href="/zh/docs/tasks/administer-cluster/change-default-storage-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="更改 PersistentVolume 的回收策略" href="/zh/docs/tasks/administer-cluster/change-pv-reclaim-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="自定义 DNS 服务" href="/zh/docs/tasks/administer-cluster/dns-custom-nameservers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群上运行的服务" href="/zh/docs/tasks/administer-cluster/access-cluster-services/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过命名空间共享集群" href="/zh/docs/tasks/administer-cluster/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过配置文件设置 Kubelet 参数" href="/zh/docs/tasks/administer-cluster/kubelet-config-file/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 API 对象配额" href="/zh/docs/tasks/administer-cluster/quota-api-object/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置多个调度器" href="/zh/docs/tasks/administer-cluster/configure-multiple-schedulers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置资源不足时的处理方式" href="/zh/docs/tasks/administer-cluster/out-of-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="限制存储消耗" href="/zh/docs/tasks/administer-cluster/limit-storage-consumption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群 DNS 服务自动伸缩" href="/zh/docs/tasks/administer-cluster/dns-horizontal-autoscaling/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群安全" href="/zh/docs/tasks/administer-cluster/securing-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群管理" href="/zh/docs/tasks/administer-cluster/cluster-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="静态加密 Secret 数据" href="/zh/docs/tasks/administer-cluster/encrypt-data/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置 Pods 和容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置 Pods 和容器" href="/zh/docs/tasks/configure-pod-container/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器和 Pod 分配内存资源" href="/zh/docs/tasks/configure-pod-container/assign-memory-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Assign CPU Resources to Containers and Pods" href="/zh/docs/tasks/configure-pod-container/assign-cpu-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure GMSA for Windows Pods and containers <small>(EN)</small>" href="/docs/tasks/configure-pod-container/configure-gmsa/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Windows 的 pod 和容器配置 RunAsUserName" href="/zh/docs/tasks/configure-pod-container/configure-runasusername/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 的服务质量" href="/zh/docs/tasks/configure-pod-container/quality-service-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器分派扩展资源" href="/zh/docs/tasks/configure-pod-container/extended-resource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用卷进行存储" href="/zh/docs/tasks/configure-pod-container/configure-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 以使用 PersistentVolume 作为存储" href="/zh/docs/tasks/configure-pod-container/configure-persistent-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 使用投射卷作存储" href="/zh/docs/tasks/configure-pod-container/configure-projected-volume-storage/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configure a Security Context for a Pod or Container <small>(EN)</small>" href="/docs/tasks/configure-pod-container/security-context/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为 Pod 配置服务账户" href="/zh/docs/tasks/configure-pod-container/configure-service-account/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="从私有仓库拉取镜像" href="/zh/docs/tasks/configure-pod-container/pull-image-private-registry/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置存活、就绪和启动探测器" href="/zh/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/tasks/configure-pod-container/assign-pods-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 Pod 初始化" href="/zh/docs/tasks/configure-pod-container/configure-pod-initialization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器的生命周期事件设置处理函数" href="/zh/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ConfigMap 配置 Pod" href="/zh/docs/tasks/configure-pod-container/configure-pod-configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Pod 中的容器之间共享进程命名空间" href="/zh/docs/tasks/configure-pod-container/share-process-namespace/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建静态 Pod" href="/zh/docs/tasks/configure-pod-container/static-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Docker Compose 文件转换为 Kubernetes 资源" href="/zh/docs/tasks/configure-pod-container/translate-compose-kubernetes/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理 Kubernetes 对象" href="/zh/docs/tasks/manage-kubernetes-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Configuration Files <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/declarative-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Declarative Management of Kubernetes Objects Using Kustomize <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/kustomization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Kubernetes Objects Using Imperative Commands <small>(EN)</small>" href="/docs/tasks/manage-kubernetes-objects/imperative-command/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用配置文件对 Kubernetes 对象进行命令式管理" href="/zh/docs/tasks/manage-kubernetes-objects/imperative-config/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="给应用注入数据">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="给应用注入数据" href="/zh/docs/tasks/inject-data-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="为容器设置启动时要执行的命令及其入参" href="/zh/docs/tasks/inject-data-application/define-command-argument-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器设置环境变量" href="/zh/docs/tasks/inject-data-application/define-environment-variable-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 PodPreset 将信息注入 Pods" href="/zh/docs/tasks/inject-data-application/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Secret 安全地分发凭证" href="/zh/docs/tasks/inject-data-application/distribute-credentials-secure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过文件将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过环境变量将Pod信息呈现给容器" href="/zh/docs/tasks/inject-data-application/environment-variable-expose-pod-information/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行应用" href="/zh/docs/tasks/run-application/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="运行一个有状态的应用程序" href="/zh/docs/tasks/run-application/run-replicated-stateful-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubectl patch 更新 API 对象" href="/zh/docs/tasks/run-application/update-api-object-kubectl-patch/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="删除 StatefulSet" href="/zh/docs/tasks/run-application/delete-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="强制删除 StatefulSet 类型的 Pods" href="/zh/docs/tasks/run-application/force-delete-stateful-set-pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="基于Replication Controller执行滚动升级" href="/zh/docs/tasks/run-application/rolling-update-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 水平自动伸缩" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Horizontal Pod Autoscaler演练" href="/zh/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="指定应用程序的中断预算（Disruption Budget）" href="/zh/docs/tasks/run-application/configure-pdb/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用Deployment运行一个无状态应用" href="/zh/docs/tasks/run-application/run-stateless-application-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="弹缩StatefulSet" href="/zh/docs/tasks/run-application/scale-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="运行一个单实例有状态应用" href="/zh/docs/tasks/run-application/run-single-instance-stateful-application/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="运行 Jobs">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="运行 Jobs" href="/zh/docs/tasks/job/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 CronJob 运行自动化任务" href="/zh/docs/tasks/job/automated-tasks-with-cron-jobs/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用扩展进行并行处理" href="/zh/docs/tasks/job/parallel-processing-expansion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行粗粒度并行处理" href="/zh/docs/tasks/job/coarse-parallel-processing-work-queue/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用工作队列进行精细的并行处理" href="/zh/docs/tasks/job/fine-parallel-processing-work-queue/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="访问集群中的应用程序">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="访问集群中的应用程序" href="/zh/docs/tasks/access-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网页界面 (Dashboard)" href="/zh/docs/tasks/access-application-cluster/web-ui-dashboard/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="访问集群" href="/zh/docs/tasks/access-application-cluster/access-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用端口转发来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/port-forward-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用服务来访问集群中的应用" href="/zh/docs/tasks/access-application-cluster/service-access-application-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建一个外部负载均衡器" href="/zh/docs/tasks/access-application-cluster/create-external-load-balancer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置你的云平台防火墙" href="/zh/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up Ingress on Minikube with the NGINX Ingress Controller <small>(EN)</small>" href="/docs/tasks/access-application-cluster/ingress-minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="列出集群中所有运行容器的镜像" href="/zh/docs/tasks/access-application-cluster/list-all-running-container-images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为集群配置 DNS" href="/zh/docs/tasks/access-application-cluster/configure-dns-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Service 把前端连接到后端" href="/zh/docs/tasks/access-application-cluster/connecting-frontend-backend/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="同 Pod 内的容器使用共享卷通信" href="/zh/docs/tasks/access-application-cluster/communicate-containers-same-pod-shared-volume/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置对多集群的访问" href="/zh/docs/tasks/access-application-cluster/configure-access-multiple-clusters/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="监控、日志和排错">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="监控、日志和排错" href="/zh/docs/tasks/debug-application-cluster/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Auditing" href="/zh/docs/tasks/debug-application-cluster/audit/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Auditing with Falco <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/falco/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Logging Using Stackdriver <small>(EN)</small>" href="/docs/tasks/debug-application-cluster/logging-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StackDriver 中的事件" href="/zh/docs/tasks/debug-application-cluster/events-stackdriver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 crictl 对 Kubernetes 节点进行调试" href="/zh/docs/tasks/debug-application-cluster/crictl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ElasticSearch 和 Kibana 进行日志管理" href="/zh/docs/tasks/debug-application-cluster/logging-elasticsearch-kibana/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在本地开发和调试服务" href="/zh/docs/tasks/debug-application-cluster/local-debugging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-application/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用自测与调试" href="/zh/docs/tasks/debug-application-cluster/debug-application-introspection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="排错" href="/zh/docs/tasks/debug-application-cluster/troubleshooting/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="确定 Pod 失败的原因" href="/zh/docs/tasks/debug-application-cluster/determine-reason-pod-failure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="节点健康监测" href="/zh/docs/tasks/debug-application-cluster/monitor-node-health/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="获取正在运行容器的 Shell" href="/zh/docs/tasks/debug-application-cluster/get-shell-running-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Init 容器" href="/zh/docs/tasks/debug-application-cluster/debug-init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Pods 和 Replication Controllers" href="/zh/docs/tasks/debug-application-cluster/debug-pod-replication-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试 Service" href="/zh/docs/tasks/debug-application-cluster/debug-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调试StatefulSet" href="/zh/docs/tasks/debug-application-cluster/debug-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源指标管道" href="/zh/docs/tasks/debug-application-cluster/resource-metrics-pipeline/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源监控工具" href="/zh/docs/tasks/debug-application-cluster/resource-usage-monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="集群故障排查" href="/zh/docs/tasks/debug-application-cluster/debug-cluster/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/tasks/access-kubernetes-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="使用自定义资源">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用自定义资源" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Extend the Kubernetes API with CustomResourceDefinitions <small>(EN)</small>" href="/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用户自定义资源版本" href="/zh/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definition-versioning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置聚合层" href="/zh/docs/tasks/access-kubernetes-api/configure-aggregation-layer/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="设置一个扩展的 API server" href="/zh/docs/tasks/access-kubernetes-api/setup-extension-api-server/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HTTP 代理访问 Kubernetes API" href="/zh/docs/tasks/access-kubernetes-api/http-proxy-access-api/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="TLS">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="管理集群中的 TLS 认证" href="/zh/docs/tasks/tls/managing-tls-in-a-cluster/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书轮换" href="/zh/docs/tasks/tls/certificate-rotation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="联邦 - 在多个集群上运行一个应用">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="联邦 - 在多个集群上运行一个应用" href="/zh/docs/tasks/federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="将 CoreDNS 设置为联邦集群的 DNS 提供者" href="/zh/docs/tasks/federation/set-up-coredns-provider-federation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用联合服务来实现跨集群的服务发现" href="/zh/docs/tasks/federation/federation-service-discovery/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="管理联邦控制平面">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理联邦控制平面" href="/zh/docs/tasks/federation/administer-federation/"></a>
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="联邦 ConfigMap" href="/zh/docs/tasks/federation/administer-federation/configmap/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 DaemonSet" href="/zh/docs/tasks/federation/administer-federation/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Deployment" href="/zh/docs/tasks/federation/administer-federation/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Job" href="/zh/docs/tasks/federation/administer-federation/job/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 ReplicaSet" href="/zh/docs/tasks/federation/administer-federation/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦 Secret" href="/zh/docs/tasks/federation/administer-federation/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦事件" href="/zh/docs/tasks/federation/administer-federation/events/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦命名空间" href="/zh/docs/tasks/federation/administer-federation/namespaces/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在联邦中设置放置策略" href="/zh/docs/tasks/federation/set-up-placement-policies-federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="管理集群守护进程">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="管理集群守护进程" href="/zh/docs/tasks/manage-daemon/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行回滚" href="/zh/docs/tasks/manage-daemon/rollback-daemon-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="对 DaemonSet 执行滚动更新" href="/zh/docs/tasks/manage-daemon/update-daemon-set/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安装服务目录">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安装服务目录" href="/zh/docs/tasks/service-catalog/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="使用 Helm 安装 Service Catalog" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-helm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 SC 安装服务目录" href="/zh/docs/tasks/service-catalog/install-service-catalog-using-sc/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="网络">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="网络" href="/zh/docs/tasks/network/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="验证 IPv4/IPv6 双协议栈" href="/zh/docs/tasks/network/validate-dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="用插件扩展 kubectl" href="/zh/docs/tasks/extend-kubectl/kubectl-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理巨页（HugePages）" href="/zh/docs/tasks/manage-hugepages/scheduling-hugepages/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度 GPUs" href="/zh/docs/tasks/manage-gpus/scheduling-gpus/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+    
+    
+    
+    
+    
+    
+	 
+    
+    
+    
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/debug-application-cluster/audit.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Auditing</h1>
+
+
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.17</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+该功能目前处于 <em>beta</em> 状态，意味着：</p>
+
+<ul>
+<li>版本名称包含 beta （例如 v2beta3）。</li>
+<li>代码经过了充分测试，启用该功能被认为是安全的。默认情况下被启用。</li>
+<li>对整体功能的支持在未来不会被移除，尽管细节上可能会做更改。</li>
+<li>在后续的 beta 或稳定版本中，对象的模式、语义可能以不兼容的方式发生变化。当这种情况发生时，我们将提供迁移到下一个版本的说明。这可能需要删除、编辑和重建 API 对象，编辑过程可能需要一些思考。这可能导致依赖该功能的应用程序停机一段时间。</li>
+<li>建议仅在非业务关键场景使用该功能，因为在后续版本中可能会发生不兼容的更改。如果您有多个可以独立升级的集群，那么您可能可以放松这个限制。</li>
+<li><strong>请尝试使用我们的 beta 版功能，并给出反馈！在它们退出 beta 测试阶段之后，我们将很难去做更多的更改。</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<!--
+Kubernetes auditing provides a security-relevant chronological set of records documenting
+the sequence of activities that have affected system by individual users, administrators
+or other components of the system. It allows cluster administrator to
+answer the following questions:
+-->
+
+<p>Kubernetes 审计功能提供了与安全相关的按时间顺序排列的记录集，记录单个用户、管理员或系统其他组件影响系统的活动顺序。
+它能帮助集群管理员处理以下问题：</p>
+
+<!--
+ - what happened?
+ - when did it happen?
+ - who initiated it?
+ - on what did it happen?
+ - where was it observed?
+ - from where was it initiated?
+ - to where was it going?
+-->
+
+<ul>
+<li>发生了什么？</li>
+<li>什么时候发生的？</li>
+<li>谁触发的？</li>
+<li>活动发生在哪个（些）对象上？</li>
+<li>在哪观察到的？</li>
+<li>它从哪触发的？</li>
+<li>活动的后续处理行为是什么？</li>
+</ul>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%ae%a1%e8%ae%a1%e7%ad%96%e7%95%a5">审计策略</a></li>
+
+
+
+
+<li><a href="#%e5%ae%a1%e8%ae%a1%e5%90%8e%e7%ab%af">审计后端</a></li>
+
+
+
+
+<li><a href="#%e5%a4%9a%e9%9b%86%e7%be%a4%e9%85%8d%e7%bd%ae">多集群配置</a></li>
+
+
+
+
+<li><a href="#%e6%97%a5%e5%bf%97%e9%80%89%e6%8b%a9%e5%99%a8%e7%a4%ba%e4%be%8b">日志选择器示例</a></li>
+
+
+
+
+<li><a href="#%e4%bc%a0%e7%bb%9f%e7%9a%84%e5%ae%a1%e8%ae%a1">传统的审计</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<!--
+[Kube-apiserver][kube-apiserver] performs auditing. Each request on each stage
+of its execution generates an event, which is then pre-processed according to
+a certain policy and written to a backend. The policy determines what's recorded
+and the backends persist the records. The current backend implementations
+include logs files and webhooks.
+-->
+
+<p><a href="/docs/admin/kube-apiserver">Kube-apiserver</a> 执行审计。每个执行阶段的每个请求都会生成一个事件，然后根据特定策略对事件进行预处理并写入后端。
+您可以在 <a href="https://github.com/kubernetes/community/blob/master/contributors/design-proposals/api-machinery/auditing.md" target="_blank">设计方案</a> 中找到更多详细信息。
+该策略确定记录的内容并且在后端存储记录。当前的后端支持日志文件和 webhook。</p>
+
+<!--
+Each request can be recorded with an associated "stage". The known stages are:
+
+- `RequestReceived` - The stage for events generated as soon as the audit
+  handler receives the request, and before it is delegated down the handler
+  chain.
+- `ResponseStarted` - Once the response headers are sent, but before the
+  response body is sent. This stage is only generated for long-running requests
+  (e.g. watch).
+- `ResponseComplete` - The response body has been completed and no more bytes
+  will be sent.
+- `Panic` - Events generated when a panic occurred.
+-->
+
+<p>每个请求都可以用相关的 &ldquo;stage&rdquo; 记录。已知的 stage 有：</p>
+
+<ul>
+<li><p><code>RequestReceived</code> - 事件的 stage 将在审计处理器接收到请求后，并且在委托给其余处理器之前生成。</p></li>
+
+<li><p><code>ResponseStarted</code> - 在响应消息的头部发送后，但是响应消息体发送前。这个 stage 仅为长时间运行的请求生成（例如 watch）。</p></li>
+
+<li><p><code>ResponseComplete</code> - 当响应消息体完成并且没有更多数据需要传输的时候。</p></li>
+
+<li><p><code>Panic</code> - 当 panic 发生时生成。</p></li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+The audit logging feature increases the memory consumption of the API
+server because some context required for auditing is stored for each request.
+Additionally, memory consumption depends on the audit logging configuration.
+-->
+
+<p><strong>注意</strong> 审计日志记录功能会增加 API server 的内存消耗，因为需要为每个请求存储审计所需的某些上下文。
+此外，内存消耗取决于审计日志记录的配置。</div>
+</blockquote>
+
+<!--
+## Audit Policy
+
+Audit policy defines rules about what events should be recorded and what data
+they should include. The audit policy object structure is defined in the
+[`audit.k8s.io` API group][auditing-api]. When an event is processed, it's
+compared against the list of rules in order. The first matching rule sets the
+"audit level" of the event. The known audit levels are:
+-->
+
+<h2 id="审计策略">审计策略</h2>
+
+<p>审计政策定义了关于应记录哪些事件以及应包含哪些数据的规则。审计策略对象结构在 <a href="https://github.com/kubernetes/kubernetes/blob/v1.17.17/staging/src/k8s.io/apiserver/pkg/apis/audit/v1beta1/types.go" target="_blank"><code>audit.k8s.io</code> API 组</a> 中定义。
+处理事件时，将按顺序与规则列表进行比较。第一个匹配规则设置事件的 [审计级别][auditing-level]。已知的审计级别有：</p>
+
+<!--
+- `None` - don't log events that match this rule.
+- `Metadata` - log request metadata (requesting user, timestamp, resource,
+  verb, etc.) but not request or response body.
+- `Request` - log event metadata and request body but not response body.
+  This does not apply for non-resource requests.
+- `RequestResponse` - log event metadata, request and response bodies.
+  This does not apply for non-resource requests.
+-->
+
+<ul>
+<li><code>None</code> - 符合这条规则的日志将不会记录。</li>
+<li><code>Metadata</code> - 记录请求的 metadata（请求的用户、timestamp、resource、verb 等等），但是不记录请求或者响应的消息体。</li>
+<li><code>Request</code> - 记录事件的 metadata 和请求的消息体，但是不记录响应的消息体。这不适用于非资源类型的请求。</li>
+<li><code>RequestResponse</code> - 记录事件的 metadata，请求和响应的消息体。这不适用于非资源类型的请求。</li>
+</ul>
+
+<!--
+You can pass a file with the policy to [kube-apiserver][kube-apiserver]
+using the `--audit-policy-file` flag. If the flag is omitted, no events are logged.
+Note that the `rules` field __must__ be provided in the audit policy file.
+A policy with no (0) rules is treated as illegal.
+
+Below is an example audit policy file:
+-->
+
+<p>您可以使用 <code>--audit-policy-file</code> 标志将包含策略的文件传递给 <a href="/docs/admin/kube-apiserver">kube-apiserver</a>。如果不设置该标志，则不记录事件。
+注意 <code>rules</code> 字段 <strong>必须</strong> 在审计策略文件中提供。没有（0）规则的策略将被视为非法配置。</p>
+
+<p>以下是一个审计策略文件的示例：</p>
+
+<table class="includecode" id="audit-audit-policy-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/audit/audit-policy.yaml" download="audit/audit-policy.yaml">
+                    <code>audit/audit-policy.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('audit-audit-policy-yaml')" title="Copy audit/audit-policy.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>audit.k8s.io/v1<span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># This is required.</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Policy<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#080;font-style:italic"># Don&#39;t generate audit events for all requests in RequestReceived stage.</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>omitStages:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;RequestReceived&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>rules:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># Log pod changes at RequestResponse level</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>level:<span style="color:#bbb"> </span>RequestResponse<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>group:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#080;font-style:italic"># Resource &#34;pods&#34; doesn&#39;t match requests to any subresource of pods,</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#080;font-style:italic"># which is consistent with the RBAC policy.</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;pods&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># Log &#34;pods/log&#34;, &#34;pods/status&#34; at Metadata level</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>level:<span style="color:#bbb"> </span>Metadata<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>group:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;pods/log&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;pods/status&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># Don&#39;t log requests to a configmap called &#34;controller-leader&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>level:<span style="color:#bbb"> </span>None<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>group:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;configmaps&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>resourceNames:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;controller-leader&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># Don&#39;t log watch requests by the &#34;system:kube-proxy&#34; on endpoints or services</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>level:<span style="color:#bbb"> </span>None<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>users:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;system:kube-proxy&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;watch&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>group:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># core API group</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;endpoints&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;services&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># Don&#39;t log authenticated requests to certain non-resource URL paths.</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>level:<span style="color:#bbb"> </span>None<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>userGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;system:authenticated&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>nonResourceURLs:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;/api*&#34;</span><span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># Wildcard matching.</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;/version&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># Log the request body of configmap changes in kube-system.</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>level:<span style="color:#bbb"> </span>Request<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>group:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># core API group</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;configmaps&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#080;font-style:italic"># This rule only applies to resources in the &#34;kube-system&#34; namespace.</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#080;font-style:italic"># The empty string &#34;&#34; can be used to select non-namespaced resources.</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>namespaces:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;kube-system&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># Log configmap and secret changes in all other namespaces at the Metadata level.</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>level:<span style="color:#bbb"> </span>Metadata<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>group:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># core API group</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;secrets&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;configmaps&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># Log all other resources in core and extensions at the Request level.</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>level:<span style="color:#bbb"> </span>Request<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>group:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># core API group</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>group:<span style="color:#bbb"> </span><span style="color:#b44">&#34;extensions&#34;</span><span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># Version of group should NOT be included.</span><span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># A catch-all rule to log all other requests at the Metadata level.</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>level:<span style="color:#bbb"> </span>Metadata<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#080;font-style:italic"># Long-running requests like watches that fall under this rule will not</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#080;font-style:italic"># generate an audit event in RequestReceived.</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>omitStages:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span><span style="color:#b44">&#34;RequestReceived&#34;</span><span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!--
+You can use a minimal audit policy file to log all requests at the `Metadata` level:
+-->
+
+<p>您可以使用最低限度的审计策略文件在 <code>Metadata</code> 级别记录所有请求：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#080;font-style:italic"># Log all requests at the Metadata level.</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>audit.k8s.io/v1beta1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Policy<span style="color:#bbb">
+</span><span style="color:#bbb"></span>rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>level:<span style="color:#bbb"> </span>Metadata</code></pre></div>
+<!--
+The [audit profile used by GCE][gce-audit-profile] should be used as reference by
+admins constructing their own audit profiles.
+-->
+
+<p>管理员构建自己的审计配置文件时，应使用 <a href="https://github.com/kubernetes/kubernetes/blob/v1.17.17/cluster/gce/gci/configure-helper.sh#L735" target="_blank">GCE 使用的审计配置文件</a> 作为参考。</p>
+
+<!--
+## Audit backends
+
+Audit backends persist audit events to an external storage.
+[Kube-apiserver][kube-apiserver] out of the box provides two backends:
+
+- Log backend, which writes events to a disk
+- Webhook backend, which sends events to an external API
+
+In both cases, audit events structure is defined by the API in the
+`audit.k8s.io` API group. The current version of the API is
+[`v1beta1`][auditing-api].
+-->
+
+<h2 id="审计后端">审计后端</h2>
+
+<p>审计后端实现将审计事件导出到外部存储。
+<a href="/docs/admin/kube-apiserver">Kube-apiserver</a> 提供两个后端：</p>
+
+<ul>
+<li>Log 后端，将事件写入到磁盘</li>
+<li>Webhook 后端，将事件发送到外部 API</li>
+</ul>
+
+<p>在这两种情况下，审计事件结构均由 <code>audit.k8s.io</code> API 组中的 API 定义。当前版本的 API 是 <a href="https://github.com/kubernetes/kubernetes/blob/v1.17.17/staging/src/k8s.io/apiserver/pkg/apis/audit/v1beta1/types.go" target="_blank"><code>v1beta1</code></a>。</p>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+In case of patches, request body is a JSON array with patch operations, not a JSON object
+with an appropriate Kubernetes API object. For example, the following request body is a valid patch
+request to `/apis/batch/v1/namespaces/some-namespace/jobs/some-job-name`.
+-->
+
+<p><strong>注意：</strong> 在 patch 请求的情况下，请求的消息体需要是一个 JSON 串指定 patch 操作，而不是一个完整的 Kubernetes API 对象 JSON 串。
+例如，以下的示例是一个合法的 patch 请求消息体，该请求对应 <code>/apis/batch/v1/namespaces/some-namespace/jobs/some-job-name</code>。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">[
+  {
+    <span style="color:#008000;font-weight:bold">&#34;op&#34;</span>: <span style="color:#b44">&#34;replace&#34;</span>,
+    <span style="color:#008000;font-weight:bold">&#34;path&#34;</span>: <span style="color:#b44">&#34;/spec/parallelism&#34;</span>,
+    <span style="color:#008000;font-weight:bold">&#34;value&#34;</span>: <span style="color:#666">0</span>
+  },
+  {
+    <span style="color:#008000;font-weight:bold">&#34;op&#34;</span>: <span style="color:#b44">&#34;remove&#34;</span>,
+    <span style="color:#008000;font-weight:bold">&#34;path&#34;</span>: <span style="color:#b44">&#34;/spec/template/spec/containers/0/terminationMessagePolicy&#34;</span>
+  }
+]</code></pre></div></div>
+</blockquote>
+
+<!--
+### Log backend
+
+Log backend writes audit events to a file in JSON format. You can configure
+log audit backend using the following [kube-apiserver][kube-apiserver] flags:
+-->
+
+<h3 id="log-后端">Log 后端</h3>
+
+<p>Log 后端将审计事件写入 JSON 格式的文件。您可以使用以下 <a href="/docs/admin/kube-apiserver">kube-apiserver</a> 标志配置 Log 审计后端：</p>
+
+<!--
+- `--audit-log-path` specifies the log file path that log backend uses to write
+  audit events. Not specifying this flag disables log backend. `-` means standard out
+- `--audit-log-maxage` defined the maximum number of days to retain old audit log files
+- `--audit-log-maxbackup` defines the maximum number of audit log files to retain
+- `--audit-log-maxsize` defines the maximum size in megabytes of the audit log file before it gets rotated
+-->
+
+<ul>
+<li><code>--audit-log-path</code> 指定用来写入审计事件的日志文件路径。不指定此标志会禁用日志后端。<code>-</code> 意味着标准化</li>
+<li><code>--audit-log-maxage</code> 定义了保留旧审计日志文件的最大天数</li>
+<li><code>--audit-log-maxbackup</code> 定义了要保留的审计日志文件的最大数量</li>
+<li><code>--audit-log-maxsize</code> 定义审计日志文件的最大大小（兆字节）</li>
+</ul>
+
+<!--
+### Webhook backend
+
+Webhook backend sends audit events to a remote API, which is assumed to be the
+same API as [kube-apiserver][kube-apiserver] exposes. You can configure webhook
+audit backend using the following kube-apiserver flags:
+-->
+
+<h3 id="webhook-后端">Webhook 后端</h3>
+
+<p>Webhook 后端将审计事件发送到远程 API，该远程 API 应该暴露与 <a href="/docs/admin/kube-apiserver">kube-apiserver</a> 相同的API。
+您可以使用如下 kube-apiserver 标志来配置 webhook 审计后端：</p>
+
+<!--
+- `--audit-webhook-config-file` specifies the path to a file with a webhook
+  configuration. Webhook configuration is effectively a [kubeconfig][kubeconfig].
+- `--audit-webhook-initial-backoff` specifies the amount of time to wait after the first failed
+  request before retrying. Subsequent requests are retried with exponential backoff.
+
+The webhook config file uses the kubeconfig format to specify the remote address of
+the service and credentials used to connect to it.
+-->
+
+<ul>
+<li><code>--audit-webhook-config-file</code> webhook 配置文件的路径。Webhook 配置文件实际上是一个 <a href="/docs/tasks/access-application-cluster/configure-access-multiple-clusters/">kubeconfig</a>。</li>
+<li><code>--audit-webhook-initial-backoff</code> 指定在第一次失败后重发请求等待的时间。随后的请求将以指数退避重试。</li>
+</ul>
+
+<p>webhook 配置文件使用 kubeconfig 格式指定服务的远程地址和用于连接它的凭据。</p>
+
+<h3 id="batching">Batching</h3>
+
+<!--
+Both log and webhook backends support batching. Using webhook as an example, here's the list of
+available flags. To get the same flag for log backend, replace `webhook` with `log` in the flag
+name. By default, batching is enabled in `webhook` and disabled in `log`. Similarly, by default
+throttling is enabled in `webhook` and disabled in `log`.
+
+- `--audit-webhook-mode` defines the buffering strategy. One of the following:
+  - `batch` - buffer events and asynchronously process them in batches. This is the default.
+  - `blocking` - block API server responses on processing each individual event.
+-->
+
+<p>log 和 webhook 后端都支持 batch。以 webhook 为例，以下是可用参数列表。要获取 log 后端的同样参数，请在参数名称中将 <code>webhook</code> 替换为 <code>log</code>。
+默认情况下，在 <code>webhook</code> 中启用 batch，在 <code>log</code> 中禁用 batch。同样，默认情况下，在 <code>webhook</code> 中启用限制，在 <code>log</code> 中禁用限制。</p>
+
+<ul>
+<li><code>--audit-webhook-mode</code> 定义缓存策略，可选值如下：
+
+<ul>
+<li><code>batch</code> - 以批处理缓存事件和异步的过程。这是默认值。</li>
+<li><code>blocking</code> - 阻止 API server 处理每个单独事件的响应。</li>
+</ul></li>
+</ul>
+
+<!--
+The following flags are used only in the `batch` mode.
+
+- `--audit-webhook-batch-buffer-size` defines the number of events to buffer before batching.
+  If the rate of incoming events overflows the buffer, events are dropped.
+- `--audit-webhook-batch-max-size` defines the maximum number of events in one batch.
+- `--audit-webhook-batch-max-wait` defines the maximum amount of time to wait before unconditionally
+  batching events in the queue.
+- `--audit-webhook-batch-throttle-qps` defines the maximum average number of batches generated
+  per second.
+- `--audit-webhook-batch-throttle-burst` defines the maximum number of batches generated at the same
+  moment if the allowed QPS was underutilized previously.
+-->
+
+<p>以下参数仅用于 <code>batch</code> 模式。</p>
+
+<ul>
+<li><code>--audit-webhook-batch-buffer-size</code> 定义 batch 之前要缓存的事件数。
+如果传入事件的速率溢出缓存区，则会丢弃事件。</li>
+<li><code>--audit-webhook-batch-max-size</code> 定义一个 batch 中的最大事件数。</li>
+<li><code>--audit-webhook-batch-max-wait</code> 无条件 batch 队列中的事件前等待的最大事件。</li>
+<li><code>--audit-webhook-batch-throttle-qps</code> 每秒生成的最大 batch 平均值。</li>
+<li><code>--audit-webhook-batch-throttle-burst</code> 在达到允许的 QPS 前，同一时刻允许存在的最大 batch 生成数。</li>
+</ul>
+
+<!--
+#### Parameter tuning
+
+Parameters should be set to accommodate the load on the apiserver.
+
+For example, if kube-apiserver receives 100 requests each second, and each request is audited only
+on `ResponseStarted` and `ResponseComplete` stages, you should account for ~200 audit
+events being generated each second. Assuming that there are up to 100 events in a batch,
+you should set throttling level at least 2 QPS. Assuming that the backend can take up to
+5 seconds to write events, you should set the buffer size to hold up to 5 seconds of events, i.e.
+10 batches, i.e. 1000 events.
+-->
+
+<h4 id="参数调整">参数调整</h4>
+
+<p>需要设置参数以适应 apiserver 上的负载。</p>
+
+<p>例如，如果 kube-apiserver 每秒收到 100 个请求，并且每个请求仅在 <code>ResponseStarted</code> 和 <code>ResponseComplete</code> 阶段进行审计，则应该考虑每秒生成约 200 个审计事件。
+假设批处理中最多有 100 个事件，则应将限制级别设置为至少 2 个 QPS。
+假设后端最多需要 5 秒钟来写入事件，您应该设置缓冲区大小以容纳最多 5 秒的事件，即 10 个 batch，即 1000 个事件。</p>
+
+<!--
+In most cases however, the default parameters should be sufficient and you don't have to worry about
+setting them manually. You can look at the following Prometheus metrics exposed by kube-apiserver
+and in the logs to monitor the state of the auditing subsystem.
+
+- `apiserver_audit_event_total` metric contains the total number of audit events exported.
+- `apiserver_audit_error_total` metric contains the total number of events dropped due to an error
+  during exporting.
+-->
+
+<p>但是，在大多数情况下，默认参数应该足够了，您不必手动设置它们。您可以查看 kube-apiserver 公开的以下 Prometheus 指标，并在日志中监控审计子系统的状态。</p>
+
+<ul>
+<li><code>apiserver_audit_event_total</code> 包含所有暴露的审计事件数量的指标。</li>
+<li><code>apiserver_audit_error_total</code> 在暴露时由于发生错误而被丢弃的事件的数量。</li>
+</ul>
+
+<!--
+## Multi-cluster setup
+
+If you're extending the Kubernetes API with the [aggregation layer][kube-aggregator], you can also
+set up audit logging for the aggregated apiserver. To do this, pass the configuration options in the
+same format as described above to the aggregated apiserver and set up the log ingesting pipeline
+to pick up audit logs. Different apiservers can have different audit configurations and different
+audit policies.
+-->
+
+<h2 id="多集群配置">多集群配置</h2>
+
+<p>如果您通过 <a href="/docs/concepts/api-extension/apiserver-aggregation">aggregation layer</a> 对 Kubernetes API 进行扩展，那么您也可以为聚合的 apiserver 设置审计日志。
+想要这么做，您需要以上述的格式给聚合的 apiserver 配置参数，并且配置日志管道以采用审计日志。不同的 apiserver 可以配置不同的审计配置和策略。</p>
+
+<!--
+## Log Collector Examples
+
+### Use fluentd to collect and distribute audit events from log file
+
+[Fluentd][fluentd] is an open source data collector for unified logging layer.
+In this example, we will use fluentd to split audit events by different namespaces.
+
+1. install [fluentd, fluent-plugin-forest and fluent-plugin-rewrite-tag-filter][fluentd_install_doc] in the kube-apiserver node
+1. create a config file for fluentd
+-->
+
+<h2 id="日志选择器示例">日志选择器示例</h2>
+
+<h3 id="使用-fluentd-从日志文件中选择并且分发审计日志">使用 fluentd 从日志文件中选择并且分发审计日志</h3>
+
+<p><a href="http://www.fluentd.org/" target="_blank">Fluentd</a> 是一个开源的数据采集器，可以从统一的日志层中采集。
+在以下示例中，我们将使用 fluentd 来按照命名空间划分审计事件。</p>
+
+<ol>
+<li>在 kube-apiserver node 节点上安装 <a href="https://docs.fluentd.org/v/0.12/articles/quickstart#step1-installing-fluentd" target="_blank">fluentd, fluent-plugin-forest and fluent-plugin-rewrite-tag-filter</a></li>
+
+<li><p>为 fluentd 创建一个配置文件</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-none" data-lang="none">$ cat &lt;&lt;EOF &gt; /etc/fluentd/config
+# fluentd conf runs in the same host with kube-apiserver
+&lt;source&gt;
+    @type tail
+    # audit log path of kube-apiserver
+    path /var/log/audit
+    pos_file /var/log/audit.pos
+    format json
+    time_key time
+    time_format %Y-%m-%dT%H:%M:%S.%N%z
+    tag audit
+&lt;/source&gt;
+
+&lt;filter audit&gt;
+    #https://github.com/fluent/fluent-plugin-rewrite-tag-filter/issues/13
+    type record_transformer
+    enable_ruby
+    &lt;record&gt;
+     namespace ${record[&#34;objectRef&#34;].nil? ? &#34;none&#34;:(record[&#34;objectRef&#34;][&#34;namespace&#34;].nil? ?  &#34;none&#34;:record[&#34;objectRef&#34;][&#34;namespace&#34;])}
+    &lt;/record&gt;
+&lt;/filter&gt;
+
+&lt;match audit&gt;
+    # route audit according to namespace element in context
+    @type rewrite_tag_filter
+    rewriterule1 namespace ^(.+) ${tag}.$1
+&lt;/match&gt;
+
+&lt;filter audit.**&gt;
+   @type record_transformer
+   remove_keys namespace
+&lt;/filter&gt;
+
+&lt;match audit.**&gt;
+    @type forest
+    subtype file
+    remove_prefix audit
+    &lt;template&gt;
+        time_slice_format %Y%m%d%H
+        compress gz
+        path /var/log/audit-${tag}.*.log
+        format json
+        include_time_key true
+    &lt;/template&gt;
+&lt;/match&gt;</code></pre></div></li>
+</ol>
+
+<!--
+1. start fluentd
+-->
+
+<ol>
+<li><p>启动 fluentd</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ fluentd -c /etc/fluentd/config  -vv</code></pre></div></li>
+</ol>
+
+<!--
+1. start kube-apiserver with the following options:
+-->
+
+<ol>
+<li><p>给 kube-apiserver 配置以下参数并启动：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">--audit-policy-file<span style="color:#666">=</span>/etc/kubernetes/audit-policy.yaml --audit-log-path<span style="color:#666">=</span>/var/log/kube-audit --audit-log-format<span style="color:#666">=</span>json</code></pre></div></li>
+</ol>
+
+<!--
+1. check audits for different namespaces in `/var/log/audit-*.log`
+-->
+
+<ol>
+<li>在 <code>/var/log/audit-*.log</code> 文件中检查不同命名空间的审计事件</li>
+</ol>
+
+<!--
+### Use logstash to collect and distribute audit events from webhook backend
+
+[Logstash][logstash] is an open source, server-side data processing tool. In this example,
+we will use logstash to collect audit events from webhook backend, and save events of
+different users into different files.
+
+1. install [logstash][logstash_install_doc]
+1. create config file for logstash
+-->
+
+<h3 id="使用-logstash-采集并分发-webhook-后端的审计事件">使用 logstash 采集并分发 webhook 后端的审计事件</h3>
+
+<p><a href="https://www.elastic.co/products/logstash" target="_blank">Logstash</a> 是一个开源的、服务器端的数据处理工具。在下面的示例中，我们将使用 logstash 采集 webhook 后端的审计事件，并且将来自不同用户的事件存入不同的文件。</p>
+
+<ol>
+<li>安装 <a href="https://www.elastic.co/guide/en/logstash/current/installing-logstash.html" target="_blank">logstash</a></li>
+
+<li><p>为 logstash 创建配置文件</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-none" data-lang="none">$ cat &lt;&lt;EOF &gt; /etc/logstash/config
+input{
+    http{
+        #TODO, figure out a way to use kubeconfig file to authenticate to logstash
+        #https://www.elastic.co/guide/en/logstash/current/plugins-inputs-http.html#plugins-inputs-http-ssl
+        port=&gt;8888
+    }
+}
+filter{
+    split{
+        # Webhook audit backend sends several events together with EventList
+        # split each event here.
+        field=&gt;[items]
+        # We only need event subelement, remove others.
+        remove_field=&gt;[headers, metadata, apiVersion, &#34;@timestamp&#34;, kind, &#34;@version&#34;, host]
+    }
+    mutate{
+        rename =&gt; {items=&gt;event}
+    }
+}
+output{
+    file{
+        # Audit events from different users will be saved into different files.
+        path=&gt;&#34;/var/log/kube-audit-%{[event][user][username]}/audit&#34;
+    }
+}</code></pre></div></li>
+</ol>
+
+<!--
+1. start logstash
+-->
+
+<ol>
+<li><p>启动 logstash</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ bin/logstash -f /etc/logstash/config --path.settings /etc/logstash/</code></pre></div></li>
+</ol>
+
+<!--
+1. create a [kubeconfig file](/docs/tasks/access-application-cluster/authenticate-across-clusters-kubeconfig/) for kube-apiserver webhook audit backend
+-->
+
+<ol>
+<li><p>为 kube-apiserver webhook 审计后端创建一个 <a href="/docs/tasks/access-application-cluster/authenticate-across-clusters-kubeconfig/">kubeconfig 文件</a></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-none" data-lang="none">$ cat &lt;&lt;EOF &gt; /etc/kubernetes/audit-webhook-kubeconfig
+apiVersion: v1
+clusters:
+- cluster:
+    server: http://&lt;ip_of_logstash&gt;:8888
+  name: logstash
+contexts:
+- context:
+    cluster: logstash
+    user: &#34;&#34;
+  name: default-context
+current-context: default-context
+kind: Config
+preferences: {}
+users: []
+EOF</code></pre></div></li>
+</ol>
+
+<!--
+1. start kube-apiserver with the following options:
+-->
+
+<ol>
+<li><p>为 kube-apiserver 配置以下参数并启动：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">--audit-policy-file<span style="color:#666">=</span>/etc/kubernetes/audit-policy.yaml --audit-webhook-config-file<span style="color:#666">=</span>/etc/kubernetes/audit-webhook-kubeconfig</code></pre></div></li>
+</ol>
+
+<!--
+1. check audits in logstash node's directories `/var/log/kube-audit-*/audit`
+
+Note that in addition to file output plugin, logstash has a variety of outputs that
+let users route data where they want. For example, users can emit audit events to elasticsearch
+plugin which supports full-text search and analytics.
+-->
+
+<ol>
+<li>在 logstash node 节点的 <code>/var/log/kube-audit-*/audit</code> 目录中检查审计事件</li>
+</ol>
+
+<p>注意到，除了文件输出插件外，logstash 还有其它多种输出可以让用户路由不同的数据。例如，用户可以将审计事件发送给支持全文搜索和分析的 elasticsearch 插件。</p>
+
+<!--
+## Legacy Audit
+
+__Note:__ Legacy Audit is deprecated and is disabled by default since 1.8 and
+will be removed in 1.12. To fallback to this legacy audit, disable the advanced
+auditing feature using the `AdvancedAuditing` feature gate in [kube-apiserver][kube-apiserver]:
+-->
+
+<h2 id="传统的审计">传统的审计</h2>
+
+<p><strong>注意：</strong> 传统审计已被弃用，自 1.8 版本以后默认禁用，并且将会在 1.12 版本中彻底移除。
+如果想要回退到传统的审计功能，请使用 <a href="/docs/admin/kube-apiserver">kube-apiserver</a> 中 feature gate 的 <code>AdvancedAuditing</code> 功能来禁用高级审核功能：</p>
+
+<pre><code>--feature-gates=AdvancedAuditing=false
+</code></pre>
+
+<!--
+In legacy format, each audit log entry contains two lines:
+
+1. The request line containing a unique ID to match the response and request
+   metadata, such as the source IP, requesting user, impersonation information,
+   resource being requested, etc.
+2. The response line containing a unique ID matching the request line and the response code.
+
+Example output for `admin` user listing pods in the `default` namespace:
+-->
+
+<p>在传统格式中，每个审计文件条目包含两行：</p>
+
+<ol>
+<li>请求行包含唯一 ID 以匹配响应和请求元数据，例如源 IP、请求用户、模拟信息和请求的资源等。</li>
+
+<li><p>响应行包含与请求行和响应代码相匹配的唯一 ID。</p>
+
+<pre><code>2017-03-21T03:57:09.106841886-04:00 AUDIT: id=&quot;c939d2a7-1c37-4ef1-b2f7-4ba9b1e43b53&quot; ip=&quot;127.0.0.1&quot; method=&quot;GET&quot; user=&quot;admin&quot; groups=&quot;\&quot;system:masters\&quot;,\&quot;system:authenticated\&quot;&quot; as=&quot;&lt;self&gt;&quot; asgroups=&quot;&lt;lookup&gt;&quot; namespace=&quot;default&quot; uri=&quot;/api/v1/namespaces/default/pods&quot;
+2017-03-21T03:57:09.108403639-04:00 AUDIT: id=&quot;c939d2a7-1c37-4ef1-b2f7-4ba9b1e43b53&quot; response=&quot;200&quot;
+</code></pre></li>
+</ol>
+
+<!--
+### Configuration
+
+[Kube-apiserver][kube-apiserver] provides the following options which are responsible
+for configuring where and how audit logs are handled:
+-->
+
+<h3 id="配置">配置</h3>
+
+<p><a href="/docs/admin/kube-apiserver">Kube-apiserver</a> 提供以下选项，负责配置审核日志的位置和处理方式：</p>
+
+<!--
+- `audit-log-path` - enables the audit log pointing to a file where the requests are being logged to, '-' means standard out.
+- `audit-log-maxage` - specifies maximum number of days to retain old audit log files based on the timestamp encoded in their filename.
+- `audit-log-maxbackup` - specifies maximum number of old audit log files to retain.
+- `audit-log-maxsize` - specifies maximum size in megabytes of the audit log file before it gets rotated. Defaults to 100MB.
+-->
+
+<ul>
+<li><code>audit-log-path</code> - 使审计日志指向请求被记录到的文件，&rsquo;-&rsquo; 表示标准输出。</li>
+<li><code>audit-log-maxage</code> - 根据文件名中编码的时间戳指定保留旧审计日志文件的最大天数。</li>
+<li><code>audit-log-maxbackup</code> - 指定要保留的旧审计日志文件的最大数量。</li>
+<li><code>audit-log-maxsize</code> - 指定审核日志文件的最大大小（兆字节）。默认为100MB。</li>
+</ul>
+
+<!--
+If an audit log file already exists, Kubernetes appends new audit logs to that file.
+Otherwise, Kubernetes creates an audit log file at the location you specified in
+`audit-log-path`. If the audit log file exceeds the size you specify in `audit-log-maxsize`,
+Kubernetes will rename the current log file by appending the current timestamp on
+the file name (before the file extension) and create a new audit log file.
+Kubernetes may delete old log files when creating a new log file; you can configure
+how many files are retained and how old they can be by specifying the `audit-log-maxbackup`
+and `audit-log-maxage` options.
+-->
+
+<p>如果审核日志文件已经存在，则 Kubernetes 会将新的审核日志附加到该文件。
+否则，Kubernetes 会在您在 <code>audit-log-path</code> 中指定的位置创建一个审计日志文件。
+如果审计日志文件超过了您在 <code>audit-log-maxsize</code> 中指定的大小，则 Kubernetes 将通过在文件名（在文件扩展名之前）附加当前时间戳并重新创建一个新的审计日志文件来重命名当前日志文件。
+Kubernetes 可能会在创建新的日志文件时删除旧的日志文件; 您可以通过指定 <code>audit-log-maxbackup</code> 和 <code>audit-log-maxage</code> 选项来配置保留多少文件以及它们的保留时间。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/tasks/debug-application-cluster/_index.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/tasks\/debug-application-cluster\/",
+    "title" : "监控、日志和排错",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/tasks\/debug-application-cluster\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/tasks/debug-application-cluster/_index.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 December 25, 2019 at 8:51 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/b8b2cc7c7443e32de70834a2b3d2186cae6eea5a/">ZH-trans: merge release1.16-temporary to master (#18217)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/tasks/debug-application-cluster/_index.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

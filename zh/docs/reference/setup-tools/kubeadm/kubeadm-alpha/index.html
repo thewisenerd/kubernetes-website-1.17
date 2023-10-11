@@ -1,0 +1,4450 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>kubeadm alpha - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="警告: kubeadm alpha 提供了一组可用于收集社区反馈的功能的预览。请尝试一下这些功能并给我们反馈！  kubeadm alpha certs renew 使用 all 子命令来更新所有 Kubernetes 证书或有选择性地更新它们。有关证书到期和续订的更多详细信息，请参见证书管理文档。
+ renew all admin.conf apiserver-etcd-client apiserver-kubelet-client apiserver controller-manager.conf etcd-healthcheck-client etcd-peer etcd-server front-proxy-client scheduler.conf  概要 此命令并非设计用来单独运行。请参阅可用子命令列表。
+kubeadm alpha certs renew [flags]  选项     -h, --help   renew 操作的帮助命令     从父命令继承的选项     --rootfs string   [实验] 到 &#39;真实&#39; 主机根文件系统的路径。      概要 续订运行控制平面所需的所有已知证书。续订是无条件进行的，与到期日期无关。续订也可以单独运行以进行更多控制。">
+<meta property="og:description" content="警告: kubeadm alpha 提供了一组可用于收集社区反馈的功能的预览。请尝试一下这些功能并给我们反馈！  kubeadm alpha certs renew 使用 all 子命令来更新所有 Kubernetes 证书或有选择性地更新它们。有关证书到期和续订的更多详细信息，请参见证书管理文档。
+ renew all admin.conf apiserver-etcd-client apiserver-kubelet-client apiserver controller-manager.conf etcd-healthcheck-client etcd-peer etcd-server front-proxy-client scheduler.conf  概要 此命令并非设计用来单独运行。请参阅可用子命令列表。
+kubeadm alpha certs renew [flags]  选项     -h, --help   renew 操作的帮助命令     从父命令继承的选项     --rootfs string   [实验] 到 &#39;真实&#39; 主机根文件系统的路径。      概要 续订运行控制平面所需的所有已知证书。续订是无条件进行的，与到期日期无关。续订也可以单独运行以进行更多控制。">
+<meta name="twitter:description" content="警告: kubeadm alpha 提供了一组可用于收集社区反馈的功能的预览。请尝试一下这些功能并给我们反馈！  kubeadm alpha certs renew 使用 all 子命令来更新所有 Kubernetes 证书或有选择性地更新它们。有关证书到期和续订的更多详细信息，请参见证书管理文档。
+ renew all admin.conf apiserver-etcd-client apiserver-kubelet-client apiserver controller-manager.conf etcd-healthcheck-client etcd-peer etcd-server front-proxy-client scheduler.conf  概要 此命令并非设计用来单独运行。请参阅可用子命令列表。
+kubeadm alpha certs renew [flags]  选项     -h, --help   renew 操作的帮助命令     从父命令继承的选项     --rootfs string   [实验] 到 &#39;真实&#39; 主机根文件系统的路径。      概要 续订运行控制平面所需的所有已知证书。续订是无条件进行的，与到期日期无关。续订也可以单独运行以进行更多控制。">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-alpha/">
+<meta property="og:title" content="kubeadm alpha">
+<meta name="twitter:title" content="kubeadm alpha">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/reference/setup-tools/kubeadm/kubeadm-alpha/">English</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-alpha/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-alpha/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-alpha/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-alpha/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-alpha/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1>参考</h1>
+<h5></h5>
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/" class="YAH">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="参考" href="/zh/docs/reference/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="标准化词汇表" href="/zh/docs/reference/glossary/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes 问题和安全">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 问题和安全" href="/zh/docs/reference/issues-security/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 问题追踪" href="/zh/docs/reference/issues-security/issues/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 安全和信息披露" href="/zh/docs/reference/issues-security/security/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="使用 Kubernetes API">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 Kubernetes API" href="/zh/docs/reference/using-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API 总览" href="/zh/docs/reference/using-api/api-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes API Concepts <small>(EN)</small>" href="/docs/reference/using-api/api-concepts/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="客户端库" href="/zh/docs/reference/using-api/client-libraries/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes Deprecation Policy <small>(EN)</small>" href="/docs/reference/using-api/deprecation-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="访问 API">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Authenticating <small>(EN)</small>" href="/docs/reference/access-authn-authz/authentication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用准入控制器" href="/zh/docs/reference/access-authn-authz/admission-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="动态准入控制" href="/zh/docs/reference/access-authn-authz/extensible-admission-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="授权概述" href="/zh/docs/reference/access-authn-authz/authorization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 RBAC 鉴权" href="/zh/docs/reference/access-authn-authz/rbac/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Node 鉴权" href="/zh/docs/reference/access-authn-authz/node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Webhook 模式" href="/zh/docs/reference/access-authn-authz/webhook/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API 访问控制" href="/zh/docs/reference/access-authn-authz/controlling-access/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 ABAC 鉴权" href="/zh/docs/reference/access-authn-authz/abac/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用启动引导令牌（Bootstrap Tokens）认证" href="/zh/docs/reference/access-authn-authz/bootstrap-tokens/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理 Service Accounts" href="/zh/docs/reference/access-authn-authz/service-accounts-admin/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="API 参考">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="API 参考" href="/zh/docs/reference/kubernetes-api/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="v1.17" href="/zh/docs/reference/kubernetes-api/api-index/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="知名标签（Label）、注解（Annotation）和 Taints" href="/zh/docs/reference/kubernetes-api/labels-annotations-taints/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安装工具">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Kubeadm">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="kubeadm 概述" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm init" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-init/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm join" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-join/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm upgrade" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm config" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm reset" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-reset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm 令牌" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-token/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm version" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-version/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm alpha" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-alpha/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm init phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm join phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-join-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm reset phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-reset-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm upgrade phase" href="/zh/docs/reference/setup-tools/kubeadm/kubeadm-upgrade-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Implementation details <small>(EN)</small>" href="/docs/reference/setup-tools/kubeadm/implementation-details/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="kubectl 命令行界面">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="kubectl 命令行界面" href="/zh/docs/reference/kubectl/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="kubectl 概述" href="/zh/docs/reference/kubectl/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="JSONPath 支持" href="/zh/docs/reference/kubectl/jsonpath/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl" href="/zh/docs/reference/kubectl/kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl 命令" href="/zh/docs/reference/kubectl/kubectl-cmds/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl 备忘单" href="/zh/docs/reference/kubectl/cheatsheet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl 的用法约定" href="/zh/docs/reference/kubectl/conventions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="适用于 Docker 用户的 kubectl" href="/zh/docs/reference/kubectl/docker-cli-to-kubectl/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="命令行工具参考">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="命令行工具参考" href="/zh/docs/reference/command-line-tools-reference/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="特性门控" href="/zh/docs/reference/command-line-tools-reference/feature-gates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="cloud-controller-manager <small>(EN)</small>" href="/docs/reference/command-line-tools-reference/cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-proxy" href="/zh/docs/reference/command-line-tools-reference/kube-proxy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-scheduler" href="/zh/docs/reference/command-line-tools-reference/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubelet" href="/zh/docs/reference/command-line-tools-reference/kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-apiserver" href="/zh/docs/reference/command-line-tools-reference/kube-apiserver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-controller-manager" href="/zh/docs/reference/command-line-tools-reference/kube-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubelet authentication/authorization" href="/zh/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="TLS bootstrapping" href="/zh/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="工具" href="/zh/docs/reference/tools/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/reference/setup-tools/kubeadm/kubeadm-alpha.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>kubeadm alpha</h1>
+
+
+
+<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#cmd-certs-renew">kubeadm alpha certs renew</a></li>
+<li><a href="#cmd-certs-certificate-key">kubeadm alpha certs certificate-key</a></li>
+<li><a href="#cmd-certs-check-expiration">kubeadm alpha certs check-expiration</a></li>
+<li><a href="#cmd-phase-kubeconfig">kubeadm alpha kubeconfig user</a></li>
+<li><a href="#cmd-phase-kubelet">kubeadm alpha kubelet config</a></li>
+<li><a href="#cmd-selfhosting">kubeadm alpha selfhosting pivot</a></li>
+<li><a href="#接下来">接下来</a></li>
+</ul></li>
+</ul>
+</nav>
+
+
+
+<!--
+---
+reviewers:
+- mikedanese
+- luxas
+- jbeda
+title: kubeadm alpha
+weight: 90
+---
+-->
+
+<blockquote class="caution">
+  <div><strong>警告:</strong> <!--
+`kubeadm alpha` provides a preview of a set of features made available for gathering feedback
+ from the community. Please try it out and give us feedback!
+ -->
+
+<p><code>kubeadm alpha</code> 提供了一组可用于收集社区反馈的功能的预览。请尝试一下这些功能并给我们反馈！</div>
+</blockquote>
+
+
+<h2 id="cmd-certs-renew">kubeadm alpha certs renew</h2>
+
+<!--
+You can renew all Kubernetes certificates using the `all` subcommand or renew them selectively.
+For more details about certificate expiration and renewal see the [certificate management documentation](/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/).
+-->
+
+<p>使用 <code>all</code> 子命令来更新所有 Kubernetes 证书或有选择性地更新它们。有关证书到期和续订的更多详细信息，请参见<a href="/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/">证书管理文档</a>。</p>
+
+
+
+
+
+<div id="tab-certs-renew">
+<ul>
+	
+	  
+  <li><a href="#tab-certs-renew-0">renew</a></li>
+
+	  
+  <li><a href="#tab-certs-renew-1">all</a></li>
+
+	  
+  <li><a href="#tab-certs-renew-2">admin.conf</a></li>
+
+	  
+  <li><a href="#tab-certs-renew-3">apiserver-etcd-client</a></li>
+
+	  
+  <li><a href="#tab-certs-renew-4">apiserver-kubelet-client</a></li>
+
+	  
+  <li><a href="#tab-certs-renew-5">apiserver</a></li>
+
+	  
+  <li><a href="#tab-certs-renew-6">controller-manager.conf</a></li>
+
+	  
+  <li><a href="#tab-certs-renew-7">etcd-healthcheck-client</a></li>
+
+	  
+  <li><a href="#tab-certs-renew-8">etcd-peer</a></li>
+
+	  
+  <li><a href="#tab-certs-renew-9">etcd-server</a></li>
+
+	  
+  <li><a href="#tab-certs-renew-10">front-proxy-client</a></li>
+
+	  
+  <li><a href="#tab-certs-renew-11">scheduler.conf</a></li>
+
+</ul>
+
+
+<div id="tab-certs-renew-0">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+This command is not meant to be run on its own. See list of available subcommands.
+-->
+
+<p>此命令并非设计用来单独运行。请参阅可用子命令列表。</p>
+
+<pre><code>kubeadm alpha certs renew [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for renew
+      -->
+       renew 操作的帮助命令
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-certs-renew-1">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Renew all known certificates necessary to run the control plane. Renewals are run unconditionally, regardless of expiration date. Renewals can also be run individually for more control.
+-->
+
+<p>续订运行控制平面所需的所有已知证书。续订是无条件进行的，与到期日期无关。续订也可以单独运行以进行更多控制。</p>
+
+<pre><code>kubeadm alpha certs renew all [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where to save and store the certificates.
+      -->
+      存储证书的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-dir string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path to output the CSRs and private keys to
+      -->
+      输出 CSR 和私钥的路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-only</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Create CSRs instead of generating certificates
+      -->
+      创建 CSR 而不是生成证书
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for all
+      -->
+       all 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--use-api</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Use the Kubernetes certificate API to renew certificates
+      -->
+      使用 Kubernetes 证书 API 续订证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-certs-renew-2">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Renew the certificate embedded in the kubeconfig file for the admin to use and for kubeadm itself.
+-->
+
+<p>续订 kubeconfig 文件中嵌入的证书，供管理员 和 kubeadm 自身使用。</p>
+
+<!--
+Renewals run unconditionally, regardless of certificate expiration date; extra attributes such as SANs will be based on the existing file/certificates, there is no need to resupply them.
+-->
+
+<p>无论证书的到期日期如何，续订都是无条件进行的；SAN 等额外属性将基于现有文件/证书，因此无需重新提供它们。</p>
+
+<!--
+Renewal by default tries to use the certificate authority in the local PKI managed by kubeadm; as alternative it is possible to use K8s certificate API for certificate renewal, or as a last option, to generate a CSR request.
+-->
+
+<p>默认情况下，续订会尝试使用由 kubeadm 管理的本地 PKI 中的证书机构；作为替代方案，也可以使用 K8s certificate API 进行证书续订，或者（作为最后一种选择）生成 CSR 请求。</p>
+
+<!--
+After renewal, in order to make changes effective, is is required to restart control-plane components and eventually re-distribute the renewed certificate in case the file is used elsewhere.
+-->
+
+<p>续订后，为了使更改生效，需要重新启动控制平面组件，并最终重新分发更新的证书，以防证书文件在其他地方使用。</p>
+
+<pre><code>kubeadm alpha certs renew admin.conf [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where to save the certificates.
+      -->
+      保存证书的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-dir string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path to output the CSRs and private keys to
+      -->
+       CSR 和私钥的输出路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-only</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Create CSRs instead of generating certificates
+      -->
+      创建 CSR 而不是生成证书
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for admin.conf
+      -->
+       admin.conf 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--use-api</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Use the Kubernetes certificate API to renew certificates
+      -->
+      使用 Kubernetes 证书 API 续订证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-certs-renew-3">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Renew the certificate the apiserver uses to access etcd.
+-->
+
+<p>续订 apiserver 用于访问 etcd 的证书。</p>
+
+<!--
+Renewals run unconditionally, regardless of certificate expiration date; extra attributes such as SANs will be based on the existing file/certificates, there is no need to resupply them.
+-->
+
+<p>无论证书的到期日期如何，续订都会无条件地进行；SAN 等额外属性将基于现有文件/证书，因此无需重新提供它们。</p>
+
+<!--
+Renewal by default tries to use the certificate authority in the local PKI managed by kubeadm; as alternative it is possible to use K8s certificate API for certificate renewal, or as a last option, to generate a CSR request.
+-->
+
+<p>默认情况下，续订尝试在 kubeadm 管理的本地 PKI 中使用证书颁发机构；作为替代方案，可以使用 K8s 证书 API 进行证书更新，或者作为最后一个选择来生成 CSR 请求。</p>
+
+<!--
+After renewal, in order to make changes effective, is is required to restart control-plane components and eventually re-distribute the renewed certificate in case the file is used elsewhere.
+-->
+
+<p>续订后，为了使更改生效，需要重新启动控制平面组件，并最终重新分发更新的证书，以防文件在其他地方使用。</p>
+
+<pre><code>kubeadm alpha certs renew apiserver-etcd-client [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where to save and store the certificates.
+      -->
+      存储证书的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-dir string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path to output the CSRs and private keys to
+      -->
+      输出 CSR 和私钥的路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-only</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Create CSRs instead of generating certificates
+      -->
+      创建 CSR 而不是生成证书
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for apiserver-etcd-client
+      -->
+       apiserver-etcd-client 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--use-api</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Use the Kubernetes certificate API to renew certificates
+      -->
+      使用 Kubernetes 证书 API 续订证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-certs-renew-4">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Renew the certificate for the API server to connect to kubelet.
+-->
+
+<p>续订 apiserver 用于连接 kubelet 的证书。</p>
+
+<!--
+Renewals run unconditionally, regardless of certificate expiration date; extra attributes such as SANs will be based on the existing file/certificates, there is no need to resupply them.
+-->
+
+<p>无论证书的到期日期如何，续订都会无条件地进行；SAN 等额外属性将基于现有文件/证书，因此无需重新提供它们。</p>
+
+<!--
+Renewal by default tries to use the certificate authority in the local PKI managed by kubeadm; as alternative it is possible to use K8s certificate API for certificate renewal, or as a last option, to generate a CSR request.
+-->
+
+<p>默认情况下，续订尝试使用位于 kubeadm 所管理的本地 PKI 中的证书颁发机构；作为替代方案，也可能调用 K8s 证书 API 进行证书更新；亦或者，作为最后一个选择，生成 CSR 请求。</p>
+
+<!--
+After renewal, in order to make changes effective, is is required to restart control-plane components and eventually re-distribute the renewed certificate in case the file is used elsewhere.
+-->
+
+<p>续订后，为了使更改生效，需要重新启动控制平面组件，并最终重新分发更新的证书，以防文件在其他地方使用。</p>
+
+<pre><code>kubeadm alpha certs renew apiserver-kubelet-client [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where to save and store the certificates.
+      -->
+      存储证书的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-dir string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path to output the CSRs and private keys to
+      -->
+      输出 CSR 和私钥的路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-only</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Create CSRs instead of generating certificates
+      -->
+      创建 CSR 而不是生成证书
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for apiserver-kubelet-client
+      -->
+       apiserver-kubelet-client 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--use-api</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Use the Kubernetes certificate API to renew certificates
+      -->
+      使用 Kubernetes 证书 API 续订证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-certs-renew-5">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Renew the certificate for serving the Kubernetes API.
+-->
+
+<p>续订用于提供 Kubernetes API 的证书。</p>
+
+<!--
+Renewals run unconditionally, regardless of certificate expiration date; extra attributes such as SANs will be based on the existing file/certificates, there is no need to resupply them.
+-->
+
+<p>无论证书的到期日期如何，续订都会无条件地进行；SAN 等额外属性将基于现有文件/证书，因此无需重新提供它们。</p>
+
+<!--
+Renewal by default tries to use the certificate authority in the local PKI managed by kubeadm; as alternative it is possible to use K8s certificate API for certificate renewal, or as a last option, to generate a CSR request.
+-->
+
+<p>默认情况下，续订尝试在 kubeadm 管理的本地 PKI 中使用证书颁发机构；作为替代方案，可以使用 K8s 证书 API 进行证书更新，或者作为最后一个选择来生成 CSR 请求。</p>
+
+<!--
+After renewal, in order to make changes effective, is is required to restart control-plane components and eventually re-distribute the renewed certificate in case the file is used elsewhere.
+-->
+
+<p>续订后，为了使更改生效，需要重新启动控制平面组件，并最终重新分发更新的证书，以防文件在其他地方使用。</p>
+
+<pre><code>kubeadm alpha certs renew apiserver [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where to save the certificates.
+      -->
+      保存证书的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-dir string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;"> 
+      <!--
+      The path to output the CSRs and private keys to
+      -->
+       CSR 和私钥的输出路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-only</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Create CSRs instead of generating certificates
+      -->
+      创建 CSR 而不是生成证书
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for apiserver
+      -->
+       apiserver 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--use-api</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Use the Kubernetes certificate API to renew certificates
+      -->
+      使用 Kubernetes 证书 API 续订证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-certs-renew-6">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Renew the certificate embedded in the kubeconfig file for the controller manager to use.
+-->
+
+<p>续订 kubeconfig 文件中嵌入的证书，以供控制器管理器（controller manager）使用。</p>
+
+<!--
+Renewals run unconditionally, regardless of certificate expiration date; extra attributes such as SANs will be based on the existing file/certificates, there is no need to resupply them.
+-->
+
+<p>续订无条件地进行，与证书的到期日期无关；SAN 等额外属性将基于现有的文件/证书，因此无需重新提供它们。</p>
+
+<!--
+Renewal by default tries to use the certificate authority in the local PKI managed by kubeadm; as alternative it is possible to use K8s certificate API for certificate renewal, or as a last option, to generate a CSR request.
+-->
+
+<p>默认情况下，续订会尝试在 kubeadm 管理的本地 PKI 中使用证书颁发机构；作为替代方案，可以使用 K8s 证书 API 进行证书续订；亦或者，作为最后一种选择，生成 CSR 请求。</p>
+
+<!--
+After renewal, in order to make changes effective, is is required to restart control-plane components and eventually re-distribute the renewed certificate in case the file is used elsewhere.
+-->
+
+<p>续订后，为了使更改生效，需要重新启动控制平面组件，并最终重新分发更新的证书，以防文件在其他地方使用。</p>
+
+<pre><code>kubeadm alpha certs renew controller-manager.conf [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where to save the certificates.
+      -->
+      保存证书的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-dir string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path to output the CSRs and private keys to
+      -->
+       CSR 和私钥的输出路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-only</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Create CSRs instead of generating certificates
+      -->
+      创建 CSR 而不是生成证书
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for controller-manager.conf
+      -->
+       controller-manager.conf 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--use-api</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Use the Kubernetes certificate API to renew certificates
+      -->
+      使用 Kubernetes 证书 API 续订证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-certs-renew-7">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Renew the certificate for liveness probes to healthcheck etcd.
+-->
+
+<p>续订 etcd 健康检查的活跃性探针的证书。</p>
+
+<!--
+Renewals run unconditionally, regardless of certificate expiration date; extra attributes such as SANs will be based on the existing file/certificates, there is no need to resupply them.
+-->
+
+<p>无论证书的到期日期如何，续订都是无条件进行的；SAN 等额外属性将基于现有文件/证书，因此无需重新提供它们。</p>
+
+<!--
+Renewal by default tries to use the certificate authority in the local PKI managed by kubeadm; as alternative it is possible to use K8s certificate API for certificate renewal, or as a last option, to generate a CSR request.
+-->
+
+<p>默认情况下，续订会尝试使用由 kubeadm 管理的本地 PKI 中的证书机构；作为替代方案，也可以使用 K8s certificate API 进行证书续订，或者（作为最后一种选择）生成 CSR 请求。</p>
+
+<!--
+After renewal, in order to make changes effective, is is required to restart control-plane components and eventually re-distribute the renewed certificate in case the file is used elsewhere.
+-->
+
+<p>续订后，为了使更改生效，需要重新启动控制平面组件，并最终重新分发更新的证书，以防证书文件在其他地方使用。</p>
+
+<pre><code>kubeadm alpha certs renew etcd-healthcheck-client [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where to save the certificates.
+      -->
+      保存证书的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-dir string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path to output the CSRs and private keys to
+      -->
+       CSR 和私钥的输出路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-only</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Create CSRs instead of generating certificates
+      -->
+      创建 CSR 而不是生成证书
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for etcd-healthcheck-client
+      -->
+       etcd-healthcheck-client 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--use-api</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Use the Kubernetes certificate API to renew certificates
+      -->
+      使用 Kubernetes 证书 API 续订证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-certs-renew-8">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Renew the certificate for etcd nodes to communicate with each other.
+-->
+
+<p>续订 etcd 节点间用来相互通信的证书。</p>
+
+<!--
+Renewals run unconditionally, regardless of certificate expiration date; extra attributes such as SANs will be based on the existing file/certificates, there is no need to resupply them.
+-->
+
+<p>无论证书的到期日期如何，续订都是无条件进行的；SAN 等额外属性将基于现有文件/证书，因此无需重新提供它们。</p>
+
+<!--
+Renewal by default tries to use the certificate authority in the local PKI managed by kubeadm; as alternative it is possible to use K8s certificate API for certificate renewal, or as a last option, to generate a CSR request.
+-->
+
+<p>默认情况下，续订会尝试使用由 kubeadm 管理的本地 PKI 中的证书机构；作为替代方案，也可以使用 K8s certificate API 进行证书续订，或者（作为最后一种选择）生成 CSR 请求。</p>
+
+<!--
+After renewal, in order to make changes effective, is is required to restart control-plane components and eventually re-distribute the renewed certificate in case the file is used elsewhere.
+-->
+
+<p>续订后，为了使更改生效，需要重新启动控制平面组件，并最终重新分发更新的证书，以防证书文件在其他地方使用。</p>
+
+<pre><code>kubeadm alpha certs renew etcd-peer [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where to save the certificates.
+      -->
+      保存证书的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-dir string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path to output the CSRs and private keys to
+      -->
+       CSR 和私钥的输出路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-only</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Create CSRs instead of generating certificates
+      -->
+      创建 CSR 而不是生成证书
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for etcd-peer
+      -->
+       etcd-peer 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--use-api</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Use the Kubernetes certificate API to renew certificates
+      -->
+      使用 Kubernetes 证书 API 续订证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-certs-renew-9">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Renew the certificate for serving etcd.
+-->
+
+<p>续订用于提供 etcd 的证书。</p>
+
+<!--
+Renewals run unconditionally, regardless of certificate expiration date; extra attributes such as SANs will be based on the existing file/certificates, there is no need to resupply them.
+-->
+
+<p>续订无条件地进行，与证书的到期日期无关；SAN 等额外属性将基于现有的文件/证书，因此无需重新提供它们。</p>
+
+<!--
+Renewal by default tries to use the certificate authority in the local PKI managed by kubeadm; as alternative it is possible to use K8s certificate API for certificate renewal, or as a last option, to generate a CSR request.
+-->
+
+<p>默认情况下，续订会尝试在 kubeadm 管理的本地 PKI 中使用证书颁发机构；作为替代方案，可以使用 K8s 证书 API 进行证书续订，或者作为最后一种选择来生成 CSR 请求。</p>
+
+<!--
+After renewal, in order to make changes effective, is is required to restart control-plane components and eventually re-distribute the renewed certificate in case the file is used elsewhere.
+-->
+
+<p>续订后，为了使更改生效，需要重新启动控制平面组件，并最终重新分发更新的证书，以防文件在其他地方使用。</p>
+
+<pre><code>kubeadm alpha certs renew etcd-server [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where to save the certificates.
+      -->
+      保存证书的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-dir string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path to output the CSRs and private keys to
+      -->
+       CSR 和私钥的输出路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-only</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Create CSRs instead of generating certificates
+      -->
+      创建 CSR 而不是生成证书
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for etcd-server
+      -->
+       etcd-server 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--use-api</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Use the Kubernetes certificate API to renew certificates
+      -->
+      使用 Kubernetes 证书 API 续订证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-certs-renew-10">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Renew the certificate for the front proxy client.
+-->
+
+<p>为前端代理客户端续订证书。</p>
+
+<!--
+Renewals run unconditionally, regardless of certificate expiration date; extra attributes such as SANs will be based on the existing file/certificates, there is no need to resupply them.
+-->
+
+<p>无论证书的到期日期如何，续订都会无条件地进行；SAN 等额外属性将基于现有文件/证书，因此无需重新提供它们。</p>
+
+<!--
+Renewal by default tries to use the certificate authority in the local PKI managed by kubeadm; as alternative it is possible to use K8s certificate API for certificate renewal, or as a last option, to generate a CSR request.
+-->
+
+<p>默认情况下，续订尝试使用位于 kubeadm 所管理的本地 PKI 中的证书颁发机构；作为替代方案，也可能使用 K8s 证书 API 进行证书续订；亦或者，作为最后一种方案，生成 CSR 请求。</p>
+
+<!--
+After renewal, in order to make changes effective, is is required to restart control-plane components and eventually re-distribute the renewed certificate in case the file is used elsewhere.
+-->
+
+<p>续订后，为了使更改生效，需要重新启动控制平面组件，并最终重新分发更新的证书，以防文件在其他地方使用。</p>
+
+<pre><code>kubeadm alpha certs renew front-proxy-client [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where to save the certificates
+      -->
+      存储证书的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-dir string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path to output the CSRs and private keys to
+      -->
+      输出 CSR 和私钥的路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-only</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Create CSRs instead of generating certificates
+      -->
+      创建 CSR 而不是生成证书
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for front-proxy-client
+      -->
+       front-proxy-client 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--use-api</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Use the Kubernetes certificate API to renew certificates
+      -->
+      使用 Kubernetes 证书 API 续订证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-certs-renew-11">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Renew the certificate embedded in the kubeconfig file for the scheduler manager to use.
+-->
+
+<p>续订 kubeconfig 文件中嵌入的证书，以供调度管理器使用。</p>
+
+<!--
+Renewals run unconditionally, regardless of certificate expiration date; extra attributes such as SANs will be based on the existing file/certificates, there is no need to resupply them.
+-->
+
+<p>续订无条件地进行，与证书的到期日期无关；SAN 等额外属性将基于现有的文件/证书，因此无需重新提供它们。</p>
+
+<!--
+Renewal by default tries to use the certificate authority in the local PKI managed by kubeadm; as alternative it is possible to use K8s certificate API for certificate renewal, or as a last option, to generate a CSR request.
+-->
+
+<p>默认情况下，续订会尝试在 kubeadm 管理的本地 PKI 中使用证书颁发机构；作为替代方案，可以使用 K8s 证书 API 进行证书续订；亦或者，作为最后一种选择，生成 CSR 请求。</p>
+
+<!--
+After renewal, in order to make changes effective, is is required to restart control-plane components and eventually re-distribute the renewed certificate in case the file is used elsewhere.
+-->
+
+<p>续订后，为了使更改生效，需要重新启动控制平面组件，并最终重新分发更新的证书，以防文件在其他地方使用。</p>
+
+<pre><code>kubeadm alpha certs renew scheduler.conf [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where to save the certificates.
+      -->
+      保存证书的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-dir string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path to output the CSRs and private keys to
+      -->
+       CSR 和私钥的输出路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--csr-only</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Create CSRs instead of generating certificates
+      -->
+      创建 CSR 而不是生成证书
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for scheduler.conf
+      -->
+       scheduler.conf 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--use-api</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Use the Kubernetes certificate API to renew certificates
+      -->
+      使用 Kubernetes 证书 API 续订证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+</div>
+
+<script>$(function(){$("#tab-certs-renew").tabs();});</script>
+
+
+<h2 id="cmd-certs-certificate-key">kubeadm alpha certs certificate-key</h2>
+
+<!--
+This command can be used to generate a new control-plane certificate key.
+The key can be passed as `--certificate-key` to `kubeadm init` and `kubeadm join`
+to enable the automatic copy of certificates when joining additional control-plane nodes.
+-->
+
+<p>该命令可用于生成新的控制平面证书密钥。密钥可以作为 <code>--certificate-key</code> 参数传递给 <code>kubeadm init</code> 和 <code>kubeadm join</code> 操作，以在加入其他控制平面节点时启用证书的自动复制。</p>
+
+
+
+
+
+<div id="tab-certs-certificate-key">
+<ul>
+	
+	  
+  <li><a href="#tab-certs-certificate-key-0">certificate-key</a></li>
+
+</ul>
+
+
+<div id="tab-certs-certificate-key-0">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+This command will print out a secure randomly-generated certificate key that can be used with
+the "init" command.
+-->
+
+<p>该命令将打印出可以与 “init” 命令一起使用的安全随机生成的证书密钥。</p>
+
+<!--
+You can also use "kubeadm init --upload-certs" without specifying a certificate key and it will generate and print one for you.
+-->
+
+<p>您也可以使用 “kubeadm init &ndash;upload-certs” 而无需指定证书密钥，它将为您生成并打印一个证书密钥。</p>
+
+<pre><code>kubeadm alpha certs certificate-key [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for certificate-key
+      -->
+       certificate-key 操作的帮助命令
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+</div>
+
+<script>$(function(){$("#tab-certs-certificate-key").tabs();});</script>
+
+
+<h2 id="cmd-certs-check-expiration">kubeadm alpha certs check-expiration</h2>
+
+<!--
+This command checks expiration for the certificates in the local PKI managed by kubeadm.
+For more details about certificate expiration and renewal see the [certificate management documentation](/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/).
+-->
+
+<p>此命令检查 kubeadm 管理的本地 PKI 中证书的到期时间。有关证书到期和续订的更多详细信息，请参见<a href="/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/">证书管理文档</a>。</p>
+
+
+
+
+
+<div id="tab-certs-check-expiration">
+<ul>
+	
+	  
+  <li><a href="#tab-certs-check-expiration-0">check-expiration</a></li>
+
+</ul>
+
+
+<div id="tab-certs-check-expiration-0">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!-- 
+Checks expiration for the certificates in the local PKI managed by kubeadm.
+-->
+
+<p>检查 kubeadm 管理的本地 PKI 中证书的到期时间。</p>
+
+<pre><code>kubeadm alpha certs check-expiration [flags]
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+<!--
+      <td colspan="2">--cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"</td> 
+-->
+      <td colspan="2">--cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值: "/etc/kubernetes/pki"</td>
+    </tr>
+    <tr>
+<!--
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">The path where to save the certificates</td>
+-->
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">保存证书的路径</td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+<!--
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">Path to a kubeadm configuration file.</td>
+-->
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">kubeadm 配置文件的路径</td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+<!--
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">help for check-expiration</td>
+-->
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">check-expiration 的帮助命令</td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="继承于父命令的选项">继承于父命令的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+<!--
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">[EXPERIMENTAL] The path to the 'real' host root filesystem.</td>
+-->
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">[实验] 到'真实'主机根文件系统的路径。</td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+</div>
+
+<script>$(function(){$("#tab-certs-check-expiration").tabs();});</script>
+
+
+<h2 id="cmd-phase-kubeconfig">kubeadm alpha kubeconfig user</h2>
+
+<!--
+The `user` subcommand can be used for the creation of kubeconfig files for additional users.
+-->
+
+<p>使用子命令 <code>user</code> 为其他用户创建 kubeconfig 文件。</p>
+
+
+
+
+
+<div id="tab-kubeconfig">
+<ul>
+	
+	  
+  <li><a href="#tab-kubeconfig-0">kubeconfig</a></li>
+
+	  
+  <li><a href="#tab-kubeconfig-1">user</a></li>
+
+</ul>
+
+
+<div id="tab-kubeconfig-0">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Kubeconfig file utilities.
+-->
+
+<p>kubeconfig 文件应用程序。</p>
+
+<!--
+Alpha Disclaimer: this command is currently alpha.
+-->
+
+<p>Alpha 免责声明：此命令当前为 alpha 功能。</p>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for kubeconfig
+      -->
+       kubeconfig 操作的帮助命令
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-kubeconfig-1">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Output a kubeconfig file for an additional user.
+-->
+
+<p>为其他用户输出 kubeconfig 文件。</p>
+
+<!--
+Alpha Disclaimer: this command is currently alpha.
+-->
+
+<p>Alpha 免责声明：此命令当前为 Alpha 功能。</p>
+
+<pre><code>kubeadm alpha kubeconfig user [flags]
+</code></pre>
+
+<!--
+### Examples # Output a kubeconfig file for an additional user named foo
+-->
+
+<h3 id="示例">示例</h3>
+
+<pre><code>  # 为名为 foo 的其他用户输出 kubeconfig 文件
+  kubeadm alpha kubeconfig user --client-name=foo
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--apiserver-advertise-address string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The IP address the API server is accessible on
+      -->
+      可通过以下网址访问 API 服务器的 IP 地址
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --apiserver-bind-port int32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: 6443
+      -->
+      --apiserver-bind-port int32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值: 6443
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The port the API server is accessible on
+      -->
+      可通过其访问 API 服务器的端口
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值: "/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where certificates are stored
+      -->
+      证书存储的路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--client-name string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The name of user. It will be used as the CN if client certificates are created
+      -->
+      用户名。如果创建了客户端证书，它将用作 CN。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for user
+      -->
+       user 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--org stringSlice</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The orgnizations of the client certificate. It will be used as the O if client certificates are created
+      -->
+      客户端证书的组织。如果创建了客户端证书，它将用作 O。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--token string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The token that should be used as the authentication mechanism for this kubeconfig, instead of client certificates
+      -->
+      应该用此 kubeconfig 的身份验证机制的令牌，而不是客户端证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 指向 '真实' 宿主机的根目录。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+</div>
+
+<script>$(function(){$("#tab-kubeconfig").tabs();});</script>
+
+
+<h2 id="cmd-phase-kubelet">kubeadm alpha kubelet config</h2>
+
+<!--
+Use the following commands to either download the kubelet configuration from the cluster or
+to enable the DynamicKubeletConfiguration feature.
+-->
+
+<p>使用以下命令从集群中下载 kubelet 配置或启用 DynamicKubeletConfiguration 功能。</p>
+
+
+
+
+
+<div id="tab-kubelet">
+<ul>
+	
+	  
+  <li><a href="#tab-kubelet-0">kubelet</a></li>
+
+	  
+  <li><a href="#tab-kubelet-1">download</a></li>
+
+	  
+  <li><a href="#tab-kubelet-2">enable-dynamic</a></li>
+
+</ul>
+
+
+<div id="tab-kubelet-0">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+This command is not meant to be run on its own. See list of available subcommands.
+-->
+
+<p>此命令并非设计用来单独运行。请参阅可用子命令列表。</p>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for kubelet
+      -->
+       kubelet 操作的帮助命令
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 指向 '真实' 宿主机的根目录。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-kubelet-1">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Download the kubelet configuration from a ConfigMap of the form "kubelet-config-1.X" in the cluster, where X is the minor version of the kubelet. Either kubeadm autodetects the kubelet version by exec-ing "kubelet --version" or respects the --kubelet-version parameter.
+-->
+
+<p>从集群中形式为 &ldquo;kubelet-config-1.X&rdquo; 的 ConfigMap 中下载 kubelet 配置，其中 X 是 kubelet 的次要版本。kubeadm 要么通过执行 &ldquo;kubelet &ndash;version&rdquo; 自动检测 kubelet 版本，要么传递 &ndash;kubelet-version 参数。</p>
+
+<!--
+Alpha Disclaimer: this command is currently alpha.
+-->
+
+<p>Alpha 免责声明：此命令当前为 Alpha 功能。</p>
+
+<pre><code>kubeadm alpha kubelet config download [flags]
+</code></pre>
+
+<!--
+### Examples
+-->
+
+<h3 id="示例">示例</h3>
+
+<!--
+```
+  # Download the kubelet configuration from the ConfigMap in the cluster. Autodetect the kubelet version.
+  kubeadm alpha phase kubelet config download
+
+  # Download the kubelet configuration from the ConfigMap in the cluster. Use a specific desired kubelet version.
+  kubeadm alpha phase kubelet config download --kubelet-version 1.16.0
+```
+-->
+
+<pre><code>  # 从集群中的 ConfigMap 下载 kubelet 配置。自动检测 kubelet 版本。
+  下载 kubeadm alpha phase kubelet 配置
+
+  # 从集群中的 ConfigMap 下载 kubelet 配置。使用特定的所需 kubelet 版本。
+  kubeadm alpha phase kubelet 配置下载 --kubelet-version 1.16.0
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for download
+      -->
+       download 的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该标志，可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--kubelet-version string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The desired version for the kubelet. Defaults to being autodetected from 'kubelet --version'.
+      -->
+       kubelet 所需版本。默认为从 'kubelet --version' 中自动检测到。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="tab-kubelet-2">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Download the kubelet configuration from a ConfigMap of the form "kubelet-config-1.X" in the cluster, where X is the minor version of the kubelet. Either kubeadm autodetects the kubelet version by exec-ing "kubelet --version" or respects the --kubelet-version parameter.
+-->
+
+<p>从集群中形式为 &ldquo;kubelet-config-1.X&rdquo; 的 ConfigMap 中下载 kubelet 配置，其中 X 是 kubelet 的次要版本。kubeadm 要么通过执行 &ldquo;kubelet &ndash;version&rdquo; 自动检测 kubelet 版本，要么传递 &ndash;kubelet-version 参数。</p>
+
+<!--
+Alpha Disclaimer: this command is currently alpha.
+-->
+
+<p>Alpha 免责声明：此命令当前为 Alpha 功能。</p>
+
+<pre><code>kubeadm alpha kubelet config download [flags]
+</code></pre>
+
+<!--
+### Examples
+-->
+
+<h3 id="示例">示例</h3>
+
+<!--
+```
+  # Download the kubelet configuration from the ConfigMap in the cluster. Autodetect the kubelet version.
+  kubeadm alpha phase kubelet config download
+
+  # Download the kubelet configuration from the ConfigMap in the cluster. Use a specific desired kubelet version.
+  kubeadm alpha phase kubelet config download --kubelet-version 1.16.0
+```
+-->
+
+<pre><code>  # 从集群中的 ConfigMap 下载 kubelet 配置。自动检测 kubelet 版本。
+  下载 kubeadm alpha phase kubelet 配置
+
+  # 从集群中的 ConfigMap 下载 kubelet 配置。使用特定的所需 kubelet 版本。
+  kubeadm alpha phase kubelet 配置下载 --kubelet-version 1.16.0
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for download
+      -->
+       download 的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该标志，可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--kubelet-version string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The desired version for the kubelet. Defaults to being autodetected from 'kubelet --version'.
+      -->
+       kubelet 所需版本。默认为从 'kubelet --version' 中自动检测到。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+</div>
+
+<script>$(function(){$("#tab-kubelet").tabs();});</script>
+
+
+<h2 id="cmd-selfhosting">kubeadm alpha selfhosting pivot</h2>
+
+<!--
+The subcommand `pivot` can be used to convert a static Pod-hosted control plane into a self-hosted one.
+-->
+
+<p>子命令 <code>pivot</code> 可用于将 Pod 托管的静态控制平面转换为自托管的控制平面。有关 <code>pivot</code> 更多信息，请参见<a href="/docs/setup/production-environment/tools/kubeadm/self-hosting/">文档</a>。</p>
+
+<!--
+[Documentation](/docs/setup/production-environment/tools/kubeadm/self-hosting/)
+-->
+
+
+
+
+
+<div id="selfhosting">
+<ul>
+	
+	  
+  <li><a href="#selfhosting-0">selfhosting</a></li>
+
+	  
+  <li><a href="#selfhosting-1">pivot</a></li>
+
+</ul>
+
+
+<div id="selfhosting-0">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+This command is not meant to be run on its own. See list of available subcommands.
+-->
+
+<p>此命令并非设计用来单独运行。请参阅可用子命令列表。</p>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for selfhosting
+      -->
+       selfhosting 操作的帮助命令
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 指向 '真实' 宿主机的根目录。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+
+<div id="selfhosting-1">
+	
+		
+		
+		
+		
+			
+
+<h3 id="概要">概要</h3>
+
+<!--
+Convert static Pod files for control plane components into self-hosted DaemonSets configured via the Kubernetes API.
+-->
+
+<p>将用于控制平面组件的静态 Pod 文件转换为通过 Kubernetes API 配置的自托管 DaemonSet。</p>
+
+<!--
+See the documentation for self-hosting limitations.
+-->
+
+<p>有关自托管的限制，请参阅相关文档。</p>
+
+<!--
+Alpha Disclaimer: this command is currently alpha.
+-->
+
+<p>Alpha 免责声明：此命令当前为 alpha 功能。</p>
+
+<pre><code>kubeadm alpha selfhosting pivot [flags]
+</code></pre>
+
+<!--
+### Examples
+-->
+
+<h3 id="示例">示例</h3>
+
+<!--
+# Convert a static Pod-hosted control plane into a self-hosted one.
+-->
+
+<pre><code>  # 将静态 Pod 托管的控制平面转换为自托管的控制平面。
+
+  kubeadm alpha phase self-hosting convert-from-staticpods
+</code></pre>
+
+<!--
+### Options
+-->
+
+<h3 id="选项">选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/pki"
+      -->
+      --cert-dir string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/pki"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The path where certificates are stored
+      -->
+      证书存储的路径
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">--config string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Path to a kubeadm configuration file.
+      -->
+       kubeadm 配置文件的路径。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-f, --force</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Pivot the cluster without prompting for confirmation
+      -->
+      在不提示确认的情况下转换集群
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-h, --help</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      help for pivot
+      -->
+       pivot 操作的帮助命令
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+      <!--
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default: "/etc/kubernetes/admin.conf"
+      -->
+      --kubeconfig string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;默认值："/etc/kubernetes/admin.conf"
+      </td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      The kubeconfig file to use when talking to the cluster. If the flag is not set, a set of standard locations can be searched for an existing kubeconfig file.
+      -->
+      与集群通信时使用的 kubeconfig 文件。如果未设置该参数，则可以在一组标准位置中搜索现有的 kubeconfig 文件。
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">-s, --store-certs-in-secrets</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      Enable storing certs in secrets
+      -->
+      启用 secret 存储证书
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+<!--
+### Options inherited from parent commands
+-->
+
+<h3 id="从父命令继承的选项">从父命令继承的选项</h3>
+
+<table style="width: 100%; table-layout: fixed;">
+  <colgroup>
+    <col span="1" style="width: 10px;" />
+    <col span="1" />
+  </colgroup>
+  <tbody>
+
+    <tr>
+      <td colspan="2">--rootfs string</td>
+    </tr>
+    <tr>
+      <td></td><td style="line-height: 130%; word-wrap: break-word;">
+      <!--
+      [EXPERIMENTAL] The path to the 'real' host root filesystem.
+      -->
+      [实验] 到 '真实' 主机根文件系统的路径。
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+		
+		
+	
+</div>
+
+</div>
+
+<script>$(function(){$("#selfhosting").tabs();});</script>
+
+
+<!--
+## What's next
+-->
+
+<h2 id="接下来">接下来</h2>
+
+<!--
+* [kubeadm init](/docs/reference/setup-tools/kubeadm/kubeadm-init/) to bootstrap a Kubernetes control-plane node
+* [kubeadm join](/docs/reference/setup-tools/kubeadm/kubeadm-join/) to connect a node to the cluster
+* [kubeadm reset](/docs/reference/setup-tools/kubeadm/kubeadm-reset/) to revert any changes made to this host by `kubeadm init` or `kubeadm join`
+-->
+
+<ul>
+<li><a href="/docs/reference/setup-tools/kubeadm/kubeadm-init/">kubeadm init</a> 引导 Kubernetes 控制平面节点</li>
+<li><a href="/docs/reference/setup-tools/kubeadm/kubeadm-join/">kubeadm join</a> 将节点连接到集群</li>
+<li><a href="/docs/reference/setup-tools/kubeadm/kubeadm-reset/">kubeadm reset</a> 会还原 <code>kubeadm init</code> 或 <code>kubeadm join</code> 操作对主机所做的任何更改。</li>
+</ul>
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/reference/setup-tools/kubeadm/kubeadm-alpha.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/reference\/setup-tools\/kubeadm\/kubeadm-alpha\/",
+    "title" : "kubeadm alpha",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/reference\/setup-tools\/kubeadm\/kubeadm-alpha\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/reference/setup-tools/kubeadm/kubeadm-alpha.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 December 25, 2019 at 8:51 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/b8b2cc7c7443e32de70834a2b3d2186cae6eea5a/">ZH-trans: merge release1.16-temporary to master (#18217)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/reference/setup-tools/kubeadm/kubeadm-alpha.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

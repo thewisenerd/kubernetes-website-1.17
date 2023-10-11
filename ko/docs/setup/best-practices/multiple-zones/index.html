@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html id="docs" lang="ko" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>여러 영역에서 구동 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/ko/docs/setup/best-practices/multiple-zones/">
+<meta property="og:title" content="여러 영역에서 구동">
+<meta name="twitter:title" content="여러 영역에서 구동">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ko/" class="logo" title="운영 수준의 컨테이너 오케스트레이션 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ko/docs/" class="active">문서</a></li>
+            
+            
+            
+            <li><a href="/ko/training/">교육</a></li>
+            
+            
+            
+            
+            
+            <li><a href="/ko/case-studies/">사례 연구</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    한국어 Korean <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/setup/best-practices/multiple-zones/">English</a></li>
+                
+                    <li><a href="/ja/docs/setup/best-practices/multiple-zones/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ko/docs/setup/best-practices/multiple-zones/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ko/docs/setup/best-practices/multiple-zones/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ko/docs/setup/best-practices/multiple-zones/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ko/docs/setup/best-practices/multiple-zones/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ko/docs/setup/best-practices/multiple-zones/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ko/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>쿠버네티스 기초 학습</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/home/">문서</a></h3>
+           <p>개념, 튜토리얼 및 참조 문서와 함께 쿠버네티스 사용하는 방법을 익힐 수 있다. 또한, <a href="/editdocs/" data-auto-burger-exclude>문서에 기여하는 것도 도움을 줄 수 있다</a>!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">코어 쿠버네티스 코드 베이스를 살펴보는데 관심이 있으십니까?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHub에서 보기</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">커뮤니티 둘러보기</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>시작하기</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ko/docs/home/">홈</a></li>
+		
+		
+		<li><a href="/ko/docs/setup/" class="YAH">시작하기</a></li>
+		
+		
+		<li><a href="/ko/docs/concepts/">개념</a></li>
+		
+		
+		<li><a href="/ko/docs/tasks/">태스크</a></li>
+		
+		
+		<li><a href="/ko/docs/tutorials/">튜토리얼</a></li>
+		
+		
+		<li><a href="/ko/docs/reference/">레퍼런스</a></li>
+		
+		
+		<li><a href="/ko/docs/contribute/">기여</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="검색하기" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  문서는 더 이상 적극적으로 관리되지 않음. 현재 보고있는 문서는 정적 스냅샷임. 최신 문서를 위해서는, 다음을 참고. 
+	 <a href="https://kubernetes.io/docs/home/">최신 버전.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="시작하기" href="/ko/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="릴리스 노트와 버전 차이 지원(skew)">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes version and version skew support policy <small>(EN)</small>" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="학습 환경">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Minikube로 쿠버네티스 설치" href="/ko/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="운영 환경">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="컨테이너 런타임" href="/ko/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="kubeadm으로 클러스터 구성하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Troubleshooting kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating a single control-plane cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm으로 컨트롤 플레인 사용자 정의하기" href="/ko/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="고가용성 토폴로지 선택" href="/ko/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating Highly Available clusters with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up a High Availability etcd cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring each kubelet in your cluster using kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring your kubernetes cluster to self-host the control plane <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with KRIB <small>(EN)</small>" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kops로 쿠버네티스 설치하기" href="/ko/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kubespray <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="턴키 클라우드 솔루션">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Alibaba Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on AWS EC2 <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Azure <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on CenturyLink Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Google Compute Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Tencent Kubernetes Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="온-프레미스 VM">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloudstack <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes on DC/OS <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="oVirt <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="쿠버네티스에서 윈도우">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Intro to Windows support in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스에서 윈도우 노드 추가 가이드" href="/ko/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스에서 윈도우 컨테이너 스케줄링을 위한 가이드" href="/ko/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="모범 사례">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="여러 영역에서 구동" href="/ko/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="대형 클러스터 구축" href="/ko/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="노드 구성 검증하기" href="/ko/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI 인증서 및 요구 조건" href="/ko/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/setup/best-practices/multiple-zones.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>여러 영역에서 구동</h1>
+
+
+
+<p>이 페이지는 여러 영역에서 어떻게 클러스터를 구동하는지 설명한다.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%ec%86%8c%ea%b0%9c">소개</a></li>
+
+
+
+
+<li><a href="#%ea%b8%b0%eb%8a%a5">기능</a></li>
+
+
+
+
+<li><a href="#%ec%a0%9c%ed%95%9c-%ec%82%ac%ed%95%ad">제한 사항</a></li>
+
+
+
+
+<li><a href="#%ec%97%b0%ec%8a%b5">연습</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<h2 id="소개">소개</h2>
+
+<p>Kubernetes 1.2 adds support for running a single cluster in multiple failure zones
+(GCE calls them simply &ldquo;zones&rdquo;, AWS calls them &ldquo;availability zones&rdquo;, here we&rsquo;ll refer to them as &ldquo;zones&rdquo;).
+This is a lightweight version of a broader Cluster Federation feature (previously referred to by the affectionate
+nickname <a href="https://github.com/kubernetes/community/blob/v1.17.17/contributors/design-proposals/multicluster/federation.md" target="_blank">&ldquo;Ubernetes&rdquo;</a>).
+Full Cluster Federation allows combining separate
+Kubernetes clusters running in different regions or cloud providers
+(or on-premises data centers).  However, many
+users simply want to run a more available Kubernetes cluster in multiple zones
+of their single cloud provider, and this is what the multizone support in 1.2 allows
+(this previously went by the nickname &ldquo;Ubernetes Lite&rdquo;).</p>
+
+<p>Multizone support is deliberately limited: a single Kubernetes cluster can run
+in multiple zones, but only within the same region (and cloud provider).  Only
+GCE and AWS are currently supported automatically (though it is easy to
+add similar support for other clouds or even bare metal, by simply arranging
+for the appropriate labels to be added to nodes and volumes).</p>
+
+<h2 id="기능">기능</h2>
+
+<p>When nodes are started, the kubelet automatically adds labels to them with
+zone information.</p>
+
+<p>Kubernetes will automatically spread the pods in a replication controller
+or service across nodes in a single-zone cluster (to reduce the impact of
+failures.)  With multiple-zone clusters, this spreading behavior is
+extended across zones (to reduce the impact of zone failures.)  (This is
+achieved via <code>SelectorSpreadPriority</code>).  This is a best-effort
+placement, and so if the zones in your cluster are heterogeneous
+(e.g. different numbers of nodes, different types of nodes, or
+different pod resource requirements), this might prevent perfectly
+even spreading of your pods across zones. If desired, you can use
+homogeneous zones (same number and types of nodes) to reduce the
+probability of unequal spreading.</p>
+
+<p>When persistent volumes are created, the <code>PersistentVolumeLabel</code>
+admission controller automatically adds zone labels to them.  The scheduler (via the
+<code>VolumeZonePredicate</code> predicate) will then ensure that pods that claim a
+given volume are only placed into the same zone as that volume, as volumes
+cannot be attached across zones.</p>
+
+<h2 id="제한-사항">제한 사항</h2>
+
+<p>There are some important limitations of the multizone support:</p>
+
+<ul>
+<li><p>We assume that the different zones are located close to each other in the
+network, so we don&rsquo;t perform any zone-aware routing.  In particular, traffic
+that goes via services might cross zones (even if some pods backing that service
+exist in the same zone as the client), and this may incur additional latency and cost.</p></li>
+
+<li><p>Volume zone-affinity will only work with a <code>PersistentVolume</code>, and will not
+work if you directly specify an EBS volume in the pod spec (for example).</p></li>
+
+<li><p>Clusters cannot span clouds or regions (this functionality will require full
+federation support).</p></li>
+
+<li><p>Although your nodes are in multiple zones, kube-up currently builds
+a single master node by default.  While services are highly
+available and can tolerate the loss of a zone, the control plane is
+located in a single zone.  Users that want a highly available control
+plane should follow the <a href="/docs/admin/high-availability">high availability</a> instructions.</p></li>
+</ul>
+
+<h3 id="volume-limitations">Volume limitations</h3>
+
+<p>The following limitations are addressed with <a href="/docs/concepts/storage/storage-classes/#volume-binding-mode">topology-aware volume binding</a>.</p>
+
+<ul>
+<li><p>StatefulSet volume zone spreading when using dynamic provisioning is currently not compatible with
+pod affinity or anti-affinity policies.</p></li>
+
+<li><p>If the name of the StatefulSet contains dashes (&ldquo;-&rdquo;), volume zone spreading
+may not provide a uniform distribution of storage across zones.</p></li>
+
+<li><p>When specifying multiple PVCs in a Deployment or Pod spec, the StorageClass
+needs to be configured for a specific single zone, or the PVs need to be
+statically provisioned in a specific zone. Another workaround is to use a
+StatefulSet, which will ensure that all the volumes for a replica are
+provisioned in the same zone.</p></li>
+</ul>
+
+<h2 id="연습">연습</h2>
+
+<p>We&rsquo;re now going to walk through setting up and using a multi-zone
+cluster on both GCE &amp; AWS.  To do so, you bring up a full cluster
+(specifying <code>MULTIZONE=true</code>), and then you add nodes in additional zones
+by running <code>kube-up</code> again (specifying <code>KUBE_USE_EXISTING_MASTER=true</code>).</p>
+
+<h3 id="클러스터-가져오기">클러스터 가져오기</h3>
+
+<p>Create the cluster as normal, but pass MULTIZONE to tell the cluster to manage multiple zones; creating nodes in us-central1-a.</p>
+
+<p>GCE:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -sS https://get.k8s.io | <span style="color:#b8860b">MULTIZONE</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>gce <span style="color:#b8860b">KUBE_GCE_ZONE</span><span style="color:#666">=</span>us-central1-a <span style="color:#b8860b">NUM_NODES</span><span style="color:#666">=</span><span style="color:#666">3</span> bash</code></pre></div>
+<p>AWS:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -sS https://get.k8s.io | <span style="color:#b8860b">MULTIZONE</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>aws <span style="color:#b8860b">KUBE_AWS_ZONE</span><span style="color:#666">=</span>us-west-2a <span style="color:#b8860b">NUM_NODES</span><span style="color:#666">=</span><span style="color:#666">3</span> bash</code></pre></div>
+<p>This step brings up a cluster as normal, still running in a single zone
+(but <code>MULTIZONE=true</code> has enabled multi-zone capabilities).</p>
+
+<h3 id="라벨이-지정된-노드-확인">라벨이 지정된 노드 확인</h3>
+
+<p>View the nodes; you can see that they are labeled with zone information.
+They are all in <code>us-central1-a</code> (GCE) or <code>us-west-2a</code> (AWS) so far.  The
+labels are <code>failure-domain.beta.kubernetes.io/region</code> for the region,
+and <code>failure-domain.beta.kubernetes.io/zone</code> for the zone:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get nodes --show-labels</code></pre></div>
+<p>The output is similar to this:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME                     STATUS                     ROLES    AGE   VERSION          LABELS
+kubernetes-master        Ready,SchedulingDisabled   &lt;none&gt;   6m    v1.13.0          beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-1,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-a,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-master
+kubernetes-minion-87j9   Ready                      &lt;none&gt;   6m    v1.13.0          beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-a,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-87j9
+kubernetes-minion-9vlv   Ready                      &lt;none&gt;   6m    v1.13.0          beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-a,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-9vlv
+kubernetes-minion-a12q   Ready                      &lt;none&gt;   6m    v1.13.0          beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-a,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-a12q</code></pre></div>
+<h3 id="두번째-영역에-더-많은-노드-추가하기">두번째 영역에 더 많은 노드 추가하기</h3>
+
+<p>Let&rsquo;s add another set of nodes to the existing cluster, reusing the
+existing master, running in a different zone (us-central1-b or us-west-2b).
+We run kube-up again, but by specifying <code>KUBE_USE_EXISTING_MASTER=true</code>
+kube-up will not create a new master, but will reuse one that was previously
+created instead.</p>
+
+<p>GCE:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b8860b">KUBE_USE_EXISTING_MASTER</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">MULTIZONE</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>gce <span style="color:#b8860b">KUBE_GCE_ZONE</span><span style="color:#666">=</span>us-central1-b <span style="color:#b8860b">NUM_NODES</span><span style="color:#666">=</span><span style="color:#666">3</span> kubernetes/cluster/kube-up.sh</code></pre></div>
+<p>On AWS we also need to specify the network CIDR for the additional
+subnet, along with the master internal IP address:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b8860b">KUBE_USE_EXISTING_MASTER</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">MULTIZONE</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>aws <span style="color:#b8860b">KUBE_AWS_ZONE</span><span style="color:#666">=</span>us-west-2b <span style="color:#b8860b">NUM_NODES</span><span style="color:#666">=</span><span style="color:#666">3</span> <span style="color:#b8860b">KUBE_SUBNET_CIDR</span><span style="color:#666">=</span><span style="color:#666">172</span>.20.1.0/24 <span style="color:#b8860b">MASTER_INTERNAL_IP</span><span style="color:#666">=</span><span style="color:#666">172</span>.20.0.9 kubernetes/cluster/kube-up.sh</code></pre></div>
+<p>View the nodes again; 3 more nodes should have launched and be tagged
+in us-central1-b:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get nodes --show-labels</code></pre></div>
+<p>The output is similar to this:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME                     STATUS                     ROLES    AGE   VERSION           LABELS
+kubernetes-master        Ready,SchedulingDisabled   &lt;none&gt;   16m   v1.13.0           beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-1,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-a,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-master
+kubernetes-minion-281d   Ready                      &lt;none&gt;   2m    v1.13.0           beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-b,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-281d
+kubernetes-minion-87j9   Ready                      &lt;none&gt;   16m   v1.13.0           beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-a,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-87j9
+kubernetes-minion-9vlv   Ready                      &lt;none&gt;   16m   v1.13.0           beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-a,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-9vlv
+kubernetes-minion-a12q   Ready                      &lt;none&gt;   17m   v1.13.0           beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-a,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-a12q
+kubernetes-minion-pp2f   Ready                      &lt;none&gt;   2m    v1.13.0           beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-b,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-pp2f
+kubernetes-minion-wf8i   Ready                      &lt;none&gt;   2m    v1.13.0           beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-b,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-wf8i</code></pre></div>
+<h3 id="볼륨-어피니티">볼륨 어피니티</h3>
+
+<p>Create a volume using the dynamic volume creation (only PersistentVolumes are supported for zone affinity):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl apply -f - <span style="color:#b44">&lt;&lt;EOF
+</span><span style="color:#b44">{
+</span><span style="color:#b44">  &#34;apiVersion&#34;: &#34;v1&#34;,
+</span><span style="color:#b44">  &#34;kind&#34;: &#34;PersistentVolumeClaim&#34;,
+</span><span style="color:#b44">  &#34;metadata&#34;: {
+</span><span style="color:#b44">    &#34;name&#34;: &#34;claim1&#34;,
+</span><span style="color:#b44">    &#34;annotations&#34;: {
+</span><span style="color:#b44">        &#34;volume.alpha.kubernetes.io/storage-class&#34;: &#34;foo&#34;
+</span><span style="color:#b44">    }
+</span><span style="color:#b44">  },
+</span><span style="color:#b44">  &#34;spec&#34;: {
+</span><span style="color:#b44">    &#34;accessModes&#34;: [
+</span><span style="color:#b44">      &#34;ReadWriteOnce&#34;
+</span><span style="color:#b44">    ],
+</span><span style="color:#b44">    &#34;resources&#34;: {
+</span><span style="color:#b44">      &#34;requests&#34;: {
+</span><span style="color:#b44">        &#34;storage&#34;: &#34;5Gi&#34;
+</span><span style="color:#b44">      }
+</span><span style="color:#b44">    }
+</span><span style="color:#b44">  }
+</span><span style="color:#b44">}
+</span><span style="color:#b44">EOF</span></code></pre></div>
+<blockquote class="note">
+  <div><strong>참고:</strong> For version 1.3+ Kubernetes will distribute dynamic PV claims across
+the configured zones. For version 1.2, dynamic persistent volumes were
+always created in the zone of the cluster master
+(here us-central1-a / us-west-2a); that issue
+(<a href="https://github.com/kubernetes/kubernetes/issues/23330" target="_blank">#23330</a>)
+was addressed in 1.3+.</div>
+</blockquote>
+
+<p>Now let&rsquo;s validate that Kubernetes automatically labeled the zone &amp; region the PV was created in.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pv --show-labels</code></pre></div>
+<p>The output is similar to this:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME           CAPACITY   ACCESSMODES   RECLAIM POLICY   STATUS    CLAIM            STORAGECLASS    REASON    AGE       LABELS
+pv-gce-mj4gm   5Gi        RWO           Retain           Bound     default/claim1   manual                    46s       failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-a</code></pre></div>
+<p>So now we will create a pod that uses the persistent volume claim.
+Because GCE PDs / AWS EBS volumes cannot be attached across zones,
+this means that this pod can only be created in the same zone as the volume:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">kubectl<span style="color:#bbb"> </span>apply<span style="color:#bbb"> </span>-f<span style="color:#bbb"> </span>-<span style="color:#bbb"> </span>&lt;&lt;EOF<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>mypod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>myfrontend<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span><span style="color:#b44">&#34;/var/www/html&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>mypd<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>mypd<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>persistentVolumeClaim:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>claimName:<span style="color:#bbb"> </span>claim1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>EOF</code></pre></div>
+<p>Note that the pod was automatically created in the same zone as the volume, as
+cross-zone attachments are not generally permitted by cloud providers:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe pod mypod | grep Node</code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">Node:        kubernetes-minion-9vlv/10.240.0.5</code></pre></div>
+<p>And check node labels:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get node kubernetes-minion-9vlv --show-labels</code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME                     STATUS    AGE    VERSION          LABELS
+kubernetes-minion-9vlv   Ready     22m    v1.6.0+fff5156   beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-a,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-9vlv</code></pre></div>
+<h3 id="여러-영역에-파드-분배하기">여러 영역에 파드 분배하기</h3>
+
+<p>Pods in a replication controller or service are automatically spread
+across zones.  First, let&rsquo;s launch more nodes in a third zone:</p>
+
+<p>GCE:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b8860b">KUBE_USE_EXISTING_MASTER</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">MULTIZONE</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>gce <span style="color:#b8860b">KUBE_GCE_ZONE</span><span style="color:#666">=</span>us-central1-f <span style="color:#b8860b">NUM_NODES</span><span style="color:#666">=</span><span style="color:#666">3</span> kubernetes/cluster/kube-up.sh</code></pre></div>
+<p>AWS:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b8860b">KUBE_USE_EXISTING_MASTER</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">MULTIZONE</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>aws <span style="color:#b8860b">KUBE_AWS_ZONE</span><span style="color:#666">=</span>us-west-2c <span style="color:#b8860b">NUM_NODES</span><span style="color:#666">=</span><span style="color:#666">3</span> <span style="color:#b8860b">KUBE_SUBNET_CIDR</span><span style="color:#666">=</span><span style="color:#666">172</span>.20.2.0/24 <span style="color:#b8860b">MASTER_INTERNAL_IP</span><span style="color:#666">=</span><span style="color:#666">172</span>.20.0.9 kubernetes/cluster/kube-up.sh</code></pre></div>
+<p>Verify that you now have nodes in 3 zones:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get nodes --show-labels</code></pre></div>
+<p>Create the guestbook-go example, which includes an RC of size 3, running a simple web app:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">find kubernetes/examples/guestbook-go/ -name <span style="color:#b44">&#39;*.json&#39;</span> | xargs -I <span style="color:#666">{}</span> kubectl apply -f <span style="color:#666">{}</span></code></pre></div>
+<p>The pods should be spread across all 3 zones:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe pod -l <span style="color:#b8860b">app</span><span style="color:#666">=</span>guestbook | grep Node</code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">Node:        kubernetes-minion-9vlv/10.240.0.5
+Node:        kubernetes-minion-281d/10.240.0.8
+Node:        kubernetes-minion-olsh/10.240.0.11</code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get node kubernetes-minion-9vlv kubernetes-minion-281d kubernetes-minion-olsh --show-labels</code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME                     STATUS    ROLES    AGE    VERSION          LABELS
+kubernetes-minion-9vlv   Ready     &lt;none&gt;   34m    v1.13.0          beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-a,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-9vlv
+kubernetes-minion-281d   Ready     &lt;none&gt;   20m    v1.13.0          beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-b,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-281d
+kubernetes-minion-olsh   Ready     &lt;none&gt;   3m     v1.13.0          beta.kubernetes.io/instance-type<span style="color:#666">=</span>n1-standard-2,failure-domain.beta.kubernetes.io/region<span style="color:#666">=</span>us-central1,failure-domain.beta.kubernetes.io/zone<span style="color:#666">=</span>us-central1-f,kubernetes.io/hostname<span style="color:#666">=</span>kubernetes-minion-olsh</code></pre></div>
+<p>Load-balancers span all zones in a cluster; the guestbook-go example
+includes an example load-balanced service:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe service guestbook | grep LoadBalancer.Ingress</code></pre></div>
+<p>The output is similar to this:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">LoadBalancer Ingress:   <span style="color:#666">130</span>.211.126.21</code></pre></div>
+<p>Set the above IP:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#a2f">export</span> <span style="color:#b8860b">IP</span><span style="color:#666">=</span><span style="color:#666">130</span>.211.126.21</code></pre></div>
+<p>Explore with curl via IP:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl -s http://<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">IP</span><span style="color:#b68;font-weight:bold">}</span>:3000/env | grep HOSTNAME</code></pre></div>
+<p>The output is similar to this:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  <span style="color:#b44">&#34;HOSTNAME&#34;</span>: <span style="color:#b44">&#34;guestbook-44sep&#34;</span>,</code></pre></div>
+<p>Again, explore multiple times:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#666">(</span><span style="color:#a2f;font-weight:bold">for</span> i in <span style="color:#b44">`</span>seq <span style="color:#666">20</span><span style="color:#b44">`</span>; <span style="color:#a2f;font-weight:bold">do</span> curl -s http://<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">IP</span><span style="color:#b68;font-weight:bold">}</span>:3000/env | grep HOSTNAME; <span style="color:#a2f;font-weight:bold">done</span><span style="color:#666">)</span>  | sort | uniq</code></pre></div>
+<p>The output is similar to this:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  <span style="color:#b44">&#34;HOSTNAME&#34;</span>: <span style="color:#b44">&#34;guestbook-44sep&#34;</span>,
+  <span style="color:#b44">&#34;HOSTNAME&#34;</span>: <span style="color:#b44">&#34;guestbook-hum5n&#34;</span>,
+  <span style="color:#b44">&#34;HOSTNAME&#34;</span>: <span style="color:#b44">&#34;guestbook-ppm40&#34;</span>,</code></pre></div>
+<p>The load balancer correctly targets all the pods, even though they are in multiple zones.</p>
+
+<h3 id="클러스터-강제-종료">클러스터 강제 종료</h3>
+
+<p>When you&rsquo;re done, clean up:</p>
+
+<p>GCE:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>gce <span style="color:#b8860b">KUBE_USE_EXISTING_MASTER</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">KUBE_GCE_ZONE</span><span style="color:#666">=</span>us-central1-f kubernetes/cluster/kube-down.sh
+<span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>gce <span style="color:#b8860b">KUBE_USE_EXISTING_MASTER</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">KUBE_GCE_ZONE</span><span style="color:#666">=</span>us-central1-b kubernetes/cluster/kube-down.sh
+<span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>gce <span style="color:#b8860b">KUBE_GCE_ZONE</span><span style="color:#666">=</span>us-central1-a kubernetes/cluster/kube-down.sh</code></pre></div>
+<p>AWS:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>aws <span style="color:#b8860b">KUBE_USE_EXISTING_MASTER</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">KUBE_AWS_ZONE</span><span style="color:#666">=</span>us-west-2c kubernetes/cluster/kube-down.sh
+<span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>aws <span style="color:#b8860b">KUBE_USE_EXISTING_MASTER</span><span style="color:#666">=</span><span style="color:#a2f">true</span> <span style="color:#b8860b">KUBE_AWS_ZONE</span><span style="color:#666">=</span>us-west-2b kubernetes/cluster/kube-down.sh
+<span style="color:#b8860b">KUBERNETES_PROVIDER</span><span style="color:#666">=</span>aws <span style="color:#b8860b">KUBE_AWS_ZONE</span><span style="color:#666">=</span>us-west-2a kubernetes/cluster/kube-down.sh</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>피드백</h2>
+  <p class="feedback--prompt">이 페이지가 도움이 되었나요? </p>
+  <button class="button feedback--yes">네</button>
+  <button class="button feedback--no">아니요</button>
+  <p class="feedback--response feedback--response__hidden">
+    피드백 감사합니다. 쿠버네티스 사용 방법에 대해서 구체적이고 답변 가능한 질문이 있다면, 다음 링크에서 질문하십시오.
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    원한다면 GitHub 리포지터리에 이슈를 열어서
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      문제 리포트</a>
+    또는
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      개선 제안이 가능합니다.</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/best-practices/multiple-zones.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ko\/docs\/setup\/best-practices\/multiple-zones\/",
+    "title" : "여러 영역에서 구동",
+    "permalink" : "https:\/\/kubernetes.io\/ko\/docs\/setup\/best-practices\/multiple-zones\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">이슈 생성하기</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/setup/best-practices/multiple-zones.md" class="button issue">페이지 편집하기</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    최종 수정일시 March 26, 2020 at 10:58 PM PST , 다음 변경에 의해서:
+    <a href="https://github.com/kubernetes/website/commit/c38acbc4f65bf9ec02ba1eeff8bd339dfd5d0752/">Seventh Korean l10n Work For Release 1.17 (#19858)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/best-practices/multiple-zones.md">페이지 변경 이력</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ko/docs/home/">홈</a>
+            
+            
+            
+            <a href="/ko/training/">교육</a>
+            
+            
+            
+            
+            
+            <a href="/ko/case-studies/">사례 연구</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">기여하기</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

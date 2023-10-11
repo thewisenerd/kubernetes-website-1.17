@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html id="docs" lang="ko" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>대형 클러스터 구축 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="지원 v1.17 버전에서, 쿠버네티스는 노드 5000개까지의 클러스터를 지원한다. 보다 정확하게는, 다음 기준을 모두 만족하는 설정을 지원한다.
+ 노드 5000개 이하 전체 파드 150000개 이하 전체 컨테이너 300000개 이하 노드 당 파드 100개 이하  
+   지원 설치  쿼터 문제 etcd 저장소 마스터 크기와 마스터 구성 요소 애드온 자원 시작 시 사소한 노드 오류 허용     설치 클러스터는 쿠버네티스 에이전트가 구동하는 노드(물리 또는 가상 머신)의 집합이며, &ldquo;마스터&rdquo;(클러스터-수준 컨트롤 플레인)에 의해 관리된다.">
+<meta property="og:description" content="지원 v1.17 버전에서, 쿠버네티스는 노드 5000개까지의 클러스터를 지원한다. 보다 정확하게는, 다음 기준을 모두 만족하는 설정을 지원한다.
+ 노드 5000개 이하 전체 파드 150000개 이하 전체 컨테이너 300000개 이하 노드 당 파드 100개 이하  
+   지원 설치  쿼터 문제 etcd 저장소 마스터 크기와 마스터 구성 요소 애드온 자원 시작 시 사소한 노드 오류 허용     설치 클러스터는 쿠버네티스 에이전트가 구동하는 노드(물리 또는 가상 머신)의 집합이며, &ldquo;마스터&rdquo;(클러스터-수준 컨트롤 플레인)에 의해 관리된다.">
+<meta name="twitter:description" content="지원 v1.17 버전에서, 쿠버네티스는 노드 5000개까지의 클러스터를 지원한다. 보다 정확하게는, 다음 기준을 모두 만족하는 설정을 지원한다.
+ 노드 5000개 이하 전체 파드 150000개 이하 전체 컨테이너 300000개 이하 노드 당 파드 100개 이하  
+   지원 설치  쿼터 문제 etcd 저장소 마스터 크기와 마스터 구성 요소 애드온 자원 시작 시 사소한 노드 오류 허용     설치 클러스터는 쿠버네티스 에이전트가 구동하는 노드(물리 또는 가상 머신)의 집합이며, &ldquo;마스터&rdquo;(클러스터-수준 컨트롤 플레인)에 의해 관리된다.">
+<meta property="og:url" content="https://kubernetes.io/ko/docs/setup/best-practices/cluster-large/">
+<meta property="og:title" content="대형 클러스터 구축">
+<meta name="twitter:title" content="대형 클러스터 구축">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ko/" class="logo" title="운영 수준의 컨테이너 오케스트레이션 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ko/docs/" class="active">문서</a></li>
+            
+            
+            
+            <li><a href="/ko/training/">교육</a></li>
+            
+            
+            
+            
+            
+            <li><a href="/ko/case-studies/">사례 연구</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    한국어 Korean <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/setup/best-practices/cluster-large/">English</a></li>
+                
+                    <li><a href="/zh/docs/setup/best-practices/cluster-large/">中文 Chinese</a></li>
+                
+                    <li><a href="/ja/docs/setup/best-practices/cluster-large/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ko/docs/setup/best-practices/cluster-large/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ko/docs/setup/best-practices/cluster-large/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ko/docs/setup/best-practices/cluster-large/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ko/docs/setup/best-practices/cluster-large/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ko/docs/setup/best-practices/cluster-large/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ko/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>쿠버네티스 기초 학습</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/home/">문서</a></h3>
+           <p>개념, 튜토리얼 및 참조 문서와 함께 쿠버네티스 사용하는 방법을 익힐 수 있다. 또한, <a href="/editdocs/" data-auto-burger-exclude>문서에 기여하는 것도 도움을 줄 수 있다</a>!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">코어 쿠버네티스 코드 베이스를 살펴보는데 관심이 있으십니까?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHub에서 보기</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">커뮤니티 둘러보기</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>시작하기</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ko/docs/home/">홈</a></li>
+		
+		
+		<li><a href="/ko/docs/setup/" class="YAH">시작하기</a></li>
+		
+		
+		<li><a href="/ko/docs/concepts/">개념</a></li>
+		
+		
+		<li><a href="/ko/docs/tasks/">태스크</a></li>
+		
+		
+		<li><a href="/ko/docs/tutorials/">튜토리얼</a></li>
+		
+		
+		<li><a href="/ko/docs/reference/">레퍼런스</a></li>
+		
+		
+		<li><a href="/ko/docs/contribute/">기여</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="검색하기" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  문서는 더 이상 적극적으로 관리되지 않음. 현재 보고있는 문서는 정적 스냅샷임. 최신 문서를 위해서는, 다음을 참고. 
+	 <a href="https://kubernetes.io/docs/home/">최신 버전.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="시작하기" href="/ko/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="릴리스 노트와 버전 차이 지원(skew)">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes version and version skew support policy <small>(EN)</small>" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="학습 환경">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Minikube로 쿠버네티스 설치" href="/ko/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="운영 환경">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="컨테이너 런타임" href="/ko/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="kubeadm으로 클러스터 구성하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Troubleshooting kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating a single control-plane cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm으로 컨트롤 플레인 사용자 정의하기" href="/ko/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="고가용성 토폴로지 선택" href="/ko/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating Highly Available clusters with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Set up a High Availability etcd cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring each kubelet in your cluster using kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring your kubernetes cluster to self-host the control plane <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with KRIB <small>(EN)</small>" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kops로 쿠버네티스 설치하기" href="/ko/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kubespray <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="턴키 클라우드 솔루션">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Alibaba Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on AWS EC2 <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Azure <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on CenturyLink Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Google Compute Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Tencent Kubernetes Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="온-프레미스 VM">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloudstack <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes on DC/OS <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="oVirt <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="쿠버네티스에서 윈도우">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Intro to Windows support in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스에서 윈도우 노드 추가 가이드" href="/ko/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스에서 윈도우 컨테이너 스케줄링을 위한 가이드" href="/ko/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="모범 사례">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="여러 영역에서 구동" href="/ko/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="대형 클러스터 구축" href="/ko/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="노드 구성 검증하기" href="/ko/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI 인증서 및 요구 조건" href="/ko/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/setup/best-practices/cluster-large.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>대형 클러스터 구축</h1>
+
+
+
+
+
+<h2 id="지원">지원</h2>
+
+<p>v1.17 버전에서, 쿠버네티스는 노드 5000개까지의 클러스터를 지원한다. 보다 정확하게는, 다음 기준을 <em>모두</em> 만족하는 설정을 지원한다.</p>
+
+<ul>
+<li>노드 5000개 이하</li>
+<li>전체 파드 150000개 이하</li>
+<li>전체 컨테이너 300000개 이하</li>
+<li>노드 당 파드 100개 이하</li>
+</ul>
+
+<p><br></p>
+
+<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#지원">지원</a></li>
+<li><a href="#설치">설치</a>
+<ul>
+<li><a href="#쿼터-문제">쿼터 문제</a></li>
+<li><a href="#etcd-저장소">etcd 저장소</a></li>
+<li><a href="#마스터-크기와-마스터-구성-요소">마스터 크기와 마스터 구성 요소</a></li>
+<li><a href="#애드온-자원">애드온 자원</a></li>
+<li><a href="#시작-시-사소한-노드-오류-허용">시작 시 사소한 노드 오류 허용</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+
+<h2 id="설치">설치</h2>
+
+<p>클러스터는 쿠버네티스 에이전트가 구동하는 노드(물리 또는 가상 머신)의 집합이며, &ldquo;마스터&rdquo;(클러스터-수준 컨트롤 플레인)에 의해 관리된다.</p>
+
+<p>보통 클러스터 내 노드 수는 플랫폼별 <code>config-default.sh</code> 파일 (예를 들면, <a href="http://releases.k8s.io/v1.17.17/cluster/gce/config-default.sh" target="_blank">GCE의 <code>config-default.sh</code></a>)에 있는 <code>NUM_NODES</code> 값에 따라 조절된다.</p>
+
+<p>하지만 단순히 값만 매우 크게 바꾼다면, 클라우드 프로바이더에 따라 셋업 스크립트가 실패할 수도 있다. 예를 들어, GCE에 배포할 때 쿼터 이슈가 발생하여 클러스터 구축이 실패할 수 있다.</p>
+
+<p>큰 쿠버네티스 클러스터를 설정할 때는 다음 이슈들을 고려해야 한다.</p>
+
+<h3 id="쿼터-문제">쿼터 문제</h3>
+
+<p>여러 노드를 가지는 클러스터를 만들 때, 클라우드 프로바이더 쿼터 이슈를 피하기 위해 고려할 점:</p>
+
+<ul>
+<li>CPU, IP 등의 쿼터를 늘린다.
+
+<ul>
+<li>예를 들어, <a href="https://cloud.google.com/compute/docs/resource-quotas" target="_blank">GCE의 경우</a> 다음에 관한 쿼터를 늘릴 수 있다.</li>
+<li>CPU</li>
+<li>VM 인스턴스</li>
+<li>전체 영구 디스크 예약</li>
+<li>사용 중인 IP 주소</li>
+<li>방화벽 규칙</li>
+<li>포워딩 규칙</li>
+<li>라우트</li>
+<li>대상 풀</li>
+</ul></li>
+<li>일부 클라우드 프로바이더는 VM 생성 속도에 상한이 있어, 셋업 스크립트 수행 간 새로운 노드 VM을 생성하는 사이사이에 대기시간이 추가되는 작은 배치가 걸릴 수 있다.</li>
+</ul>
+
+<h3 id="etcd-저장소">etcd 저장소</h3>
+
+<p>큰 클러스터의 성능 향상을 위해, 우리는 이벤트를 각각의 전용 etcd 인스턴스에 저장한다.</p>
+
+<p>클러스터 생성시의 부가 스트립트이다.</p>
+
+<ul>
+<li>추가 ectd 인스턴스 시작 및 설정</li>
+<li>이벤트를 저장하기 위한 api-server 설정</li>
+</ul>
+
+<h3 id="마스터-크기와-마스터-구성-요소">마스터 크기와 마스터 구성 요소</h3>
+
+<p>GCE/구글 쿠버네티스 엔진 및 AWS에서, <code>kube-up</code>은 클러스터 내 노드의 수에 따라 마스터용으로 적합한 VM 크기를 자동으로 설정한다.
+기타 다른 프로바이더의 경우, 수동으로 설정해야 한다. 참고로 GCE에 적용하는 크기는 다음과 같다.</p>
+
+<ul>
+<li>1-5 노드: n1-standard-1</li>
+<li>6-10 노드: n1-standard-2</li>
+<li>11-100 노드: n1-standard-4</li>
+<li>101-250 노드: n1-standard-8</li>
+<li>251-500 노드: n1-standard-16</li>
+<li>500 노드 이상: n1-standard-32</li>
+</ul>
+
+<p>AWS에 적용하는 크기는 다음과 같다.</p>
+
+<ul>
+<li>1-5 노드: m3.medium</li>
+<li>6-10 노드: m3.large</li>
+<li>11-100 노드: m3.xlarge</li>
+<li>101-250 노드: m3.2xlarge</li>
+<li>251-500 노드: c4.4xlarge</li>
+<li>500 노드 이상: c4.8xlarge</li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>참고:</strong> <p>구글 쿠버네티스 엔진에서, 마스터 노드 크기는 클러스터의 크기에 따라 자동적으로 조절된다. 자세한 사항은 <a href="https://cloudplatform.googleblog.com/2017/11/Cutting-Cluster-Management-Fees-on-Google-Kubernetes-Engine.html" target="_blank">이 블로그 글</a>을 참고하라.</p>
+
+<p>AWS에서, 마스터 노드의 크기는 클러스터 시작 시에 설정된 그대로이며 변경되지 않는다. 이후에 클러스터를 스케일 업/다운하거나 수동으로 노드를 추가/제거하거나 클러스터 오토스케일러를 사용하더라도 그렇다.</p>
+</div>
+</blockquote>
+
+<h3 id="애드온-자원">애드온 자원</h3>
+
+<p><a href="https://releases.k8s.io/v1.17.17/cluster/addons" target="_blank">클러스터 애드온</a>이 메모리 누수 등 노드 상의 가용한 리소스를 모두 소비하는 리소스 이슈를 방지하기 위해, 쿠버네티스는 애드온 컨테이너가 소비할 수 있는 CPU와 메모리 리소스를 제한하는 리소스 상한을 둔다(PR <a href="http://pr.k8s.io/10653/files" target="_blank">#10653</a>과 <a href="http://pr.k8s.io/10778/files" target="_blank">#10778</a> 참고).</p>
+
+<p>예시:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>fluentd-cloud-logging<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/fluentd-gcp:<span style="color:#666">1.16</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>limits:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>cpu:<span style="color:#bbb"> </span>100m<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>memory:<span style="color:#bbb"> </span>200Mi</code></pre></div>
+<p>힙스터(Heapster)를 제외하고, 이러한 상한들은 정적이며 4-노드 클러스터에서 구동한 애드온으로부터 수집한 데이터에 기반한 것이다.(<a href="http://issue.k8s.io/10335#issuecomment-117861225" target="_blank">#10335</a> 참고). 애드온이 큰 클러스터에서 구동되면 더 많은 리소스를 소비한다(<a href="http://issue.k8s.io/5880#issuecomment-113984085" target="_blank">#5880</a> 참고). 따라서, 이러한 값의 조정 없이 큰 클러스터를 배포하면, 애드온들이 상한에 걸려 반복적으로 죽을 수 있다.</p>
+
+<p>많은 노드를 가진 클러스터를 생성할 때는 애드온 리소스 이슈를 피하기 위해 다음을 고려하라.</p>
+
+<ul>
+<li>다음 애드온을 사용한다면, 클러스터의 크기를 확장할 때 그에 맞게 메모리와 CPU 상한을 규모를 조정하라 (전체 클러스터를 담당하는 각 레플리카는, 메모리와 CPU 사용량이 대체로 클러스터의 크기/부하에 따라 비율적으로 증가할 것이다).
+
+<ul>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/cluster-monitoring/influxdb/influxdb-grafana-controller.yaml" target="_blank">InfluxDB와 Grafana</a></li>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/dns/kube-dns/kube-dns.yaml.in" target="_blank">kubedns, dnsmasq, 사이드카</a></li>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/fluentd-elasticsearch/kibana-deployment.yaml" target="_blank">Kibana</a></li>
+</ul></li>
+<li>다음 애드온들을 쓴다면 클러스터 크기에 따라 레플리카 수를 조절해준다(각각 레플리카가 여러 개 두면 늘어나는 부하를 처리하는 데 도움이 되지만, 레플리카 당 부하도 약간 늘어나게 되므로 CPU/메모리 상한을 높이는 것을 고려해보자):
+
+<ul>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/fluentd-elasticsearch/es-statefulset.yaml" target="_blank">elasticsearch</a></li>
+</ul></li>
+<li>다음의 애드온들을 쓴다면, 클러스터 크기에 따라 각각 메모리와 CPU 상한을 조금 더 높이자(노드 당 레플리카 1개만 있어도 클러스터 부하량/크기에 따라 CPU/메모리 사용율은 조금씩 증가한다).
+
+<ul>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/fluentd-elasticsearch/fluentd-es-ds.yaml" target="_blank">ElasticSearch 플러그인을 적용한 FluentD</a></li>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/fluentd-gcp/fluentd-gcp-ds.yaml" target="_blank">GCP 플러그인을 적용한 FluentD</a></li>
+</ul></li>
+</ul>
+
+<p>힙스터의 리소스 상한은 클러스터 최초 크기에 기초하여 동적으로 설정된다(<a href="http://issue.k8s.io/16185" target="_blank">#16185</a>과
+<a href="http://issue.k8s.io/22940" target="_blank">#22940</a> 참조). 힙스터에 리소스가 부족한 경우라면,
+ 힙스터 메모리 요청량(상세내용은 해당 PR 참조)을 계산하는 공식을 적용해보자.</p>
+
+<p>애드온 컨테이너가 리소스 상한에 걸리는 것을 탐지하는 방법에 대해서는 <a href="/docs/concepts/configuration/manage-compute-resources-container/#troubleshooting">컴퓨트 리소스의 트러블슈팅 섹션</a>을 참고하라.</p>
+
+<p><a href="http://issue.k8s.io/13048" target="_blank">미래</a>에는 모든 클러스터 애드온의 리소스 상한을 클러스터 크기에 맞게 설정해주고 클러스터를 키우거나 줄일 때 동적으로 조절해줄 수 있기를 기대한다.
+이런 기능들에 대한 PR은 언제든 환영한다.</p>
+
+<h3 id="시작-시-사소한-노드-오류-허용">시작 시 사소한 노드 오류 허용</h3>
+
+<p>다양한 이유로(자세한 내용은 <a href="https://github.com/kubernetes/kubernetes/issues/18969" target="_blank">#18969</a> 참고) 매우 큰 <code>NUM_NODES</code>를 주고
+<code>kube-up.sh</code>을 실행하면 제대로 기동되지 않은 극소수의 노드들 때문에 실패할 수 있다.
+현재로서는 두 가지 선택지가 있다. 클러스터를 재시작하거나(<code>kube-down.sh</code> 한 후 다시 <code>kube-up.sh</code> ),
+<code>kube-up.sh</code> 실행 전에 환경변수 <code>ALLOWED_NOTREADY_NODES</code>를 적당한 값으로 설정해주는 것이다.
+이렇게 하면 <code>NUM_NODES</code>에 못 미치는 경우에도 <code>kube-up.sh</code>이 성공할 수 있다.
+실패 원인에 따라 일부 노드들이 늦게 결합되거나, 클러스터가 <code>NUM_NODES - ALLOWED_NOTREADY_NODES</code>의 크기로 남을 수 있다.</p>
+
+
+
+
+    
+            
+  <h2>피드백</h2>
+  <p class="feedback--prompt">이 페이지가 도움이 되었나요? </p>
+  <button class="button feedback--yes">네</button>
+  <button class="button feedback--no">아니요</button>
+  <p class="feedback--response feedback--response__hidden">
+    피드백 감사합니다. 쿠버네티스 사용 방법에 대해서 구체적이고 답변 가능한 질문이 있다면, 다음 링크에서 질문하십시오.
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    원한다면 GitHub 리포지터리에 이슈를 열어서
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      문제 리포트</a>
+    또는
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      개선 제안이 가능합니다.</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/best-practices/cluster-large.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ko\/docs\/setup\/best-practices\/cluster-large\/",
+    "title" : "대형 클러스터 구축",
+    "permalink" : "https:\/\/kubernetes.io\/ko\/docs\/setup\/best-practices\/cluster-large\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">이슈 생성하기</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/setup/best-practices/cluster-large.md" class="button issue">페이지 편집하기</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    최종 수정일시 January 10, 2020 at 12:31 AM PST , 다음 변경에 의해서:
+    <a href="https://github.com/kubernetes/website/commit/29235743edb6fb57c2b5af7642d1566c9b5dd3a1/">Second Korean L10n Work For Release 1.17 (#18570)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/best-practices/cluster-large.md">페이지 변경 이력</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ko/docs/home/">홈</a>
+            
+            
+            
+            <a href="/ko/training/">교육</a>
+            
+            
+            
+            
+            
+            <a href="/ko/case-studies/">사례 연구</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">기여하기</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

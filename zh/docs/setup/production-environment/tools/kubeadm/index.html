@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>使用 kubeadm 引导集群 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/">
+<meta property="og:title" content="使用 kubeadm 引导集群">
+<meta name="twitter:title" content="使用 kubeadm 引导集群">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/setup/production-environment/tools/kubeadm/">English</a></li>
+                
+                    <li><a href="/ko/docs/setup/production-environment/tools/kubeadm/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/docs/setup/production-environment/tools/kubeadm/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>入门</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/" class="YAH">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="入门" href="/zh/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Kubernetes 发行说明和版本偏差">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 发行说明和版本偏差" href="/zh/docs/setup/release/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 版本及版本倾斜支持策略" href="/zh/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="学习环境">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="学习环境" href="/zh/docs/setup/learning-environment/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Minikube 安装 Kubernetes" href="/zh/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 创建一个单主集群" href="/zh/docs/setup/independent/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="生产环境">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="生产环境" href="/zh/docs/setup/production-environment/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="容器运行时" href="/zh/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Turnkey 云解决方案">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Turnkey 云解决方案" href="/zh/docs/setup/production-environment/turnkey/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on CenturyLink Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Google Compute Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 IBM Cloud Private 在多个云上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 AWS EC2 上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Azure 上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在腾讯云容器服务上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在阿里云上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="使用部署工具安装 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用部署工具安装 Kubernetes" href="/zh/docs/setup/production-environment/tools/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="使用 kubeadm 引导集群">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 kubeadm 引导集群" href="/zh/docs/setup/production-environment/tools/kubeadm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="安装 kubeadm" href="/zh/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="对 kubeadm 进行故障排查" href="/zh/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating a single control-plane cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 定制控制平面配置" href="/zh/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="高可用拓扑选项" href="/zh/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="利用 kubeadm 创建高可用集群" href="/zh/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 创建一个高可用 etcd 集群" href="/zh/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 配置集群中的每个 kubelet" href="/zh/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置您的 kubernetes 集群以自托管控制平台" href="/zh/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with KRIB <small>(EN)</small>" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kops 安装 Kubernetes" href="/zh/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kubespray <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="本地 VMs">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="本地 VMs" href="/zh/docs/setup/production-environment/on-premises-vm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloudstack <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DC/OS 上的 Kubernetes" href="/zh/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="oVirt" href="/zh/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Windows Kubernetes" href="/zh/docs/setup/production-environment/windows/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Intro to Windows support in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Guide for adding Windows Nodes in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 中调度 Windows 容器的指南" href="/zh/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="最佳实践">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="最佳实践" href="/zh/docs/setup/best-practices/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running in multiple zones <small>(EN)</small>" href="/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建大型集群" href="/zh/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="校验节点设置" href="/zh/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI 证书和要求" href="/zh/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+    
+    
+    
+    
+    
+    
+	 
+    
+    
+    
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/setup/production-environment/tools/kubeadm/install-kubeadm.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>安装 kubeadm</h1>
+
+
+
+
+<!--
+<img src="https://raw.githubusercontent.com/kubernetes/kubeadm/master/logos/stacked/color/kubeadm-stacked-color.png" align="right" width="150px">This page shows how to install the `kubeadm` toolbox.
+For information how to create a cluster with kubeadm once you have performed this installation process, see the [Using kubeadm to Create a Cluster](/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/) page.
+-->
+
+<p><img src="https://raw.githubusercontent.com/kubernetes/kubeadm/master/logos/stacked/color/kubeadm-stacked-color.png" align="right" width="150px">本页面显示如何安装 <code>kubeadm</code> 工具箱。
+有关在执行此安装过程后如何使用 kubeadm 创建集群的信息，请参见<a href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/">使用 kubeadm 创建集群</a> 页面。</p>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%87%86%e5%a4%87%e5%bc%80%e5%a7%8b">准备开始</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#verify-the-mac-address-and-product-uuid-are-unique-for-every-node">确保每个节点上 MAC 地址和 product_uuid 的唯一性</a></li>
+
+
+
+
+<li><a href="#%e6%a3%80%e6%9f%a5%e7%bd%91%e7%bb%9c%e9%80%82%e9%85%8d%e5%99%a8">检查网络适配器</a></li>
+
+
+
+
+<li><a href="#%e7%a1%ae%e4%bf%9d-iptables-%e5%b7%a5%e5%85%b7%e4%b8%8d%e4%bd%bf%e7%94%a8-nftables-%e5%90%8e%e7%ab%af">确保 iptables 工具不使用 nftables 后端</a></li>
+
+
+
+
+<li><a href="#check-required-ports">检查所需端口</a></li>
+
+
+
+
+<li><a href="#installing-runtime">安装 runtime</a></li>
+
+
+
+
+<li><a href="#%e5%ae%89%e8%a3%85-kubeadm-kubelet-%e5%92%8c-kubectl">安装 kubeadm、kubelet 和 kubectl</a></li>
+
+
+
+
+<li><a href="#%e5%9c%a8%e6%8e%a7%e5%88%b6%e5%b9%b3%e9%9d%a2%e8%8a%82%e7%82%b9%e4%b8%8a%e9%85%8d%e7%bd%ae-kubelet-%e4%bd%bf%e7%94%a8%e7%9a%84-cgroup-%e9%a9%b1%e5%8a%a8%e7%a8%8b%e5%ba%8f">在控制平面节点上配置 kubelet 使用的 cgroup 驱动程序</a></li>
+
+
+
+
+<li><a href="#%e6%95%85%e9%9a%9c%e6%8e%92%e6%9f%a5">故障排查</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e6%8e%a5%e4%b8%8b%e6%9d%a5">接下来</a></li>
+
+
+
+</ul>
+
+
+
+<h2 id="准备开始">准备开始</h2>
+<!--
+* One or more machines running one of:
+  - Ubuntu 16.04+
+  - Debian 9+
+  - CentOS 7
+  - Red Hat Enterprise Linux (RHEL) 7
+  - Fedora 25+
+  - HypriotOS v1.0.1+
+  - Container Linux (tested with 1800.6.0)
+* 2 GB or more of RAM per machine (any less will leave little room for your apps)
+* 2 CPUs or more
+* Full network connectivity between all machines in the cluster (public or private network is fine)
+* Unique hostname, MAC address, and product_uuid for every node. See [here](#verify-the-mac-address-and-product-uuid-are-unique-for-every-node) for more details.
+* Certain ports are open on your machines. See [here](#check-required-ports) for more details.
+* Swap disabled. You **MUST** disable swap in order for the kubelet to work properly.
+-->
+
+<ul>
+<li>一台或多台运行着下列系统的机器：
+
+<ul>
+<li>Ubuntu 16.04+</li>
+<li>Debian 9+</li>
+<li>CentOS 7</li>
+<li>Red Hat Enterprise Linux (RHEL) 7</li>
+<li>Fedora 25+</li>
+<li>HypriotOS v1.0.1+</li>
+<li>Container Linux (测试 1800.6.0 版本)</li>
+</ul></li>
+<li>每台机器 2 GB 或更多的 RAM (如果少于这个数字将会影响您应用的运行内存)</li>
+<li>2 CPU 核或更多</li>
+<li>集群中的所有机器的网络彼此均能相互连接(公网和内网都可以)</li>
+<li>节点之中不可以有重复的主机名、MAC 地址或 product_uuid。请参见<a href="#verify-the-mac-address-and-product-uuid-are-unique-for-every-node">这里</a> 了解更多详细信息。</li>
+<li>开启机器上的某些端口。请参见<a href="#check-required-ports">这里</a> 了解更多详细信息。</li>
+<li>禁用交换分区。为了保证 kubelet 正常工作，您 <strong>必须</strong> 禁用交换分区。</li>
+</ul>
+
+
+
+
+<!--
+## Verify the MAC address and product_uuid are unique for every node
+
+* You can get the MAC address of the network interfaces using the command `ip link` or `ifconfig -a`
+* The product_uuid can be checked by using the command `sudo cat /sys/class/dmi/id/product_uuid`
+
+It is very likely that hardware devices will have unique addresses, although some virtual machines may have
+identical values. Kubernetes uses these values to uniquely identify the nodes in the cluster.
+If these values are not unique to each node, the installation process
+may [fail](https://github.com/kubernetes/kubeadm/issues/31).
+-->
+
+<h2 id="verify-the-mac-address-and-product-uuid-are-unique-for-every-node">确保每个节点上 MAC 地址和 product_uuid 的唯一性</h2>
+
+<ul>
+<li>您可以使用命令 <code>ip link</code> 或 <code>ifconfig -a</code> 来获取网络接口的 MAC 地址</li>
+<li>可以使用 <code>sudo cat /sys/class/dmi/id/product_uuid</code> 命令对 product_uuid 校验</li>
+</ul>
+
+<p>一般来讲，硬件设备会拥有唯一的地址，但是有些虚拟机的地址可能会重复。Kubernetes 使用这些值来唯一确定集群中的节点。
+如果这些值在每个节点上不唯一，可能会导致安装<a href="https://github.com/kubernetes/kubeadm/issues/31" target="_blank">失败</a>。</p>
+
+<!--
+## Check network adapters
+
+If you have more than one network adapter, and your Kubernetes components are not reachable on the default
+route, we recommend you add IP route(s) so Kubernetes cluster addresses go via the appropriate adapter.
+-->
+
+<h2 id="检查网络适配器">检查网络适配器</h2>
+
+<p>如果您有一个以上的网络适配器，同时您的 Kubernetes 组件通过默认路由不可达，我们建议您预先添加 IP 路由规则，这样 Kubernetes 集群就可以通过对应的适配器完成连接。</p>
+
+<!--
+## Ensure iptables tooling does not use the nftables backend
+
+In Linux, nftables is available as a modern replacement for the kernel's iptables subsystem. The
+`iptables` tooling can act as a compatibility layer, behaving like iptables but actually configuring
+nftables. This nftables backend is not compatible with the current kubeadm packages: it causes duplicated
+firewall rules and breaks `kube-proxy`.
+
+If your system's `iptables` tooling uses the nftables backend, you will need to switch the `iptables`
+tooling to 'legacy' mode to avoid these problems. This is the case on at least Debian 10 (Buster),
+Ubuntu 19.04, Fedora 29 and newer releases of these distributions by default. RHEL 8 does not support
+switching to legacy mode, and is therefore incompatible with current kubeadm packages.
+-->
+
+<h2 id="确保-iptables-工具不使用-nftables-后端">确保 iptables 工具不使用 nftables 后端</h2>
+
+<p>在 Linux 中，nftables 当前可以作为内核 iptables 子系统的替代品。
+<code>iptables</code> 工具可以充当兼容性层，其行为类似于 iptables 但实际上是在配置 nftables。
+nftables 后端与当前的 kubeadm 软件包不兼容：它会导致重复防火墙规则并破坏 <code>kube-proxy</code>。</p>
+
+<p>如果您系统的 <code>iptables</code> 工具使用 nftables 后端，则需要把 <code>iptables</code> 工具切换到“旧版”模式来避免这些问题。
+默认情况下，至少在 Debian 10 (Buster)、Ubuntu 19.04、Fedora 29 和较新的发行版本中会出现这种问题。RHEL 8 不支持切换到旧版本模式，因此与当前的 kubeadm 软件包不兼容。</p>
+
+<div id="iptables-legacy">
+<ul>
+    
+      
+  <li><a href="#iptables-legacy-0">Debian 或 Ubuntu</a></li>
+
+      
+  <li><a href="#iptables-legacy-1">Fedora</a></li>
+
+</ul>
+
+
+<div id="iptables-legacy-0">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">update-alternatives --set iptables /usr/sbin/iptables-legacy
+update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+update-alternatives --set arptables /usr/sbin/arptables-legacy
+update-alternatives --set ebtables /usr/sbin/ebtables-legacy</code></pre></div>
+    
+
+<p></div></p>
+
+<div id="iptables-legacy-1">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">update-alternatives --set iptables /usr/sbin/iptables-legacy</code></pre></div>
+    
+
+<p></div></p>
+
+<p></div></p>
+
+<script>$(function(){$("#iptables-legacy").tabs();});</script>
+
+<!--
+## Check required ports
+
+### Control-plane node(s)
+
+| Protocol | Direction | Port Range | Purpose                 | Used By                   |
+|----------|-----------|------------|-------------------------|---------------------------|
+| TCP      | Inbound   | 6443*      | Kubernetes API server   | All                       |
+| TCP      | Inbound   | 2379-2380  | etcd server client API  | kube-apiserver, etcd      |
+| TCP      | Inbound   | 10250      | Kubelet API             | Self, Control plane       |
+| TCP      | Inbound   | 10251      | kube-scheduler          | Self                      |
+| TCP      | Inbound   | 10252      | kube-controller-manager | Self                      |
+-->
+
+<h2 id="check-required-ports">检查所需端口</h2>
+
+<h3 id="控制平面节点">控制平面节点</h3>
+
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>方向</th>
+<th>端口范围</th>
+<th>作用</th>
+<th>使用者</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>6443*</td>
+<td>Kubernetes API 服务器</td>
+<td>所有组件</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>2379-2380</td>
+<td>etcd server client API</td>
+<td>kube-apiserver, etcd</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>10250</td>
+<td>Kubelet API</td>
+<td>kubelet 自身、控制平面组件</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>10251</td>
+<td>kube-scheduler</td>
+<td>kube-scheduler 自身</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>10252</td>
+<td>kube-controller-manager</td>
+<td>kube-controller-manager 自身</td>
+</tr>
+</tbody>
+</table>
+
+<!--
+### Worker node(s)
+
+| Protocol | Direction | Port Range  | Purpose               | Used By                 |
+|----------|-----------|-------------|-----------------------|-------------------------|
+| TCP      | Inbound   | 10250       | Kubelet API           | Self, Control plane     |
+| TCP      | Inbound   | 30000-32767 | NodePort Services**   | All                     |
+
+** Default port range for [NodePort Services](/docs/concepts/services-networking/service/).
+
+Any port numbers marked with * are overridable, so you will need to ensure any
+custom ports you provide are also open.
+
+Although etcd ports are included in control-plane nodes, you can also host your own
+etcd cluster externally or on custom ports.
+
+The pod network plugin you use (see below) may also require certain ports to be
+open. Since this differs with each pod network plugin, please see the
+documentation for the plugins about what port(s) those need.
+-->
+
+<h3 id="工作节点">工作节点</h3>
+
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>方向</th>
+<th>端口范围</th>
+<th>作用</th>
+<th>使用者</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>10250</td>
+<td>Kubelet API</td>
+<td>kubelet 自身、控制平面组件</td>
+</tr>
+
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>30000-32767</td>
+<td>NodePort 服务**</td>
+<td>所有组件</td>
+</tr>
+</tbody>
+</table>
+
+<p>** <a href="/docs/concepts/services-networking/service/">NodePort 服务</a> 的默认端口范围。</p>
+
+<p>使用 * 标记的任意端口号都可以被覆盖，所以您需要保证所定制的端口是开放的。</p>
+
+<p>虽然控制平面节点已经包含了 etcd 的端口，您也可以使用自定义的外部 etcd 集群，或是指定自定义端口。</p>
+
+<p>您使用的 pod 网络插件 (见下) 也可能需要某些特定端口开启。由于各个 pod 网络插件都有所不同，请参阅他们各自文档中对端口的要求。</p>
+
+<!--
+## Installing runtime {#installing-runtime}
+
+Since v1.6.0, Kubernetes has enabled the use of CRI, Container Runtime Interface, by default.
+
+Since v1.14.0, kubeadm will try to automatically detect the container runtime on Linux nodes
+by scanning through a list of well known domain sockets. The detectable runtimes and the
+socket paths, that are used, can be found in the table below.
+
+| Runtime    | Domain Socket                    |
+|------------|----------------------------------|
+| Docker     | /var/run/docker.sock             |
+| containerd | /run/containerd/containerd.sock  |
+| CRI-O      | /var/run/crio/crio.sock          |
+
+If both Docker and containerd are detected together, Docker takes precedence. This is
+needed, because Docker 18.09 ships with containerd and both are detectable.
+If any other two or more runtimes are detected, kubeadm will exit with an appropriate
+error message.
+
+On non-Linux nodes the container runtime used by default is Docker.
+
+If the container runtime of choice is Docker, it is used through the built-in
+`dockershim` CRI implementation inside of the `kubelet`.
+
+Other CRI-based runtimes include:
+
+- [containerd](https://github.com/containerd/cri) (CRI plugin built into containerd)
+- [cri-o](https://cri-o.io/)
+- [frakti](https://github.com/kubernetes/frakti)
+
+Refer to the [CRI installation instructions](/docs/setup/cri) for more information.
+-->
+
+<h2 id="installing-runtime">安装 runtime</h2>
+
+<p>从 v1.6.0 版本起，Kubernetes 开始默认允许使用 CRI（容器运行时接口）。</p>
+
+<p>从 v1.14.0 版本起，kubeadm 将通过观察已知的 UNIX 域套接字来自动检测 Linux 节点上的容器运行时。
+下表中是可检测到的正在运行的 runtime 和 socket 路径。</p>
+
+<table>
+<thead>
+<tr>
+<th>运行时</th>
+<th>域套接字</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Docker</td>
+<td>/var/run/docker.sock</td>
+</tr>
+
+<tr>
+<td>containerd</td>
+<td>/run/containerd/containerd.sock</td>
+</tr>
+
+<tr>
+<td>CRI-O</td>
+<td>/var/run/crio/crio.sock</td>
+</tr>
+</tbody>
+</table>
+
+<p>如果同时检测到 docker 和 containerd，则优先选择 docker。
+这是必然的，因为 docker 18.09 附带了 containerd 并且两者都是可以检测到的。
+如果检测到其他两个或多个运行时，kubeadm 将以一个合理的错误信息退出。</p>
+
+<p>在非 Linux 节点上，默认使用 docker 作为容器 runtime。</p>
+
+<p>如果选择的容器 runtime 是 docker，则通过内置 <code>dockershim</code> CRI 在 <code>kubelet</code> 的内部实现其的应用。</p>
+
+<p>基于 CRI 的其他 runtimes 有：</p>
+
+<ul>
+<li><a href="https://github.com/containerd/cri" target="_blank">containerd</a> （containerd 的内置 CRI 插件）</li>
+<li><a href="https://cri-o.io/" target="_blank">cri-o</a></li>
+<li><a href="https://github.com/kubernetes/frakti" target="_blank">frakti</a></li>
+</ul>
+
+<p>请参考 <a href="/docs/setup/cri">CRI 安装指南</a> 获取更多信息。</p>
+
+<!--
+## Installing kubeadm, kubelet and kubectl
+
+You will install these packages on all of your machines:
+
+* `kubeadm`: the command to bootstrap the cluster.
+
+* `kubelet`: the component that runs on all of the machines in your cluster
+    and does things like starting pods and containers.
+
+* `kubectl`: the command line util to talk to your cluster.
+
+kubeadm **will not** install or manage `kubelet` or `kubectl` for you, so you will
+need to ensure they match the version of the Kubernetes control plane you want
+kubeadm to install for you. If you do not, there is a risk of a version skew occurring that
+can lead to unexpected, buggy behaviour. However, _one_ minor version skew between the
+kubelet and the control plane is supported, but the kubelet version may never exceed the API
+server version. For example, kubelets running 1.7.0 should be fully compatible with a 1.8.0 API server,
+but not vice versa.
+
+For information about installing `kubectl`, see [Install and set up kubectl](/docs/tasks/tools/install-kubectl/).
+-->
+
+<h2 id="安装-kubeadm-kubelet-和-kubectl">安装 kubeadm、kubelet 和 kubectl</h2>
+
+<p>您需要在每台机器上安装以下的软件包：</p>
+
+<ul>
+<li><p><code>kubeadm</code>：用来初始化集群的指令。</p></li>
+
+<li><p><code>kubelet</code>：在集群中的每个节点上用来启动 pod 和容器等。</p></li>
+
+<li><p><code>kubectl</code>：用来与集群通信的命令行工具。</p></li>
+</ul>
+
+<p>kubeadm <strong>不能</strong> 帮您安装或者管理 <code>kubelet</code> 或 <code>kubectl</code>，所以您需要确保它们与通过 kubeadm 安装的控制平面的版本相匹配。
+如果不这样做，则存在发生版本偏差的风险，可能会导致一些预料之外的错误和问题。
+然而，控制平面与 kubelet 间的相差一个次要版本不一致是支持的，但 kubelet 的版本不可以超过 API 服务器的版本。
+例如，1.7.0 版本的 kubelet 可以完全兼容 1.8.0 版本的 API 服务器，反之则不可以。</p>
+
+<p>有关安装 <code>kubectl</code> 的信息，请参阅<a href="/docs/tasks/tools/install-kubectl/">安装和设置 kubectl</a>文档。</p>
+
+<blockquote class="warning">
+  <div><strong>警告：</strong> <!--
+These instructions exclude all Kubernetes packages from any system upgrades.
+This is because kubeadm and Kubernetes require
+[special attention to upgrade](/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade-1-14/).
+-->
+
+<p>这些指南不包括系统升级时使用的所有 Kubernetes 程序包。这是因为 kubeadm 和 Kubernetes 有<a href="/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade-1-14/">特殊的升级注意事项</a>。</div>
+</blockquote>
+
+<!--
+For more information on version skews, see:
+
+* Kubernetes [version and version-skew policy](/docs/setup/release/version-skew-policy/)
+* Kubeadm-specific [version skew policy](/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#version-skew-policy)
+-->
+
+<p>关于版本偏差的更多信息，请参阅以下文档：</p>
+
+<ul>
+<li>Kubernetes <a href="/docs/setup/release/version-skew-policy/">版本与版本间的偏差策略</a></li>
+<li>Kubeadm-specific <a href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#version-skew-policy">版本偏差策略</a></li>
+</ul>
+
+<div id="k8s-install">
+<ul>
+    
+      
+  <li><a href="#k8s-install-0">Ubuntu、Debian 或 HypriotOS</a></li>
+
+      
+  <li><a href="#k8s-install-1">CentOS、RHEL 或 Fedora</a></li>
+
+      
+  <li><a href="#k8s-install-2">Container Linux</a></li>
+
+</ul>
+
+
+<div id="k8s-install-0">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">apt-get update <span style="color:#666">&amp;&amp;</span> apt-get install -y apt-transport-https curl
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <span style="color:#b44">&lt;&lt;EOF &gt;/etc/apt/sources.list.d/kubernetes.list
+</span><span style="color:#b44">deb https://apt.kubernetes.io/ kubernetes-xenial main
+</span><span style="color:#b44">EOF</span>
+apt-get update
+apt-get install -y kubelet kubeadm kubectl
+apt-mark hold kubelet kubeadm kubectl</code></pre></div>
+    
+
+<p></div></p>
+
+<div id="k8s-install-1">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat <span style="color:#b44">&lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
+</span><span style="color:#b44">[kubernetes]
+</span><span style="color:#b44">name=Kubernetes
+</span><span style="color:#b44">baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+</span><span style="color:#b44">enabled=1
+</span><span style="color:#b44">gpgcheck=1
+</span><span style="color:#b44">repo_gpgcheck=1
+</span><span style="color:#b44">gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+</span><span style="color:#b44">EOF</span>
+
+<span style="color:#080;font-style:italic"># 将 SELinux 设置为 permissive 模式（相当于将其禁用）</span>
+setenforce <span style="color:#666">0</span>
+sed -i <span style="color:#b44">&#39;s/^SELINUX=enforcing$/SELINUX=permissive/&#39;</span> /etc/selinux/config
+
+yum install -y kubelet kubeadm kubectl --disableexcludes<span style="color:#666">=</span>kubernetes
+
+systemctl <span style="color:#a2f">enable</span> --now kubelet</code></pre></div>
+<!--
+
+  **Note:**
+
+  - Setting SELinux in permissive mode by running `setenforce 0` and `sed ...` effectively disables it.
+    This is required to allow containers to access the host filesystem, which is needed by pod networks for example.
+    You have to do this until SELinux support is improved in the kubelet.
+  - Some users on RHEL/CentOS 7 have reported issues with traffic being routed incorrectly due to iptables being bypassed. You should ensure
+    `net.bridge.bridge-nf-call-iptables` is set to 1 in your `sysctl` config, e.g.
+
+    ```bash
+    cat <<EOF >  /etc/sysctl.d/k8s.conf
+    net.bridge.bridge-nf-call-ip6tables = 1
+    net.bridge.bridge-nf-call-iptables = 1
+    EOF
+    sysctl --system
+    ```
+  - Make sure that the `br_netfilter` module is loaded before this step. This can be done by running `lsmod | grep br_netfilter`. To load it explicitly call `modprobe br_netfilter`.
+-->
+
+<p><strong>请注意：</strong></p>
+
+<ul>
+<li>通过运行命令 <code>setenforce 0</code> 和 <code>sed ...</code> 将 SELinux 设置为 permissive 模式可以有效的将其禁用。
+这是允许容器访问主机文件系统所必须的，例如正常使用 pod 网络。
+您必须这么做，直到 kubelet 做出升级支持 SELinux 为止。</li>
+
+<li><p>一些 RHEL/CentOS 7 的用户曾经遇到过问题：由于 iptables 被绕过而导致流量无法正确路由的问题。您应该确保
+在 <code>sysctl</code> 配置中的 <code>net.bridge.bridge-nf-call-iptables</code> 被设置为 1。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">cat <span style="color:#b44">&lt;&lt;EOF &gt;  /etc/sysctl.d/k8s.conf
+</span><span style="color:#b44">net.bridge.bridge-nf-call-ip6tables = 1
+</span><span style="color:#b44">net.bridge.bridge-nf-call-iptables = 1
+</span><span style="color:#b44">EOF</span>
+sysctl --system</code></pre></div></li>
+
+<li><p>确保在此步骤之前已加载了 <code>br_netfilter</code> 模块。这可以通过运行 <code>lsmod | grep br_netfilter</code> 来完成。要显示加载它，请调用 <code>modprobe br_netfilter</code>。</p></li>
+</ul>
+
+    
+</div>
+
+<div id="k8s-install-2">
+    
+        <!--
+Install CNI plugins (required for most pod network):
+-->
+
+<p>安装 CNI 插件（大多数 pod 网络都需要）：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#b8860b">CNI_VERSION</span><span style="color:#666">=</span><span style="color:#b44">&#34;v0.8.2&#34;</span>
+mkdir -p /opt/cni/bin
+curl -L <span style="color:#b44">&#34;https://github.com/containernetworking/plugins/releases/download/</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">CNI_VERSION</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">/cni-plugins-linux-amd64-</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">CNI_VERSION</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">.tgz&#34;</span> | tar -C /opt/cni/bin -xz</code></pre></div>
+<!--
+Install crictl (required for kubeadm / Kubelet Container Runtime Interface (CRI))
+-->
+
+<p>安装 crictl（kubeadm/kubelet 容器运行时接口（CRI）所需）</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#b8860b">CRICTL_VERSION</span><span style="color:#666">=</span><span style="color:#b44">&#34;v1.16.0&#34;</span>
+mkdir -p /opt/bin
+curl -L <span style="color:#b44">&#34;https://github.com/kubernetes-sigs/cri-tools/releases/download/</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">CRICTL_VERSION</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">/crictl-</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">CRICTL_VERSION</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">-linux-amd64.tar.gz&#34;</span> | tar -C /opt/bin -xz</code></pre></div>
+<!--
+Install `kubeadm`, `kubelet`, `kubectl` and add a `kubelet` systemd service:
+-->
+
+<p>安装 <code>kubeadm</code>、<code>kubelet</code>、<code>kubectl</code> 并添加 <code>kubelet</code> 系统服务：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#b8860b">RELEASE</span><span style="color:#666">=</span><span style="color:#b44">&#34;</span><span style="color:#a2f;font-weight:bold">$(</span>curl -sSL https://dl.k8s.io/release/stable.txt<span style="color:#a2f;font-weight:bold">)</span><span style="color:#b44">&#34;</span>
+
+mkdir -p /opt/bin
+<span style="color:#a2f">cd</span> /opt/bin
+curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">RELEASE</span><span style="color:#b68;font-weight:bold">}</span>/bin/linux/amd64/<span style="color:#666">{</span>kubeadm,kubelet,kubectl<span style="color:#666">}</span>
+chmod +x <span style="color:#666">{</span>kubeadm,kubelet,kubectl<span style="color:#666">}</span>
+
+curl -sSL <span style="color:#b44">&#34;https://raw.githubusercontent.com/kubernetes/kubernetes/</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">RELEASE</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">/build/debs/kubelet.service&#34;</span> | sed <span style="color:#b44">&#34;s:/usr/bin:/opt/bin:g&#34;</span> &gt; /etc/systemd/system/kubelet.service
+mkdir -p /etc/systemd/system/kubelet.service.d
+curl -sSL <span style="color:#b44">&#34;https://raw.githubusercontent.com/kubernetes/kubernetes/</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">RELEASE</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">/build/debs/10-kubeadm.conf&#34;</span> | sed <span style="color:#b44">&#34;s:/usr/bin:/opt/bin:g&#34;</span> &gt; /etc/systemd/system/kubelet.service.d/10-kubeadm.conf</code></pre></div>
+<!--
+Enable and start `kubelet`:
+-->
+
+<p>开启并启动 <code>kubelet</code>：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl <span style="color:#a2f">enable</span> --now kubelet</code></pre></div>
+    
+
+<p></div></p>
+
+<p></div></p>
+
+<script>$(function(){$("#k8s-install").tabs();});</script>
+
+<!--
+The kubelet is now restarting every few seconds, as it waits in a crashloop for
+kubeadm to tell it what to do.
+-->
+
+<p>kubelet 现在每隔几秒就会重启，因为它陷入了一个等待 kubeadm 指令的死循环。</p>
+
+<!--
+## Configure cgroup driver used by kubelet on control-plane node
+
+When using Docker, kubeadm will automatically detect the cgroup driver for the kubelet
+and set it in the `/var/lib/kubelet/kubeadm-flags.env` file during runtime.
+
+If you are using a different CRI, you have to modify the file
+`/etc/default/kubelet` (`/etc/sysconfig/kubelet` for CentOS, RHEL, Fedora) with your `cgroup-driver` value, like so:
+
+```bash
+KUBELET_EXTRA_ARGS=--cgroup-driver=<value>
+```
+
+This file will be used by `kubeadm init` and `kubeadm join` to source extra
+user defined arguments for the kubelet.
+
+Please mind, that you **only** have to do that if the cgroup driver of your CRI
+is not `cgroupfs`, because that is the default value in the kubelet already.
+
+Restarting the kubelet is required:
+
+```bash
+systemctl daemon-reload
+systemctl restart kubelet
+```
+
+The automatic detection of cgroup driver for other container runtimes
+like CRI-O and containerd is work in progress.
+
+-->
+
+<h2 id="在控制平面节点上配置-kubelet-使用的-cgroup-驱动程序">在控制平面节点上配置 kubelet 使用的 cgroup 驱动程序</h2>
+
+<p>使用 docker 时，kubeadm 会自动为其检测 cgroup 驱动并在运行时对 <code>/var/lib/kubelet/kubeadm-flags.env</code> 文件进行配置。</p>
+
+<p>如果您使用不同的 CRI，您需要使用 <code>cgroup-driver</code> 值修改 <code>/etc/default/kubelet</code> 文件（对于 CentOS、RHEL、Fedora，修改 <code>/etc/sysconfig/kubelet</code> 文件），像这样：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#b8860b">KUBELET_EXTRA_ARGS</span><span style="color:#666">=</span>--cgroup-driver<span style="color:#666">=</span>&lt;value&gt;</code></pre></div>
+<p>这个文件将由 <code>kubeadm init</code> 和 <code>kubeadm join</code> 使用以获取额外的用户自定义的 kubelet 参数。</p>
+
+<p>请注意，您 <strong>只</strong> 需要在您的 cgroup 驱动程序不是 <code>cgroupfs</code> 时这么做，因为它已经是 kubelet 中的默认值。</p>
+
+<p>需要重新启动 kubelet：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">systemctl daemon-reload
+systemctl restart kubelet</code></pre></div>
+<p>自动检测其他容器运行时的 cgroup 驱动，例如在进程中工作的 CRI-O 和 containerd。</p>
+
+<!--
+## Troubleshooting
+
+If you are running into difficulties with kubeadm, please consult our [troubleshooting docs](/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/).
+-->
+
+<h2 id="故障排查">故障排查</h2>
+
+<p>如果您在使用 kubeadm 时遇到困难，请参阅我们的<a href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/">故障排查文档</a>。</p>
+
+
+
+
+
+
+<!--
+---
+title: Installing kubeadm
+content_template: templates/task
+weight: 10
+card:
+  name: setup
+  weight: 20
+  title: Install the kubeadm setup tool
+---
+-->
+
+
+
+
+
+
+
+
+
+
+<h2 id="接下来">接下来</h2>
+<!--
+* [Using kubeadm to Create a Cluster](/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
+-->
+
+<ul>
+<li><a href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/">使用 kubeadm 创建集群</a></li>
+</ul>
+
+
+
+
+
+
+    
+    
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/production-environment/tools/kubeadm/_index.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/setup\/production-environment\/tools\/kubeadm\/",
+    "title" : "使用 kubeadm 引导集群",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/setup\/production-environment\/tools\/kubeadm\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/setup/production-environment/tools/kubeadm/_index.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 December 25, 2019 at 8:51 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/b8b2cc7c7443e32de70834a2b3d2186cae6eea5a/">ZH-trans: merge release1.16-temporary to master (#18217)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/production-environment/tools/kubeadm/_index.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

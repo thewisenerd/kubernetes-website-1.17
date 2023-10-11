@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html id="docs" lang="pt" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Arquitetura de Log - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/pt/docs/concepts/cluster-administration/logging/">
+<meta property="og:title" content="Arquitetura de Log">
+<meta name="twitter:title" content="Arquitetura de Log">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/pt/" class="logo" title="Orquestração de contêiner pronto para produção - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/pt/docs/" class="active">Documentação</a></li>
+            
+            <li><a href="/pt/blog/">Blog</a></li>
+            
+            
+            
+            <li><a href="/pt/partners/">Parceiros</a></li>
+            
+            <li><a href="/pt/community/">Comunidade</a></li>
+            
+            <li><a href="/pt/case-studies/">Casos de estudo</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    Português <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/cluster-administration/logging/">English</a></li>
+                
+                    <li><a href="/zh/docs/concepts/cluster-administration/logging/">中文 Chinese</a></li>
+                
+                    <li><a href="/fr/docs/concepts/cluster-administration/logging/">Français</a></li>
+                
+                    <li><a href="/id/docs/concepts/cluster-administration/logging/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/pt/docs/concepts/cluster-administration/logging/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/pt/docs/concepts/cluster-administration/logging/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/pt/docs/concepts/cluster-administration/logging/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/pt/docs/concepts/cluster-administration/logging/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/pt/docs/concepts/cluster-administration/logging/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/pt/docs/home/">Documentação</a></h3>
+           <p>Aprenda a usar o Kubernetes com documentação conceitual, tutorial e de referência. Você também pode <a href="/editdocs/" data-auto-burger-exclude>ajudar a contribuir para a documentação</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/pt/blog/">Blog</a></h3>
+           <p>Leia as últimas novidades sobre Kubernetes e contêineres em geral, e obtenha detalhes técnicos atualizados</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Interessado em mergulhar na base de código do Kubernetes?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>Veja no Github</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explore a comunidade</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Fórum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendário de Eventos</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/pt/docs/home/">HOME</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Procurar" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  a documentação não é mais mantida ativamente. A versão que você está visualizando no momento é uma captura instantânea estática. Para obter documentação atualizada, consulte 
+	 <a href="https://kubernetes.io/docs/home/">última versão.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+         
+        
+        <a class="item" data-title="Administração de Cluster" href="/pt/docs/concepts/cluster-administration/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Visão Geral da Administração de Cluster" href="/pt/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Certificates" href="/pt/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloud Providers <small>(EN)</small>" href="/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Resources <small>(EN)</small>" href="/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Arquitetura de Log" href="/pt/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Metrics For The Kubernetes Control Plane <small>(EN)</small>" href="/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configurando o Garbage Collection do kubelet" href="/pt/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Proxies in Kubernetes <small>(EN)</small>" href="/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Instalando Addons" href="/pt/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/pt/docs/concepts/cluster-administration/logging.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Arquitetura de Log</h1>
+
+
+
+<p>Os logs de aplicativos e sistemas podem ajudá-lo a entender o que está acontecendo dentro do seu cluster. Os logs são particularmente úteis para depurar problemas e monitorar a atividade do cluster. A maioria das aplicações modernas possui algum tipo de mecanismo de logs; como tal, a maioria dos mecanismos de contêineres também é projetada para suportar algum tipo de log. O método de log mais fácil e abrangente para aplicações em contêiner é gravar nos fluxos de saída e erro padrão.</p>
+
+<p>No entanto, a funcionalidade nativa fornecida por um mecanismo de contêiner ou tempo de execução geralmente não é suficiente para uma solução completa de log. Por exemplo, se um contêiner travar, um pod for despejado ou um nó morrer, geralmente você ainda desejará acessar os logs do aplicativo. Dessa forma, os logs devem ter armazenamento e ciclo de vida separados, independentemente de nós, pods ou contêineres. Este conceito é chamado <em>cluster-level-logging</em>. O log no nível de cluster requer um back-end separado para armazenar, analisar e consultar logs. O kubernetes não fornece uma solução de armazenamento nativa para dados de log, mas você pode integrar muitas soluções de log existentes no cluster do Kubernetes.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#log-b%c3%a1sico-no-kubernentes">Log básico no Kubernentes</a></li>
+
+
+
+
+<li><a href="#logs-no-n%c3%advel-do-n%c3%b3">Logs no nível do Nó</a></li>
+
+
+
+
+<li><a href="#arquiteturas-de-log-no-n%c3%advel-de-cluster">Arquiteturas de log no nível de cluster</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<p>As arquiteturas de log no nível de cluster são descritas no pressuposto de que um back-end de log esteja presente dentro ou fora do cluster. Se você não estiver interessado em ter o log no nível do cluster, ainda poderá encontrar a descrição de como os logs são armazenados e manipulados no nó para serem úteis.</p>
+
+<h2 id="log-básico-no-kubernentes">Log básico no Kubernentes</h2>
+
+<p>Nesta seção, você pode ver um exemplo de log básico no Kubernetes que gera dados para o fluxo de saída padrão(standard output stream). Esta demostração usa uma <a href="/examples/debug/counter-pod.yaml">especificação de pod</a> com um contêiner que grava algum texto na saída padrão uma vez por segundo.</p>
+
+<table class="includecode" id="debug-counter-pod-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/pt/examples/debug/counter-pod.yaml" download="debug/counter-pod.yaml">
+                    <code>debug/counter-pod.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('debug-counter-pod-yaml')" title="Copy debug/counter-pod.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>counter<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb"> </span>[/bin/sh,<span style="color:#bbb"> </span>-c,<span style="color:#bbb">
+</span><span style="color:#bbb">            </span><span style="color:#b44">&#39;i=0; while true; do echo &#34;$i: $(date)&#34;; i=$((i+1)); sleep 1; done&#39;</span>]<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Para executar este pod, use o seguinte comando:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f https://k8s.io/examples/debug/counter-pod.yaml</code></pre></div>
+<p>A saída será:</p>
+
+<pre><code>pod/counter created
+</code></pre>
+
+<p>Para buscar os logs, use o comando <code>kubectl logs</code>, da seguinte maneira:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl logs counter</code></pre></div>
+<p>A saída será:</p>
+
+<pre><code>0: Mon Jan  1 00:00:00 UTC 2001
+1: Mon Jan  1 00:00:01 UTC 2001
+2: Mon Jan  1 00:00:02 UTC 2001
+...
+</code></pre>
+
+<p>Você pode usar <code>kubectl logs</code> para recuperar logs de uma instanciação anterior de um contêiner com o sinalizador <code>--previous</code>, caso o contêiner tenha falhado. Se o seu pod tiver vários contêineres, você deverá especificar quais logs do contêiner você deseja acessar anexando um nome de contêiner ao comando. Veja a <a href="/docs/reference/generated/kubectl/kubectl-commands#logs">documentação do <code>kubectl logs</code></a> para mais destalhes.</p>
+
+<h2 id="logs-no-nível-do-nó">Logs no nível do Nó</h2>
+
+<p><img src="/images/docs/user-guide/logging/logging-node-level.png" alt="Log no nível do nó" /></p>
+
+<p>Tudo o que um aplicativo em contêiner grava no <code>stdout</code> e <code>stderr</code> é tratado e redirecionado para algum lugar por dentro do mecanismo de contêiner. Por exemplo, o mecanismo de contêiner do Docker redireciona esses dois fluxos para <a href="https://docs.docker.com/engine/admin/logging/overview" target="_blank">um driver de log</a>, configurado no Kubernetes para gravar em um arquivo no formato json.</p>
+
+<blockquote class="note">
+  <div><strong>Nota:</strong> O driver de log json do Docker trata cada linha como uma mensagem separada. Ao usar o driver de log do Docker, não há suporte direto para mensagens de várias linhas. Você precisa lidar com mensagens de várias linhas no nível do agente de log ou superior.</div>
+</blockquote>
+
+<p>Por padrão, se um contêiner reiniciar, o kubelet manterá um contêiner terminado com seus logs. Se um pod for despejado do nó, todos os contêineres correspondentes também serão despejados, juntamente com seus logs.</p>
+
+<p>Uma consideração importante no log no nível do nó está implementado a rotação de log, para que os logs não consumam todo o armazenamento disponível no nó. Atualmente, o Kubernentes não é responsável pela rotação de logs, mas uma ferramenta de deployment deve configurar uma solução para resolver isso.
+Por exemplo, nos clusters do Kubernetes, implementados pelo script <code>kube-up.sh</code>, existe uma ferramenta <a href="https://linux.die.net/man/8/logrotate" target="_blank"><code>logrotate</code></a> configurada para executar a cada hora. Você pode configurar um tempo de execução do contêiner para girar os logs do aplicativo automaticamente, por exemplo, usando o <code>log-opt</code> do Docker.
+No script <code>kube-up.sh</code>, a última abordagem é usada para imagem COS no GCP, e a anterior é usada em qualquer outro ambiente. Nos dois casos por padrão, a rotação é configurada para ocorrer quando o arquivo de log exceder 10MB.</p>
+
+<p>Como exemplo, você pode encontrar informações detalhadas sobre como o <code>kube-up.sh</code> define o log da imagem COS no GCP no <a href="https://github.com/kubernetes/kubernetes/blob/v1.17.17/cluster/gce/gci/configure-helper.sh" target="_blank">script</a> correspondente.</p>
+
+<p>Quando você executa <a href="/docs/reference/generated/kubectl/kubectl-commands#logs"><code>kubectl logs</code></a> como no exemplo de log básico acima, o kubelet no nó lida com a solicitação e lê diretamente do arquivo de log, retornando o conteúdo na resposta.</p>
+
+<blockquote class="note">
+  <div><strong>Nota:</strong> Atualmente, se algum sistema externo executou a rotação, apenas o conteúdo do arquivo de log mais recente estará disponível através de <code>kubectl logs</code>. Por exemplo, se houver um arquivo de 10MB, o <code>logrotate</code> executa a rotação e existem dois arquivos, um com 10MB de tamanho e um vazio, o <code>kubectl logs</code> retornará uma resposta vazia.</div>
+</blockquote>
+
+<h3 id="logs-de-componentes-do-sistema">Logs de componentes do sistema</h3>
+
+<p>Existem dois tipos de componentes do sistema: aqueles que são executados em um contêiner e aqueles que não são executados em um contêiner. Por exemplo:</p>
+
+<ul>
+<li>O scheduler Kubernetes e o kube-proxy são executados em um contêiner.</li>
+<li>O tempo de execução do kubelet e do contêiner, por exemplo, Docker, não é executado em contêineres.</li>
+</ul>
+
+<p>Nas máquinas com systemd, o tempo de execução do kubelet e do container é gravado no journald. Se systemd não estiver presente, eles gravam em arquivos <code>.log</code> no diretório <code>/var/log</code>.
+Os componentes do sistema dentro dos contêineres sempre gravam no diretório <code>/var/log</code>, ignorando o mecanismo de log padrão. Eles usam a biblioteca de logs <a href="https://github.com/kubernetes/klog" target="_blank">klog</a>. Você pode encontrar as convenções para a gravidade do log desses componentes nos <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/sig-instrumentation/logging.md" target="_blank">documentos de desenvolvimento sobre log</a>.</p>
+
+<p>Da mesma forma que os logs de contêiner, os logs de componentes do sistema no diretório <code>/var/log</code> devem ser rotacionados. Nos clusters do Kubernetes criados pelo script <code>kube-up.sh</code>, esses logs são configurados para serem rotacionados pela ferramenta <code>logrotate</code> diariamente ou quando o tamanho exceder 100MB.</p>
+
+<h2 id="arquiteturas-de-log-no-nível-de-cluster">Arquiteturas de log no nível de cluster</h2>
+
+<p>Embora o Kubernetes não forneça uma solução nativa para o log em nível de cluster, há várias abordagens comuns que você pode considerar. Aqui estão algumas opções:</p>
+
+<ul>
+<li>Use um agente de log no nível do nó que seja executado em todos os nós.</li>
+<li>Inclua um contêiner sidecar dedicado para efetuar logging em um pod de aplicativo.</li>
+<li>Envie logs diretamente para um back-end de dentro de um aplicativo.</li>
+</ul>
+
+<h3 id="usando-um-agente-de-log-de-nó">Usando um agente de log de nó</h3>
+
+<p><img src="/images/docs/user-guide/logging/logging-with-node-agent.png" alt="Usando um agente de log no nível do nó" /></p>
+
+<p>Você pode implementar o log em nível de cluster incluindo um <em>agente de log em nível de nó</em> em cada nó. O agente de log é uma ferramenta dedicada que expõe logs ou envia logs para um back-end. Geralmente, o agente de log é um contêiner que tem acesso a um diretório com arquivos de log de todos os contêineres de aplicativos nesse nó.</p>
+
+<p>Como o agente de log deve ser executado em todos os nós, é comum implementá-lo como uma réplica do DaemonSet, um pod de manifesto ou um processo nativo dedicado no nó. No entanto, as duas últimas abordagens são obsoletas e altamente desencorajadas.</p>
+
+<p>O uso de um agente de log no nível do nó é a abordagem mais comum e incentivada para um cluster Kubernetes, porque ele cria apenas um agente por nó e não requer alterações nos aplicativos em execução no nó. No entanto, o log no nível do nó <em>funciona apenas para a saída padrão dos aplicativos e o erro padrão</em>.</p>
+
+<p>O Kubernetes não especifica um agente de log, mas dois agentes de log opcionais são fornecidos com a versão Kubernetes: <a href="/docs/user-guide/logging/stackdriver">Stackdriver Logging</a> para uso com o Google Cloud Platform e <a href="/docs/user-guide/logging/elasticsearch">Elasticsearch</a>. Você pode encontrar mais informações e instruções nos documentos dedicados. Ambos usam <a href="http://www.fluentd.org/" target="_blank">fluentd</a> com configuração customizada como um agente no nó.</p>
+
+<h3 id="usando-um-contêiner-sidecar-com-o-agente-de-log">Usando um contêiner sidecar com o agente de log</h3>
+
+<p>Você pode usar um contêiner sidecar de uma das seguintes maneiras:</p>
+
+<ul>
+<li>O container sidecar transmite os logs do aplicativo para seu próprio <code>stdout</code>.</li>
+<li>O contêiner do sidecar executa um agente de log, configurado para selecionar logs de um contêiner de aplicativo.</li>
+</ul>
+
+<h4 id="streaming-sidecar-conteiner">Streaming sidecar conteiner</h4>
+
+<p><img src="/images/docs/user-guide/logging/logging-with-streaming-sidecar.png" alt="Conteiner sidecar com um streaming container" /></p>
+
+<p>Fazendo com que seus contêineres de sidecar fluam para seus próprios <code>stdout</code> e <code>stderr</code>, você pode tirar proveito do kubelet e do agente de log que já executam em cada nó. Os contêineres sidecar lêem logs de um arquivo, socket ou journald. Cada contêiner sidecar individual imprime o log em seu próprio <code>stdout</code> ou <code>stderr</code> stream.</p>
+
+<p>Essa abordagem permite separar vários fluxos de logs de diferentes partes do seu aplicativo, algumas das quais podem não ter suporte para gravar em <code>stdout</code> ou <code>stderr</code>. A lógica por trás do redirecionamento de logs é mínima, portanto dificilmente representa uma sobrecarga significativa. Além disso, como <code>stdout</code> e <code>stderr</code> são manipulados pelo kubelet, você pode usar ferramentas internas como o <code>kubectl logs</code>.</p>
+
+<p>Considere o seguinte exemplo. Um pod executa um único contêiner e grava em dois arquivos de log diferentes, usando dois formatos diferentes. Aqui está um arquivo de configuração para o Pod:</p>
+
+<table class="includecode" id="admin-logging-two-files-counter-pod-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/pt/examples/admin/logging/two-files-counter-pod.yaml" download="admin/logging/two-files-counter-pod.yaml">
+                    <code>admin/logging/two-files-counter-pod.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('admin-logging-two-files-counter-pod-yaml')" title="Copy admin/logging/two-files-counter-pod.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>counter<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>/bin/sh<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>-c<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">      i=0;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>while<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>do<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$i: $(date)&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">1.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$(date) INFO $i&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">2.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>i=$((i<span style="color:#666">+1</span>));<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>sleep<span style="color:#bbb"> </span><span style="color:#666">1</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>done<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>emptyDir:<span style="color:#bbb"> </span>{}<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Seria uma bagunça ter entradas de log de diferentes formatos no mesmo fluxo de logs, mesmo se você conseguisse redirecionar os dois componentes para o fluxo <code>stdout</code> do contêiner. Em vez disso, você pode introduzir dois contêineres sidecar. Cada contêiner sidecar pode direcionar um arquivo de log específico de um volume compartilhado e depois redirecionar os logs para seu próprio fluxo <code>stdout</code>.</p>
+
+<p>Aqui está um arquivo de configuração para um pod que possui dois contêineres sidecar:</p>
+
+<table class="includecode" id="admin-logging-two-files-counter-pod-streaming-sidecar-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/pt/examples/admin/logging/two-files-counter-pod-streaming-sidecar.yaml" download="admin/logging/two-files-counter-pod-streaming-sidecar.yaml">
+                    <code>admin/logging/two-files-counter-pod-streaming-sidecar.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('admin-logging-two-files-counter-pod-streaming-sidecar-yaml')" title="Copy admin/logging/two-files-counter-pod-streaming-sidecar.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>counter<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>/bin/sh<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>-c<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">      i=0;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>while<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>do<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$i: $(date)&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">1.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$(date) INFO $i&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">2.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>i=$((i<span style="color:#666">+1</span>));<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>sleep<span style="color:#bbb"> </span><span style="color:#666">1</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>done<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count-log<span style="color:#666">-1</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb"> </span>[/bin/sh,<span style="color:#bbb"> </span>-c,<span style="color:#bbb"> </span><span style="color:#b44">&#39;tail -n+1 -f /var/log/1.log&#39;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count-log<span style="color:#666">-2</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb"> </span>[/bin/sh,<span style="color:#bbb"> </span>-c,<span style="color:#bbb"> </span><span style="color:#b44">&#39;tail -n+1 -f /var/log/2.log&#39;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>emptyDir:<span style="color:#bbb"> </span>{}<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Agora, quando você executa este pod, é possível acessar cada fluxo de log separadamente, executando os seguintes comandos:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl logs counter count-log-1</code></pre></div>
+<pre><code>0: Mon Jan  1 00:00:00 UTC 2001
+1: Mon Jan  1 00:00:01 UTC 2001
+2: Mon Jan  1 00:00:02 UTC 2001
+...
+</code></pre>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl logs counter count-log-2</code></pre></div>
+<pre><code>Mon Jan  1 00:00:00 UTC 2001 INFO 0
+Mon Jan  1 00:00:01 UTC 2001 INFO 1
+Mon Jan  1 00:00:02 UTC 2001 INFO 2
+...
+</code></pre>
+
+<p>O agente no nível do nó instalado em seu cluster coleta esses fluxos de logs automaticamente sem nenhuma configuração adicional. Se desejar, você pode configurar o agente para analisar as linhas de log, dependendo do contêiner de origem.</p>
+
+<p>Observe que, apesar do baixo uso da CPU e da memória (ordem de alguns milicores por CPU e ordem de vários megabytes de memória), gravar logs em um arquivo e depois transmiti-los para o <code>stdout</code> pode duplicar o uso do disco. Se você tem um aplicativo que grava em um único arquivo, geralmente é melhor definir <code>/dev/stdout</code> como destino, em vez de implementar a abordagem de contêiner de transmissão no sidecar.</p>
+
+<p>Os contêineres sidecar também podem ser usados para rotacionar arquivos de log que não podem ser rotacionados pelo próprio aplicativo. Um exemplo dessa abordagem é um pequeno contêiner executando <code>logrotate</code> periodicamente.
+No entanto, é recomendável usar o <code>stdout</code> e o <code>stderr</code> diretamente e deixar as políticas de rotação e retenção no kubelet.</p>
+
+<h4 id="contêiner-sidecar-com-um-agente-de-log">Contêiner sidecar com um agente de log</h4>
+
+<p><img src="/images/docs/user-guide/logging/logging-with-sidecar-agent.png" alt="Contêiner sidecar com um agente de log" /></p>
+
+<p>Se o agente de log no nível do nó não for flexível o suficiente para sua situação, você poderá criar um contêiner secundário com um agente de log separado que você configurou especificamente para executar com seu aplicativo.</p>
+
+<blockquote class="note">
+  <div><strong>Nota:</strong> O uso de um agente de log em um contêiner sidecar pode levar a um consumo significativo de recursos. Além disso, você não poderá acessar esses logs usando o comando <code>kubectl logs</code>, porque eles não são controlados pelo kubelet.</div>
+</blockquote>
+
+<p>Como exemplo, você pode usar o <a href="/docs/tasks/debug-application-cluster/logging-stackdriver/">Stackdriver</a>, que usa fluentd como um agente de log. Aqui estão dois arquivos de configuração que você pode usar para implementar essa abordagem. O primeiro arquivo contém um <a href="/docs/tasks/configure-pod-container/configure-pod-configmap/">ConfigMap</a> para configurar o fluentd.</p>
+
+<table class="includecode" id="admin-logging-fluentd-sidecar-config-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/pt/examples/admin/logging/fluentd-sidecar-config.yaml" download="admin/logging/fluentd-sidecar-config.yaml">
+                    <code>admin/logging/fluentd-sidecar-config.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('admin-logging-fluentd-sidecar-config-yaml')" title="Copy admin/logging/fluentd-sidecar-config.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ConfigMap<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>fluentd-config<span style="color:#bbb">
+</span><span style="color:#bbb"></span>data:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>fluentd.conf:<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">|
+</span><span style="color:#b44;font-style:italic">    &lt;source&gt;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>type<span style="color:#bbb"> </span>tail<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>format<span style="color:#bbb"> </span>none<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>path<span style="color:#bbb"> </span>/var/log/<span style="color:#666">1.</span>log<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>pos_file<span style="color:#bbb"> </span>/var/log/<span style="color:#666">1.</span>log.pos<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>tag<span style="color:#bbb"> </span>count.format1<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>&lt;/source<span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">
+</span><span style="color:#b44;font-style:italic">    &lt;source&gt;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>type<span style="color:#bbb"> </span>tail<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>format<span style="color:#bbb"> </span>none<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>path<span style="color:#bbb"> </span>/var/log/<span style="color:#666">2.</span>log<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>pos_file<span style="color:#bbb"> </span>/var/log/<span style="color:#666">2.</span>log.pos<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>tag<span style="color:#bbb"> </span>count.format2<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>&lt;/source<span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">
+</span><span style="color:#b44;font-style:italic">    &lt;match **&gt;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>type<span style="color:#bbb"> </span>google_cloud<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>&lt;/match&gt;<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<blockquote class="note">
+  <div><strong>Nota:</strong> A configuração do fluentd está além do escopo deste artigo. Para obter informações sobre como configurar o fluentd, consulte a <a href="http://docs.fluentd.org/" target="_blank">documentação oficial do fluentd</a>.</div>
+</blockquote>
+
+<p>O segundo arquivo descreve um pod que possui um contêiner sidecar rodando fluentemente.
+O pod monta um volume onde o fluentd pode coletar seus dados de configuração.</p>
+
+<table class="includecode" id="admin-logging-two-files-counter-pod-agent-sidecar-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/pt/examples/admin/logging/two-files-counter-pod-agent-sidecar.yaml" download="admin/logging/two-files-counter-pod-agent-sidecar.yaml">
+                    <code>admin/logging/two-files-counter-pod-agent-sidecar.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('admin-logging-two-files-counter-pod-agent-sidecar-yaml')" title="Copy admin/logging/two-files-counter-pod-agent-sidecar.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>counter<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>busybox<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>args:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>/bin/sh<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>-c<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span><span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">      i=0;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>while<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>do<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$i: $(date)&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">1.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>echo<span style="color:#bbb"> </span><span style="color:#b44">&#34;$(date) INFO $i&#34;</span><span style="color:#bbb"> </span>&gt;&gt;<span style="color:#bbb"> </span>/var/log/<span style="color:#666">2.</span>log;<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>i=$((i<span style="color:#666">+1</span>));<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>sleep<span style="color:#bbb"> </span><span style="color:#666">1</span>;<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>done<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>count-agent<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/fluentd-gcp:<span style="color:#666">1.30</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>env:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>FLUENTD_ARGS<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>value:<span style="color:#bbb"> </span>-c<span style="color:#bbb"> </span>/etc/fluentd-config/fluentd.conf<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/var/log<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>config-volume<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/etc/fluentd-config<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>varlog<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>emptyDir:<span style="color:#bbb"> </span>{}<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>config-volume<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>configMap:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>fluentd-config<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Depois de algum tempo, você pode encontrar mensagens de log na interface do Stackdriver.</p>
+
+<p>Lembre-se de que este é apenas um exemplo e você pode realmente substituir o fluentd por qualquer agente de log, lendo de qualquer fonte dentro de um contêiner de aplicativo.</p>
+
+<h3 id="expondo-logs-diretamente-do-aplicativo">Expondo logs diretamente do aplicativo</h3>
+
+<p><img src="/images/docs/user-guide/logging/logging-from-application.png" alt="Expondo logs diretamente do aplicativo" /></p>
+
+<p>Você pode implementar o log no nível do cluster, expondo ou enviando logs diretamente de todos os aplicativos; no entanto, a implementação desse mecanismo de log está fora do escopo do Kubernetes.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Comentários</h2>
+  <p class="feedback--prompt">Esta página foi útil? </p>
+  <button class="button feedback--yes">Sim</button>
+  <button class="button feedback--no">Não</button>
+  <p class="feedback--response feedback--response__hidden">
+    Obrigado pelo feedback. Se você tiver uma pergunta específica sobre como utilizar o Kubernetes, faça em
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Abra um bug no repositório do GitHub se você deseja 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      reportar um problema</a>
+    ou
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      sugerir uma melhoria</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/cluster-administration/logging.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/pt\/docs\/concepts\/cluster-administration\/logging\/",
+    "title" : "Arquitetura de Log",
+    "permalink" : "https:\/\/kubernetes.io\/pt\/docs\/concepts\/cluster-administration\/logging\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Abra um bug</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/pt/docs/concepts/cluster-administration/logging.md" class="button issue">Edite essa página</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Última modificação da página em March 15, 2020 at 6:44 PM PST por
+    <a href="https://github.com/kubernetes/website/commit/6aa392535ccc4216a21ae9f941175d24d2b299f6/">Translate content/pt/docs/concepts/cluster-administration/logging.md into Portugues  (#19573)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/cluster-administration/logging.md">História da página</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/pt/docs/home/">Home</a>
+            
+            <a href="/pt/blog/">Blog</a>
+            
+            
+            
+            <a href="/pt/partners/">Parceiros</a>
+            
+            <a href="/pt/community/">Comunidade</a>
+            
+            <a href="/pt/case-studies/">Casos de estudo</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Fórum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendário de Eventos</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribuir</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 Os autores do Kubernetes | Documentação Distribuída sob <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 A Fundação Linux &reg;. Todos os direitos reservados. A Linux Foundation tem marcas registradas e usa marcas registradas. Para uma lista de marcas registradas da The Linux Foundation, por favor, veja nossa <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Página de uso de marca registrada</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

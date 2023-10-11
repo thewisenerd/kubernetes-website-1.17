@@ -1,0 +1,2354 @@
+<!DOCTYPE html>
+<html id="docs" lang="en" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Using Admission Controllers - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/">
+<meta property="og:title" content="Using Admission Controllers">
+<meta name="twitter:title" content="Using Admission Controllers">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/" class="logo" title="Production-Grade Container Orchestration - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/blog/">Blog</a></li>
+            
+            <li><a href="/training/">Training</a></li>
+            
+            <li><a href="/partners/">Partners</a></li>
+            
+            <li><a href="/community/">Community</a></li>
+            
+            <li><a href="/case-studies/">Case Studies</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    English <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/zh/docs/reference/access-authn-authz/admission-controllers/">中文 Chinese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/docs/reference/access-authn-authz/admission-controllers/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/docs/reference/access-authn-authz/admission-controllers/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/docs/reference/access-authn-authz/admission-controllers/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/docs/reference/access-authn-authz/admission-controllers/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Learn Kubernetes Basics</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/docs/home/">Documentation</a></h3>
+           <p>Learn how to use Kubernetes with conceptual, tutorial, and reference documentation. You can even <a href="/editdocs/" data-auto-burger-exclude>help contribute to the docs</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/blog/">Blog</a></h3>
+           <p>Read the latest news for Kubernetes and the containers space in general, and get technical how-tos hot off the presses.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Interested in hacking on the core Kubernetes code base?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>View On GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explore the community</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1>Reference</h1>
+<h5></h5>
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/docs/home/">HOME</a></li>
+		
+		
+		<li><a href="/docs/setup/">GETTING STARTED</a></li>
+		
+		
+		<li><a href="/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/docs/tasks/">TASKS</a></li>
+		
+		
+		<li><a href="/docs/tutorials/">TUTORIALS</a></li>
+		
+		
+		<li><a href="/docs/reference/" class="YAH">REFERENCE</a></li>
+		
+		
+		<li><a href="/docs/contribute/">CONTRIBUTE</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Search" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation is no longer actively maintained. The version you are currently viewing is a static snapshot. For up-to-date documentation, see the 
+	 <a href="https://kubernetes.io/docs/home/">latest version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Reference" href="/docs/reference/"></a>
+
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Standardized Glossary" href="/docs/reference/glossary/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes Issues and Security">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes Issue Tracker" href="/docs/reference/issues-security/issues/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes Security and Disclosure Information" href="/docs/reference/issues-security/security/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Using the Kubernetes API">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API Overview" href="/docs/reference/using-api/api-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API Concepts" href="/docs/reference/using-api/api-concepts/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Client Libraries" href="/docs/reference/using-api/client-libraries/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes Deprecation Policy" href="/docs/reference/using-api/deprecation-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Accessing the API">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Controlling Access to the Kubernetes API" href="/docs/reference/access-authn-authz/controlling-access/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Authenticating" href="/docs/reference/access-authn-authz/authentication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Authenticating with Bootstrap Tokens" href="/docs/reference/access-authn-authz/bootstrap-tokens/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using Admission Controllers" href="/docs/reference/access-authn-authz/admission-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Dynamic Admission Control" href="/docs/reference/access-authn-authz/extensible-admission-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Managing Service Accounts" href="/docs/reference/access-authn-authz/service-accounts-admin/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Authorization Overview" href="/docs/reference/access-authn-authz/authorization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using RBAC Authorization" href="/docs/reference/access-authn-authz/rbac/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using ABAC Authorization" href="/docs/reference/access-authn-authz/abac/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using Node Authorization" href="/docs/reference/access-authn-authz/node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Webhook Mode" href="/docs/reference/access-authn-authz/webhook/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="API Reference">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="v1.17" href="/docs/reference/kubernetes-api/api-index/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Well-Known Labels, Annotations and Taints" href="/docs/reference/kubernetes-api/labels-annotations-taints/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Setup tools reference">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Kubeadm">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Overview of kubeadm" href="/docs/reference/setup-tools/kubeadm/kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm init" href="/docs/reference/setup-tools/kubeadm/kubeadm-init/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm join" href="/docs/reference/setup-tools/kubeadm/kubeadm-join/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm upgrade" href="/docs/reference/setup-tools/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm config" href="/docs/reference/setup-tools/kubeadm/kubeadm-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm reset" href="/docs/reference/setup-tools/kubeadm/kubeadm-reset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm token" href="/docs/reference/setup-tools/kubeadm/kubeadm-token/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm version" href="/docs/reference/setup-tools/kubeadm/kubeadm-version/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm alpha" href="/docs/reference/setup-tools/kubeadm/kubeadm-alpha/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm init phase" href="/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm join phase" href="/docs/reference/setup-tools/kubeadm/kubeadm-join-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm reset phase" href="/docs/reference/setup-tools/kubeadm/kubeadm-reset-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm upgrade phase" href="/docs/reference/setup-tools/kubeadm/kubeadm-upgrade-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Implementation details" href="/docs/reference/setup-tools/kubeadm/implementation-details/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Command line tools reference">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Feature Gates" href="/docs/reference/command-line-tools-reference/feature-gates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="cloud-controller-manager" href="/docs/reference/command-line-tools-reference/cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-apiserver" href="/docs/reference/command-line-tools-reference/kube-apiserver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-controller-manager" href="/docs/reference/command-line-tools-reference/kube-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-proxy" href="/docs/reference/command-line-tools-reference/kube-proxy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-scheduler" href="/docs/reference/command-line-tools-reference/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubelet" href="/docs/reference/command-line-tools-reference/kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubelet authentication/authorization" href="/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="TLS bootstrapping" href="/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="kubectl CLI">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Overview of kubectl" href="/docs/reference/kubectl/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="JSONPath Support" href="/docs/reference/kubectl/jsonpath/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl" href="/docs/reference/kubectl/kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl Cheat Sheet" href="/docs/reference/kubectl/cheatsheet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl Commands" href="/docs/reference/kubectl/kubectl-cmds/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl for Docker Users" href="/docs/reference/kubectl/docker-cli-to-kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl Usage Conventions" href="/docs/reference/kubectl/conventions/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Tools" href="/docs/reference/tools/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/reference/access-authn-authz/admission-controllers.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Using Admission Controllers</h1>
+
+
+
+<p>This page provides an overview of Admission Controllers.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#what-are-they">What are they?</a></li>
+
+
+
+
+<li><a href="#why-do-i-need-them">Why do I need them?</a></li>
+
+
+
+
+<li><a href="#how-do-i-turn-on-an-admission-controller">How do I turn on an admission controller?</a></li>
+
+
+
+
+<li><a href="#how-do-i-turn-off-an-admission-controller">How do I turn off an admission controller?</a></li>
+
+
+
+
+<li><a href="#which-plugins-are-enabled-by-default">Which plugins are enabled by default?</a></li>
+
+
+
+
+<li><a href="#what-does-each-admission-controller-do">What does each admission controller do?</a></li>
+
+
+
+
+<li><a href="#is-there-a-recommended-set-of-admission-controllers-to-use">Is there a recommended set of admission controllers to use?</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<h2 id="what-are-they">What are they?</h2>
+
+<p>An admission controller is a piece of code that intercepts requests to the
+Kubernetes API server prior to persistence of the object, but after the request
+is authenticated and authorized.  The controllers consist of the
+<a href="#what-does-each-admission-controller-do">list</a> below, are compiled into the
+<code>kube-apiserver</code> binary, and may only be configured by the cluster
+administrator. In that list, there are two special controllers:
+MutatingAdmissionWebhook and ValidatingAdmissionWebhook.  These execute the
+mutating and validating (respectively) <a href="/docs/reference/access-authn-authz/extensible-admission-controllers/#admission-webhooks">admission control
+webhooks</a>
+which are configured in the API.</p>
+
+<p>Admission controllers may be &ldquo;validating&rdquo;, &ldquo;mutating&rdquo;, or both. Mutating
+controllers may modify the objects they admit; validating controllers may not.</p>
+
+<p>The admission control process proceeds in two phases. In the first phase,
+mutating admission controllers are run. In the second phase, validating
+admission controllers are run. Note again that some of the controllers are
+both.</p>
+
+<p>If any of the controllers in either phase reject the request, the entire
+request is rejected immediately and an error is returned to the end-user.</p>
+
+<p>Finally, in addition to sometimes mutating the object in question, admission
+controllers may sometimes have side effects, that is, mutate related
+resources as part of request processing. Incrementing quota usage is the
+canonical example of why this is necessary. Any such side-effect needs a
+corresponding reclamation or reconciliation process, as a given admission
+controller does not know for sure that a given request will pass all of the
+other admission controllers.</p>
+
+<h2 id="why-do-i-need-them">Why do I need them?</h2>
+
+<p>Many advanced features in Kubernetes require an admission controller to be enabled in order
+to properly support the feature.  As a result, a Kubernetes API server that is not properly
+configured with the right set of admission controllers is an incomplete server and will not
+support all the features you expect.</p>
+
+<h2 id="how-do-i-turn-on-an-admission-controller">How do I turn on an admission controller?</h2>
+
+<p>The Kubernetes API server flag <code>enable-admission-plugins</code> takes a comma-delimited list of admission control plugins to invoke prior to modifying objects in the cluster.
+For example, the following command line enables the <code>NamespaceLifecycle</code> and the <code>LimitRanger</code>
+admission control plugins:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kube-apiserver --enable-admission-plugins<span style="color:#666">=</span>NamespaceLifecycle,LimitRanger ...</code></pre></div>
+<blockquote class="note">
+  <div><strong>Note:</strong> Depending on the way your Kubernetes cluster is deployed and how the API server is
+started, you may need to apply the settings in different ways. For example, you may
+have to modify the systemd unit file if the API server is deployed as a systemd
+service, you may modify the manifest file for the API server if Kubernetes is deployed
+in a self-hosted way.</div>
+</blockquote>
+
+<h2 id="how-do-i-turn-off-an-admission-controller">How do I turn off an admission controller?</h2>
+
+<p>The Kubernetes API server flag <code>disable-admission-plugins</code> takes a comma-delimited list of admission control plugins to be disabled, even if they are in the list of plugins enabled by default.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kube-apiserver --disable-admission-plugins<span style="color:#666">=</span>PodNodeSelector,AlwaysDeny ...</code></pre></div>
+<h2 id="which-plugins-are-enabled-by-default">Which plugins are enabled by default?</h2>
+
+<p>To see which admission plugins are enabled:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kube-apiserver -h | grep enable-admission-plugins</code></pre></div>
+<p>In 1.16, they are:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NamespaceLifecycle, LimitRanger, ServiceAccount, TaintNodesByCondition, Priority, DefaultTolerationSeconds, DefaultStorageClass, StorageObjectInUseProtection, PersistentVolumeClaimResize, MutatingAdmissionWebhook, ValidatingAdmissionWebhook, RuntimeClass, ResourceQuota</code></pre></div>
+<h2 id="what-does-each-admission-controller-do">What does each admission controller do?</h2>
+
+<h3 id="alwaysadmit">AlwaysAdmit</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>deprecated</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="deprecated">
+This feature is <em>deprecated</em>. For more information on this state, see the <a href="/docs/reference/deprecation-policy/">Kubernetes Deprecation Policy</a>.
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>This admission controller allows all pods into the cluster. It is deprecated because its behavior is the same as if there were no admission controller at all.</p>
+
+<h3 id="alwayspullimages">AlwaysPullImages</h3>
+
+<p>This admission controller modifies every new Pod to force the image pull policy to Always. This is useful in a
+multitenant cluster so that users can be assured that their private images can only be used by those
+who have the credentials to pull them. Without this admission controller, once an image has been pulled to a
+node, any pod from any user can use it simply by knowing the image&rsquo;s name (assuming the Pod is
+scheduled onto the right node), without any authorization check against the image. When this admission controller
+is enabled, images are always pulled prior to starting containers, which means valid credentials are
+required.</p>
+
+<h3 id="alwaysdeny">AlwaysDeny</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>deprecated</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="deprecated">
+This feature is <em>deprecated</em>. For more information on this state, see the <a href="/docs/reference/deprecation-policy/">Kubernetes Deprecation Policy</a>.
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>Rejects all requests. AlwaysDeny is DEPRECATED as no real meaning.</p>
+
+<h3 id="defaultstorageclass">DefaultStorageClass</h3>
+
+<p>This admission controller observes creation of <code>PersistentVolumeClaim</code> objects that do not request any specific storage class
+and automatically adds a default storage class to them.
+This way, users that do not request any special storage class do not need to care about them at all and they
+will get the default one.</p>
+
+<p>This admission controller does not do anything when no default storage class is configured. When more than one storage
+class is marked as default, it rejects any creation of <code>PersistentVolumeClaim</code> with an error and an administrator
+must revisit their <code>StorageClass</code> objects and mark only one as default.
+This admission controller ignores any <code>PersistentVolumeClaim</code> updates; it acts only on creation.</p>
+
+<p>See <a href="/docs/concepts/storage/persistent-volumes/">persistent volume</a> documentation about persistent volume claims and
+storage classes and how to mark a storage class as default.</p>
+
+<h3 id="defaulttolerationseconds">DefaultTolerationSeconds</h3>
+
+<p>This admission controller sets the default forgiveness toleration for pods to tolerate
+the taints <code>notready:NoExecute</code> and <code>unreachable:NoExecute</code> for 5 minutes,
+if the pods don&rsquo;t already have toleration for taints
+<code>node.kubernetes.io/not-ready:NoExecute</code> or
+<code>node.alpha.kubernetes.io/unreachable:NoExecute</code>.</p>
+
+<h3 id="denyexeconprivileged">DenyExecOnPrivileged</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>deprecated</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="deprecated">
+This feature is <em>deprecated</em>. For more information on this state, see the <a href="/docs/reference/deprecation-policy/">Kubernetes Deprecation Policy</a>.
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>This admission controller will intercept all requests to exec a command in a pod if that pod has a privileged container.</p>
+
+<p>This functionality has been merged into <a href="#denyescalatingexec">DenyEscalatingExec</a>.
+The DenyExecOnPrivileged admission plugin is deprecated and will be removed in v1.18.</p>
+
+<p>Use of a policy-based admission plugin (like <a href="#podsecuritypolicy">PodSecurityPolicy</a> or a custom admission plugin)
+which can be targeted at specific users or Namespaces and also protects against creation of overly privileged Pods
+is recommended instead.</p>
+
+<h3 id="denyescalatingexec">DenyEscalatingExec</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>deprecated</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="deprecated">
+This feature is <em>deprecated</em>. For more information on this state, see the <a href="/docs/reference/deprecation-policy/">Kubernetes Deprecation Policy</a>.
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>This admission controller will deny exec and attach commands to pods that run with escalated privileges that
+allow host access.  This includes pods that run as privileged, have access to the host IPC namespace, and
+have access to the host PID namespace.</p>
+
+<p>The DenyEscalatingExec admission plugin is deprecated and will be removed in v1.18.</p>
+
+<p>Use of a policy-based admission plugin (like <a href="#podsecuritypolicy">PodSecurityPolicy</a> or a custom admission plugin)
+which can be targeted at specific users or Namespaces and also protects against creation of overly privileged Pods
+is recommended instead.</p>
+
+<h3 id="eventratelimit">EventRateLimit</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>alpha</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="alpha">
+This feature is currently in a <em>alpha</em> state, meaning:</p>
+
+<ul>
+<li>The version names contain alpha (e.g. v1alpha1).</li>
+<li>Might be buggy. Enabling the feature may expose bugs. Disabled by default.</li>
+<li>Support for feature may be dropped at any time without notice.</li>
+<li>The API may change in incompatible ways in a later software release without notice.</li>
+<li>Recommended for use only in short-lived testing clusters, due to increased risk of bugs and lack of long-term support.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>This admission controller mitigates the problem where the API server gets flooded by
+event requests. The cluster admin can specify event rate limits by:</p>
+
+<ul>
+<li>Ensuring that <code>eventratelimit.admission.k8s.io/v1alpha1=true</code> is included in the
+<code>--runtime-config</code> flag for the API server;</li>
+<li>Enabling the <code>EventRateLimit</code> admission controller;</li>
+<li>Referencing an <code>EventRateLimit</code> configuration file from the file provided to the API
+server&rsquo;s command line flag <code>--admission-control-config-file</code>:</li>
+</ul>
+
+<div id="eventratelimit-example">
+<ul>
+    
+      
+  <li><a href="#eventratelimit-example-0">apiserver.config.k8s.io/v1</a></li>
+
+      
+  <li><a href="#eventratelimit-example-1">apiserver.k8s.io/v1alpha1</a></li>
+
+</ul>
+
+
+<div id="eventratelimit-example-0">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apiserver.config.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>AdmissionConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>plugins:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>EventRateLimit<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>path:<span style="color:#bbb"> </span>eventconfig.yaml<span style="color:#bbb">
+</span><span style="color:#bbb"></span>...</code></pre></div>
+    
+
+<p></div></p>
+
+<div id="eventratelimit-example-1">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#080;font-style:italic"># Deprecated in v1.17 in favor of apiserver.config.k8s.io/v1</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>apiserver.k8s.io/v1alpha1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>AdmissionConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>plugins:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>EventRateLimit<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>path:<span style="color:#bbb"> </span>eventconfig.yaml<span style="color:#bbb">
+</span><span style="color:#bbb"></span>...</code></pre></div>
+    
+
+<p></div></p>
+
+<p></div></p>
+
+<script>$(function(){$("#eventratelimit-example").tabs();});</script>
+
+<p>There are four types of limits that can be specified in the configuration:</p>
+
+<ul>
+<li><code>Server</code>: All event requests received by the API server share a single bucket.</li>
+<li><code>Namespace</code>: Each namespace has a dedicated bucket.</li>
+<li><code>User</code>: Each user is allocated a bucket.</li>
+<li><code>SourceAndObject</code>: A bucket is assigned by each combination of source and
+involved object of the event.</li>
+</ul>
+
+<p>Below is a sample <code>eventconfig.yaml</code> for such a configuration:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>eventratelimit.admission.k8s.io/v1alpha1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Configuration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>limits:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>Namespace<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>qps:<span style="color:#bbb"> </span><span style="color:#666">50</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>burst:<span style="color:#bbb"> </span><span style="color:#666">100</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>cacheSize:<span style="color:#bbb"> </span><span style="color:#666">2000</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>User<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>qps:<span style="color:#bbb"> </span><span style="color:#666">10</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>burst:<span style="color:#bbb"> </span><span style="color:#666">50</span></code></pre></div>
+<p>See the <a href="https://git.k8s.io/community/contributors/design-proposals/api-machinery/admission_control_event_rate_limit.md" target="_blank">EventRateLimit proposal</a>
+for more details.</p>
+
+<h3 id="extendedresourcetoleration">ExtendedResourceToleration</h3>
+
+<p>This plug-in facilitates creation of dedicated nodes with extended resources.
+If operators want to create dedicated nodes with extended resources (like GPUs, FPGAs etc.), they are expected to
+<a href="/docs/concepts/configuration/taint-and-toleration/#example-use-cases">taint the node</a> with the extended resource
+name as the key. This admission controller, if enabled, automatically
+adds tolerations for such taints to pods requesting extended resources, so users don&rsquo;t have to manually
+add these tolerations.</p>
+
+<h3 id="imagepolicywebhook">ImagePolicyWebhook</h3>
+
+<p>The ImagePolicyWebhook admission controller allows a backend webhook to make admission decisions.</p>
+
+<h4 id="configuration-file-format">Configuration File Format</h4>
+
+<p>ImagePolicyWebhook uses a configuration file to set options for the behavior of the backend.
+This file may be json or yaml and has the following format:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">imagePolicy:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kubeConfigFile:<span style="color:#bbb"> </span>/path/to/kubeconfig/for/backend<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># time in s to cache approval</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>allowTTL:<span style="color:#bbb"> </span><span style="color:#666">50</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># time in s to cache denial</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>denyTTL:<span style="color:#bbb"> </span><span style="color:#666">50</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># time in ms to wait between retries</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>retryBackoff:<span style="color:#bbb"> </span><span style="color:#666">500</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># determines behavior if the webhook backend fails</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>defaultAllow:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span></code></pre></div>
+<p>Reference the ImagePolicyWebhook configuration file from the file provided to the API server&rsquo;s command line flag <code>--admission-control-config-file</code>:</p>
+
+<div id="imagepolicywebhook-example1">
+<ul>
+    
+      
+  <li><a href="#imagepolicywebhook-example1-0">apiserver.config.k8s.io/v1</a></li>
+
+      
+  <li><a href="#imagepolicywebhook-example1-1">apiserver.k8s.io/v1alpha1</a></li>
+
+</ul>
+
+
+<div id="imagepolicywebhook-example1-0">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apiserver.config.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>AdmissionConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>plugins:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>ImagePolicyWebhook<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>path:<span style="color:#bbb"> </span>imagepolicyconfig.yaml<span style="color:#bbb">
+</span><span style="color:#bbb"></span>...</code></pre></div>
+    
+
+<p></div></p>
+
+<div id="imagepolicywebhook-example1-1">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#080;font-style:italic"># Deprecated in v1.17 in favor of apiserver.config.k8s.io/v1</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>apiserver.k8s.io/v1alpha1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>AdmissionConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>plugins:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>ImagePolicyWebhook<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>path:<span style="color:#bbb"> </span>imagepolicyconfig.yaml<span style="color:#bbb">
+</span><span style="color:#bbb"></span>...</code></pre></div>
+    
+
+<p></div></p>
+
+<p></div></p>
+
+<script>$(function(){$("#imagepolicywebhook-example1").tabs();});</script>
+
+<p>Alternatively, you can embed the configuration directly in the file:</p>
+
+<div id="imagepolicywebhook-example2">
+<ul>
+    
+      
+  <li><a href="#imagepolicywebhook-example2-0">apiserver.config.k8s.io/v1</a></li>
+
+      
+  <li><a href="#imagepolicywebhook-example2-1">apiserver.k8s.io/v1alpha1</a></li>
+
+</ul>
+
+
+<div id="imagepolicywebhook-example2-0">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apiserver.config.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>AdmissionConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>plugins:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>ImagePolicyWebhook<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>configuration:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>imagePolicy:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>kubeConfigFile:<span style="color:#bbb"> </span>&lt;path-to-kubeconfig-file<span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">      allowTTL: 50</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>denyTTL:<span style="color:#bbb"> </span><span style="color:#666">50</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>retryBackoff:<span style="color:#bbb"> </span><span style="color:#666">500</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>defaultAllow:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span></code></pre></div>
+    
+
+<p></div></p>
+
+<div id="imagepolicywebhook-example2-1">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#080;font-style:italic"># Deprecated in v1.17 in favor of apiserver.config.k8s.io/v1</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>apiserver.k8s.io/v1alpha1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>AdmissionConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>plugins:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>ImagePolicyWebhook<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>configuration:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>imagePolicy:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>kubeConfigFile:<span style="color:#bbb"> </span>&lt;path-to-kubeconfig-file<span style="color:#b44;font-style:italic">&gt;
+</span><span style="color:#b44;font-style:italic">      allowTTL: 50</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>denyTTL:<span style="color:#bbb"> </span><span style="color:#666">50</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>retryBackoff:<span style="color:#bbb"> </span><span style="color:#666">500</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>defaultAllow:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span></code></pre></div>
+    
+
+<p></div></p>
+
+<p></div></p>
+
+<script>$(function(){$("#imagepolicywebhook-example2").tabs();});</script>
+
+<p>The ImagePolicyWebhook config file must reference a <a href="/docs/concepts/cluster-administration/authenticate-across-clusters-kubeconfig/">kubeconfig</a> formatted file which sets up the connection to the backend. It is required that the backend communicate over TLS.</p>
+
+<p>The kubeconfig file&rsquo;s cluster field must point to the remote service, and the user field must contain the returned authorizer.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#080;font-style:italic"># clusters refers to the remote service.</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>clusters:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>name-of-remote-imagepolicy-service<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>cluster:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>certificate-authority:<span style="color:#bbb"> </span>/path/to/ca.pem<span style="color:#bbb">    </span><span style="color:#080;font-style:italic"># CA for verifying the remote service.</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>server:<span style="color:#bbb"> </span>https://images.example.com/policy<span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># URL of remote service to query. Must use &#39;https&#39;.</span><span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#080;font-style:italic"># users refers to the API server&#39;s webhook configuration.</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>users:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>name-of-api-server<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>user:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>client-certificate:<span style="color:#bbb"> </span>/path/to/cert.pem<span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># cert for the webhook admission controller to use</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>client-key:<span style="color:#bbb"> </span>/path/to/key.pem<span style="color:#bbb">          </span><span style="color:#080;font-style:italic"># key matching the cert</span></code></pre></div>
+<p>For additional HTTP configuration, refer to the <a href="/docs/concepts/cluster-administration/authenticate-across-clusters-kubeconfig/">kubeconfig</a> documentation.</p>
+
+<h4 id="request-payloads">Request Payloads</h4>
+
+<p>When faced with an admission decision, the API Server POSTs a JSON serialized <code>imagepolicy.k8s.io/v1alpha1</code> <code>ImageReview</code> object describing the action. This object contains fields describing the containers being admitted, as well as any pod annotations that match <code>*.image-policy.k8s.io/*</code>.</p>
+
+<p>Note that webhook API objects are subject to the same versioning compatibility rules as other Kubernetes API objects. Implementers should be aware of looser compatibility promises for alpha objects and check the &ldquo;apiVersion&rdquo; field of the request to ensure correct deserialization. Additionally, the API Server must enable the imagepolicy.k8s.io/v1alpha1 API extensions group (<code>--runtime-config=imagepolicy.k8s.io/v1alpha1=true</code>).</p>
+
+<p>An example request body:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#008000;font-weight:bold">&#34;apiVersion&#34;</span>:<span style="color:#b44">&#34;imagepolicy.k8s.io/v1alpha1&#34;</span>,
+  <span style="color:#008000;font-weight:bold">&#34;kind&#34;</span>:<span style="color:#b44">&#34;ImageReview&#34;</span>,
+  <span style="color:#008000;font-weight:bold">&#34;spec&#34;</span>:{
+    <span style="color:#008000;font-weight:bold">&#34;containers&#34;</span>:[
+      {
+        <span style="color:#008000;font-weight:bold">&#34;image&#34;</span>:<span style="color:#b44">&#34;myrepo/myimage:v1&#34;</span>
+      },
+      {
+        <span style="color:#008000;font-weight:bold">&#34;image&#34;</span>:<span style="color:#b44">&#34;myrepo/myimage@sha256:beb6bd6a68f114c1dc2ea4b28db81bdf91de202a9014972bec5e4d9171d90ed&#34;</span>
+      }
+    ],
+    <span style="color:#008000;font-weight:bold">&#34;annotations&#34;</span>:{
+      <span style="color:#008000;font-weight:bold">&#34;mycluster.image-policy.k8s.io/ticket-1234&#34;</span>: <span style="color:#b44">&#34;break-glass&#34;</span>
+    },
+    <span style="color:#008000;font-weight:bold">&#34;namespace&#34;</span>:<span style="color:#b44">&#34;mynamespace&#34;</span>
+  }
+}</code></pre></div>
+<p>The remote service is expected to fill the <code>ImageReviewStatus</code> field of the request and respond to either allow or disallow access. The response body&rsquo;s &ldquo;spec&rdquo; field is ignored and may be omitted. A permissive response would return:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#008000;font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#b44">&#34;imagepolicy.k8s.io/v1alpha1&#34;</span>,
+  <span style="color:#008000;font-weight:bold">&#34;kind&#34;</span>: <span style="color:#b44">&#34;ImageReview&#34;</span>,
+  <span style="color:#008000;font-weight:bold">&#34;status&#34;</span>: {
+    <span style="color:#008000;font-weight:bold">&#34;allowed&#34;</span>: <span style="color:#a2f;font-weight:bold">true</span>
+  }
+}</code></pre></div>
+<p>To disallow access, the service would return:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#008000;font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#b44">&#34;imagepolicy.k8s.io/v1alpha1&#34;</span>,
+  <span style="color:#008000;font-weight:bold">&#34;kind&#34;</span>: <span style="color:#b44">&#34;ImageReview&#34;</span>,
+  <span style="color:#008000;font-weight:bold">&#34;status&#34;</span>: {
+    <span style="color:#008000;font-weight:bold">&#34;allowed&#34;</span>: <span style="color:#a2f;font-weight:bold">false</span>,
+    <span style="color:#008000;font-weight:bold">&#34;reason&#34;</span>: <span style="color:#b44">&#34;image currently blacklisted&#34;</span>
+  }
+}</code></pre></div>
+<p>For further documentation refer to the <code>imagepolicy.v1alpha1</code> API objects and <code>plugin/pkg/admission/imagepolicy/admission.go</code>.</p>
+
+<h4 id="extending-with-annotations">Extending with Annotations</h4>
+
+<p>All annotations on a Pod that match <code>*.image-policy.k8s.io/*</code> are sent to the webhook. Sending annotations allows users who are aware of the image policy backend to send extra information to it, and for different backends implementations to accept different information.</p>
+
+<p>Examples of information you might put here are:</p>
+
+<ul>
+<li>request to &ldquo;break glass&rdquo; to override a policy, in case of emergency.</li>
+<li>a ticket number from a ticket system that documents the break-glass request</li>
+<li>provide a hint to the policy server as to the imageID of the image being provided, to save it a lookup</li>
+</ul>
+
+<p>In any case, the annotations are provided by the user and are not validated by Kubernetes in any way. In the future, if an annotation is determined to be widely useful, it may be promoted to a named field of <code>ImageReviewSpec</code>.</p>
+
+<h3 id="limitpodhardantiaffinitytopology">LimitPodHardAntiAffinityTopology</h3>
+
+<p>This admission controller denies any pod that defines <code>AntiAffinity</code> topology key other than
+<code>kubernetes.io/hostname</code> in <code>requiredDuringSchedulingRequiredDuringExecution</code>.</p>
+
+<h3 id="limitranger">LimitRanger</h3>
+
+<p>This admission controller will observe the incoming request and ensure that it does not violate any of the constraints
+enumerated in the <code>LimitRange</code> object in a <code>Namespace</code>.  If you are using <code>LimitRange</code> objects in
+your Kubernetes deployment, you MUST use this admission controller to enforce those constraints. LimitRanger can also
+be used to apply default resource requests to Pods that don&rsquo;t specify any; currently, the default LimitRanger
+applies a 0.1 CPU requirement to all Pods in the <code>default</code> namespace.</p>
+
+<p>See the <a href="https://git.k8s.io/community/contributors/design-proposals/resource-management/admission_control_limit_range.md" target="_blank">limitRange design doc</a> and the <a href="/docs/tasks/configure-pod-container/limit-range/">example of Limit Range</a> for more details.</p>
+
+<h3 id="mutatingadmissionwebhook">MutatingAdmissionWebhook</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+This feature is currently in a <em>beta</em> state, meaning:</p>
+
+<ul>
+<li>The version names contain beta (e.g. v2beta3).</li>
+<li>Code is well tested. Enabling the feature is considered safe. Enabled by default.</li>
+<li>Support for the overall feature will not be dropped, though details may change.</li>
+<li>The schema and/or semantics of objects may change in incompatible ways in a subsequent beta or stable release. When this happens, we will provide instructions for migrating to the next version. This may require deleting, editing, and re-creating API objects. The editing process may require some thought. This may require downtime for applications that rely on the feature.</li>
+<li>Recommended for only non-business-critical uses because of potential for incompatible changes in subsequent releases. If you have multiple clusters that can be upgraded independently, you may be able to relax this restriction.</li>
+<li><strong>Please do try our beta features and give feedback on them! After they exit beta, it may not be practical for us to make more changes.</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>This admission controller calls any mutating webhooks which match the request. Matching
+webhooks are called in serial; each one may modify the object if it desires.</p>
+
+<p>This admission controller (as implied by the name) only runs in the mutating phase.</p>
+
+<p>If a webhook called by this has side effects (for example, decrementing quota) it
+<em>must</em> have a reconciliation system, as it is not guaranteed that subsequent
+webhooks or validating admission controllers will permit the request to finish.</p>
+
+<p>If you disable the MutatingAdmissionWebhook, you must also disable the
+<code>MutatingWebhookConfiguration</code> object in the <code>admissionregistration.k8s.io/v1beta1</code>
+group/version via the <code>--runtime-config</code> flag (both are on by default in
+versions &gt;= 1.9).</p>
+
+<h4 id="use-caution-when-authoring-and-installing-mutating-webhooks">Use caution when authoring and installing mutating webhooks</h4>
+
+<ul>
+<li>Users may be confused when the objects they try to create are different from
+what they get back.</li>
+<li>Built in control loops may break when the objects they try to create are
+different when read back.
+
+<ul>
+<li>Setting originally unset fields is less likely to cause problems than
+overwriting fields set in the original request. Avoid doing the latter.</li>
+</ul></li>
+<li>This is a beta feature. Future versions of Kubernetes may restrict the types of
+mutations these webhooks can make.</li>
+<li>Future changes to control loops for built-in resources or third-party resources
+may break webhooks that work well today. Even when the webhook installation API
+is finalized, not all possible webhook behaviors will be guaranteed to be supported
+indefinitely.</li>
+</ul>
+
+<h3 id="namespaceautoprovision">NamespaceAutoProvision</h3>
+
+<p>This admission controller examines all incoming requests on namespaced resources and checks
+if the referenced namespace does exist.
+It creates a namespace if it cannot be found.
+This admission controller is useful in deployments that do not want to restrict creation of
+a namespace prior to its usage.</p>
+
+<h3 id="namespaceexists">NamespaceExists</h3>
+
+<p>This admission controller checks all requests on namespaced resources other than <code>Namespace</code> itself.
+If the namespace referenced from a request doesn&rsquo;t exist, the request is rejected.</p>
+
+<h3 id="namespacelifecycle">NamespaceLifecycle</h3>
+
+<p>This admission controller enforces that a <code>Namespace</code> that is undergoing termination cannot have new objects created in it,
+and ensures that requests in a non-existent <code>Namespace</code> are rejected. This admission controller also prevents deletion of
+three system reserved namespaces <code>default</code>, <code>kube-system</code>, <code>kube-public</code>.</p>
+
+<p>A <code>Namespace</code> deletion kicks off a sequence of operations that remove all objects (pods, services, etc.) in that
+namespace.  In order to enforce integrity of that process, we strongly recommend running this admission controller.</p>
+
+<h3 id="noderestriction">NodeRestriction</h3>
+
+<p>This admission controller limits the <code>Node</code> and <code>Pod</code> objects a kubelet can modify. In order to be limited by this admission controller,
+kubelets must use credentials in the <code>system:nodes</code> group, with a username in the form <code>system:node:&lt;nodeName&gt;</code>.
+Such kubelets will only be allowed to modify their own <code>Node</code> API object, and only modify <code>Pod</code> API objects that are bound to their node.
+In Kubernetes 1.11+, kubelets are not allowed to update or remove taints from their <code>Node</code> API object.</p>
+
+<p>In Kubernetes 1.13+, the <code>NodeRestriction</code> admission plugin prevents kubelets from deleting their <code>Node</code> API object,
+and enforces kubelet modification of labels under the <code>kubernetes.io/</code> or <code>k8s.io/</code> prefixes as follows:</p>
+
+<ul>
+<li><strong>Prevents</strong> kubelets from adding/removing/updating labels with a <code>node-restriction.kubernetes.io/</code> prefix.
+This label prefix is reserved for administrators to label their <code>Node</code> objects for workload isolation purposes,
+and kubelets will not be allowed to modify labels with that prefix.</li>
+<li><strong>Allows</strong> kubelets to add/remove/update these labels and label prefixes:
+
+<ul>
+<li><code>kubernetes.io/hostname</code></li>
+<li><code>kubernetes.io/arch</code></li>
+<li><code>kubernetes.io/os</code></li>
+<li><code>beta.kubernetes.io/instance-type</code></li>
+<li><code>node.kubernetes.io/instance-type</code></li>
+<li><code>failure-domain.beta.kubernetes.io/region</code></li>
+<li><code>failure-domain.beta.kubernetes.io/zone</code></li>
+<li><code>topology.kubernetes.io/region</code></li>
+<li><code>topology.kubernetes.io/zone</code></li>
+<li><code>kubelet.kubernetes.io/</code>-prefixed labels</li>
+<li><code>node.kubernetes.io/</code>-prefixed labels</li>
+</ul></li>
+</ul>
+
+<p>Use of any other labels under the <code>kubernetes.io</code> or <code>k8s.io</code> prefixes by kubelets is reserved, and may be disallowed or allowed by the <code>NodeRestriction</code> admission plugin in the future.</p>
+
+<p>Future versions may add additional restrictions to ensure kubelets have the minimal set of permissions required to operate correctly.</p>
+
+<h3 id="ownerreferencespermissionenforcement">OwnerReferencesPermissionEnforcement</h3>
+
+<p>This admission controller protects the access to the <code>metadata.ownerReferences</code> of an object
+so that only users with &ldquo;delete&rdquo; permission to the object can change it.
+This admission controller also protects the access to <code>metadata.ownerReferences[x].blockOwnerDeletion</code>
+of an object, so that only users with &ldquo;update&rdquo; permission to the <code>finalizers</code>
+subresource of the referenced <em>owner</em> can change it.</p>
+
+<h3 id="persistentvolumelabel">PersistentVolumeLabel</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>deprecated</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="deprecated">
+This feature is <em>deprecated</em>. For more information on this state, see the <a href="/docs/reference/deprecation-policy/">Kubernetes Deprecation Policy</a>.
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>This admission controller automatically attaches region or zone labels to PersistentVolumes
+as defined by the cloud provider (for example, GCE or AWS).
+It helps ensure the Pods and the PersistentVolumes mounted are in the same
+region and/or zone.
+If the admission controller doesn&rsquo;t support automatic labelling your PersistentVolumes, you
+may need to add the labels manually to prevent pods from mounting volumes from
+a different zone. PersistentVolumeLabel is DEPRECATED and labeling persistent volumes has been taken over by
+<a href="/docs/tasks/administer-cluster/running-cloud-controller/">cloud controller manager</a>.
+Starting from 1.11, this admission controller is disabled by default.</p>
+
+<h3 id="podnodeselector">PodNodeSelector</h3>
+
+<p>This admission controller defaults and limits what node selectors may be used within a namespace by reading a namespace annotation and a global configuration.</p>
+
+<h4 id="configuration-file-format-1">Configuration File Format</h4>
+
+<p><code>PodNodeSelector</code> uses a configuration file to set options for the behavior of the backend.
+Note that the configuration file format will move to a versioned file in a future release.
+This file may be json or yaml and has the following format:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">podNodeSelectorPluginConfig:<span style="color:#bbb">
+</span><span style="color:#bbb"> </span>clusterDefaultNodeSelector:<span style="color:#bbb"> </span>name-of-node-selector<span style="color:#bbb">
+</span><span style="color:#bbb"> </span>namespace1:<span style="color:#bbb"> </span>name-of-node-selector<span style="color:#bbb">
+</span><span style="color:#bbb"> </span>namespace2:<span style="color:#bbb"> </span>name-of-node-selector</code></pre></div>
+<p>Reference the <code>PodNodeSelector</code> configuration file from the file provided to the API server&rsquo;s command line flag <code>--admission-control-config-file</code>:</p>
+
+<div id="podnodeselector-example1">
+<ul>
+    
+      
+  <li><a href="#podnodeselector-example1-0">apiserver.config.k8s.io/v1</a></li>
+
+      
+  <li><a href="#podnodeselector-example1-1">apiserver.k8s.io/v1alpha1</a></li>
+
+</ul>
+
+
+<div id="podnodeselector-example1-0">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apiserver.config.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>AdmissionConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>plugins:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>PodNodeSelector<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>path:<span style="color:#bbb"> </span>podnodeselector.yaml<span style="color:#bbb">
+</span><span style="color:#bbb"></span>...</code></pre></div>
+    
+
+<p></div></p>
+
+<div id="podnodeselector-example1-1">
+    
+        <div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#080;font-style:italic"># Deprecated in v1.17 in favor of apiserver.config.k8s.io/v1</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>apiserver.k8s.io/v1alpha1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>AdmissionConfiguration<span style="color:#bbb">
+</span><span style="color:#bbb"></span>plugins:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>PodNodeSelector<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>path:<span style="color:#bbb"> </span>podnodeselector.yaml<span style="color:#bbb">
+</span><span style="color:#bbb"></span>...</code></pre></div>
+    
+
+<p></div></p>
+
+<p></div></p>
+
+<script>$(function(){$("#podnodeselector-example1").tabs();});</script>
+
+<h4 id="configuration-annotation-format">Configuration Annotation Format</h4>
+
+<p><code>PodNodeSelector</code> uses the annotation key <code>scheduler.alpha.kubernetes.io/node-selector</code> to assign node selectors to namespaces.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Namespace<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>annotations:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>scheduler.alpha.kubernetes.io/node-selector:<span style="color:#bbb"> </span>name-of-node-selector<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>namespace3</code></pre></div>
+<h4 id="internal-behavior">Internal Behavior</h4>
+
+<p>This admission controller has the following behavior:</p>
+
+<ol>
+<li>If the <code>Namespace</code> has an annotation with a key <code>scheduler.alpha.kubernetes.io/node-selector</code>, use its value as the
+node selector.</li>
+<li>If the namespace lacks such an annotation, use the <code>clusterDefaultNodeSelector</code> defined in the <code>PodNodeSelector</code>
+plugin configuration file as the node selector.</li>
+<li>Evaluate the pod&rsquo;s node selector against the namespace node selector for conflicts. Conflicts result in rejection.</li>
+<li>Evaluate the pod&rsquo;s node selector against the namespace-specific whitelist defined the plugin configuration file.
+Conflicts result in rejection.</li>
+</ol>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> PodNodeSelector allows forcing pods to run on specifically labeled nodes. Also see the PodTolerationRestriction
+admission plugin, which allows preventing pods from running on specifically tainted nodes.</div>
+</blockquote>
+
+<h3 id="persistentvolumeclaimresize">PersistentVolumeClaimResize</h3>
+
+<p>This admission controller implements additional validations for checking incoming <code>PersistentVolumeClaim</code> resize requests.</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Support for volume resizing is available as an alpha feature. Admins must set the feature gate <code>ExpandPersistentVolumes</code>
+to <code>true</code> to enable resizing.</div>
+</blockquote>
+
+<p>After enabling the <code>ExpandPersistentVolumes</code> feature gate, enabling the <code>PersistentVolumeClaimResize</code> admission
+controller is recommended, too. This admission controller prevents resizing of all claims by default unless a claim&rsquo;s <code>StorageClass</code>
+ explicitly enables resizing by setting <code>allowVolumeExpansion</code> to <code>true</code>.</p>
+
+<p>For example: all <code>PersistentVolumeClaim</code>s created from the following <code>StorageClass</code> support volume expansion:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>gluster-vol-default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/glusterfs<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resturl:<span style="color:#bbb"> </span><span style="color:#b44">&#34;http://192.168.10.100:8080&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restuser:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>secretNamespace:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>secretName:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>allowVolumeExpansion:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span></code></pre></div>
+<p>For more information about persistent volume claims, see <a href="/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims">PersistentVolumeClaims</a>.</p>
+
+<h3 id="podpreset">PodPreset</h3>
+
+<p>This admission controller injects a pod with the fields specified in a matching PodPreset.
+See also <a href="/docs/concepts/workloads/pods/podpreset/">PodPreset concept</a> and
+<a href="/docs/tasks/inject-data-application/podpreset">Inject Information into Pods Using a PodPreset</a>
+for more information.</p>
+
+<h3 id="podsecuritypolicy">PodSecurityPolicy</h3>
+
+<p>This admission controller acts on creation and modification of the pod and determines if it should be admitted
+based on the requested security context and the available Pod Security Policies.</p>
+
+<p>For Kubernetes &lt; 1.6.0, the API Server must enable the extensions/v1beta1/podsecuritypolicy API
+extensions group (<code>--runtime-config=extensions/v1beta1/podsecuritypolicy=true</code>).</p>
+
+<p>See also <a href="/docs/concepts/policy/pod-security-policy/">Pod Security Policy documentation</a>
+for more information.</p>
+
+<h3 id="podtolerationrestriction">PodTolerationRestriction</h3>
+
+<p>The PodTolerationRestriction admission controller verifies any conflict between tolerations of a pod and the tolerations of its namespace.
+It rejects the pod request if there is a conflict.
+It then merges the tolerations annotated on the namespace into the tolerations of the pod.
+The resulting tolerations are checked against a whitelist of tolerations annotated to the namespace.
+If the check succeeds, the pod request is admitted otherwise it is rejected.</p>
+
+<p>If the namespace of the pod does not have any associated default tolerations or a whitelist of
+tolerations annotated, the cluster-level default tolerations or cluster-level whitelist of tolerations are used
+instead if they are specified.</p>
+
+<p>Tolerations to a namespace are assigned via the <code>scheduler.alpha.kubernetes.io/defaultTolerations</code> annotation key.
+The whitelist can be added via the <code>scheduler.alpha.kubernetes.io/tolerationsWhitelist</code> annotation key.</p>
+
+<p>Example for namespace annotations:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Namespace<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>apps-that-need-nodes-exclusively<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>annotations:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>scheduler.alpha.kubernetes.io/defaultTolerations:<span style="color:#bbb"> </span><span style="color:#b44">&#39;{&#34;operator&#34;: &#34;Exists&#34;, &#34;effect&#34;: &#34;NoSchedule&#34;, &#34;key&#34;: &#34;dedicated-node&#34;}&#39;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>scheduler.alpha.kubernetes.io/tolerationsWhitelist:<span style="color:#bbb"> </span><span style="color:#b44">&#39;{&#34;operator&#34;: &#34;Exists&#34;, &#34;effect&#34;: &#34;NoSchedule&#34;, &#34;key&#34;: &#34;dedicated-node&#34;}&#39;</span></code></pre></div>
+<h3 id="priority">Priority</h3>
+
+<p>The priority admission controller uses the <code>priorityClassName</code> field and populates the integer value of the priority. If the priority class is not found, the Pod is rejected.</p>
+
+<h3 id="resourcequota">ResourceQuota</h3>
+
+<p>This admission controller will observe the incoming request and ensure that it does not violate any of the constraints
+enumerated in the <code>ResourceQuota</code> object in a <code>Namespace</code>.  If you are using <code>ResourceQuota</code>
+objects in your Kubernetes deployment, you MUST use this admission controller to enforce quota constraints.</p>
+
+<p>See the <a href="https://git.k8s.io/community/contributors/design-proposals/resource-management/admission_control_resource_quota.md" target="_blank">resourceQuota design doc</a> and the <a href="/docs/concepts/policy/resource-quotas/">example of Resource Quota</a> for more details.</p>
+
+<h3 id="runtimeclass">RuntimeClass</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.16</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>alpha</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="alpha">
+This feature is currently in a <em>alpha</em> state, meaning:</p>
+
+<ul>
+<li>The version names contain alpha (e.g. v1alpha1).</li>
+<li>Might be buggy. Enabling the feature may expose bugs. Disabled by default.</li>
+<li>Support for feature may be dropped at any time without notice.</li>
+<li>The API may change in incompatible ways in a later software release without notice.</li>
+<li>Recommended for use only in short-lived testing clusters, due to increased risk of bugs and lack of long-term support.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>For <a href="/docs/concepts/containers/runtime-class/">RuntimeClass</a> definitions which describe an overhead associated with running a pod,
+this admission controller will set the pod.Spec.Overhead field accordingly.</p>
+
+<p>See also <a href="/docs/concepts/configuration/pod-overhead/">Pod Overhead</a>
+for more information.</p>
+
+<h3 id="securitycontextdeny">SecurityContextDeny</h3>
+
+<p>This admission controller will deny any pod that attempts to set certain escalating <a href="/docs/user-guide/security-context">SecurityContext</a> fields. This should be enabled if a cluster doesn&rsquo;t utilize <a href="/docs/user-guide/pod-security-policy">pod security policies</a> to restrict the set of values a security context can take.</p>
+
+<h3 id="serviceaccount">ServiceAccount</h3>
+
+<p>This admission controller implements automation for <a href="/docs/user-guide/service-accounts">serviceAccounts</a>.
+We strongly recommend using this admission controller if you intend to make use of Kubernetes <code>ServiceAccount</code> objects.</p>
+
+<h3 id="storageobjectinuseprotection">StorageObjectInUseProtection</h3>
+
+<p>The <code>StorageObjectInUseProtection</code> plugin adds the <code>kubernetes.io/pvc-protection</code> or <code>kubernetes.io/pv-protection</code> finalizers to newly created Persistent Volume Claims (PVCs) or Persistent Volumes (PV). In case a user deletes a PVC or PV the PVC or PV is not removed until the finalizer is removed from the PVC or PV by PVC or PV Protection Controller. Refer to the <a href="/docs/concepts/storage/persistent-volumes/#storage-object-in-use-protection">Storage Object in Use Protection</a> for more detailed information.</p>
+
+<h3 id="taintnodesbycondition">TaintNodesByCondition</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.12</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+This feature is currently in a <em>beta</em> state, meaning:</p>
+
+<ul>
+<li>The version names contain beta (e.g. v2beta3).</li>
+<li>Code is well tested. Enabling the feature is considered safe. Enabled by default.</li>
+<li>Support for the overall feature will not be dropped, though details may change.</li>
+<li>The schema and/or semantics of objects may change in incompatible ways in a subsequent beta or stable release. When this happens, we will provide instructions for migrating to the next version. This may require deleting, editing, and re-creating API objects. The editing process may require some thought. This may require downtime for applications that rely on the feature.</li>
+<li>Recommended for only non-business-critical uses because of potential for incompatible changes in subsequent releases. If you have multiple clusters that can be upgraded independently, you may be able to relax this restriction.</li>
+<li><strong>Please do try our beta features and give feedback on them! After they exit beta, it may not be practical for us to make more changes.</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>This admission controller <a class='glossary-tooltip' href='/docs/concepts/configuration/taint-and-toleration/' target='_blank'>taints<span class='tooltip-text'>A core object consisting of three required properties: key, value, and effect. Taints prevent the scheduling of pods on nodes or node groups.</span>
+</a> newly created Nodes as <code>NotReady</code> and <code>NoSchedule</code>. That tainting avoids a race condition that could cause Pods to be scheduled on new Nodes before their taints were updated to accurately reflect their reported conditions.</p>
+
+<h3 id="validatingadmissionwebhook">ValidatingAdmissionWebhook</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+This feature is currently in a <em>beta</em> state, meaning:</p>
+
+<ul>
+<li>The version names contain beta (e.g. v2beta3).</li>
+<li>Code is well tested. Enabling the feature is considered safe. Enabled by default.</li>
+<li>Support for the overall feature will not be dropped, though details may change.</li>
+<li>The schema and/or semantics of objects may change in incompatible ways in a subsequent beta or stable release. When this happens, we will provide instructions for migrating to the next version. This may require deleting, editing, and re-creating API objects. The editing process may require some thought. This may require downtime for applications that rely on the feature.</li>
+<li>Recommended for only non-business-critical uses because of potential for incompatible changes in subsequent releases. If you have multiple clusters that can be upgraded independently, you may be able to relax this restriction.</li>
+<li><strong>Please do try our beta features and give feedback on them! After they exit beta, it may not be practical for us to make more changes.</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>This admission controller calls any validating webhooks which match the request. Matching
+webhooks are called in parallel; if any of them rejects the request, the request
+fails. This admission controller only runs in the validation phase; the webhooks it calls may not
+mutate the object, as opposed to the webhooks called by the <code>MutatingAdmissionWebhook</code> admission controller.</p>
+
+<p>If a webhook called by this has side effects (for example, decrementing quota) it
+<em>must</em> have a reconciliation system, as it is not guaranteed that subsequent
+webhooks or other validating admission controllers will permit the request to finish.</p>
+
+<p>If you disable the ValidatingAdmissionWebhook, you must also disable the
+<code>ValidatingWebhookConfiguration</code> object in the <code>admissionregistration.k8s.io/v1beta1</code>
+group/version via the <code>--runtime-config</code> flag (both are on by default in
+versions 1.9 and later).</p>
+
+<h2 id="is-there-a-recommended-set-of-admission-controllers-to-use">Is there a recommended set of admission controllers to use?</h2>
+
+<p>Yes. For Kubernetes version 1.10 and later, the recommended admission controllers are enabled by default (shown <a href="/docs/reference/command-line-tools-reference/kube-apiserver/#options">here</a>), so you do not need to explicitly specify them. You can enable additional admission controllers beyond the default set using the <code>--enable-admission-plugins</code> flag (<strong>order doesn&rsquo;t matter</strong>).</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> <code>--admission-control</code> was deprecated in 1.10 and replaced with <code>--enable-admission-plugins</code>.</div>
+</blockquote>
+
+<p>For Kubernetes 1.9 and earlier, we recommend running the following set of admission controllers using the <code>--admission-control</code> flag (<strong>order matters</strong>).</p>
+
+<ul>
+<li><p>v1.9</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">--admission-control<span style="color:#666">=</span>NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota</code></pre></div>
+<ul>
+<li>It&rsquo;s worth reiterating that in 1.9, these happen in a mutating phase
+and a validating phase, and that for example <code>ResourceQuota</code> runs in the validating
+phase, and therefore is the last admission controller to run.
+<code>MutatingAdmissionWebhook</code> appears before it in this list, because it runs
+in the mutating phase.</li>
+</ul>
+
+<p>For earlier versions, there was no concept of validating versus mutating and the
+admission controllers ran in the exact order specified.</p></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Was this page helpful? </p>
+  <button class="button feedback--yes">Yes</button>
+  <button class="button feedback--no">No</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/reference/access-authn-authz/admission-controllers.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/docs\/reference\/access-authn-authz\/admission-controllers\/",
+    "title" : "Using Admission Controllers",
+    "permalink" : "https:\/\/kubernetes.io\/docs\/reference\/access-authn-authz\/admission-controllers\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Create an Issue</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/reference/access-authn-authz/admission-controllers.md" class="button issue">Edit This Page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Page last modified on March 16, 2020 at 6:04 AM PST by
+    <a href="https://github.com/kubernetes/website/commit/1d08290c55cff8236b44e01450cfe19afbd7df5f/">AdmissionControllers: Rewrite PodTolerationRestriction (#18849)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/reference/access-authn-authz/admission-controllers.md">Page History</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/docs/home/">Home</a>
+            
+            <a href="/blog/">Blog</a>
+            
+            <a href="/training/">Training</a>
+            
+            <a href="/partners/">Partners</a>
+            
+            <a href="/community/">Community</a>
+            
+            <a href="/case-studies/">Case Studies</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribute</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

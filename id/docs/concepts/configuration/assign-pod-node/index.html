@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html id="docs" lang="id" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Menetapkan Pod ke Node - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/id/docs/concepts/configuration/assign-pod-node/">
+<meta property="og:title" content="Menetapkan Pod ke Node">
+<meta name="twitter:title" content="Menetapkan Pod ke Node">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/id/" class="logo" title="Orkestrasi Kontainer dengan Skala Produksi - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/id/docs/" class="active">Dokumentasi</a></li>
+            
+            
+            
+            
+            
+            
+            
+            <li><a href="/id/community/">Komunitas</a></li>
+            
+            <li><a href="/id/case-studies/">Studi kasus</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    Bahasa Indonesia <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/configuration/assign-pod-node/">English</a></li>
+                
+                    <li><a href="/zh/docs/concepts/configuration/assign-pod-node/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/docs/concepts/configuration/assign-pod-node/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/docs/concepts/configuration/assign-pod-node/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/id/docs/concepts/configuration/assign-pod-node/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/id/docs/concepts/configuration/assign-pod-node/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/id/docs/concepts/configuration/assign-pod-node/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/id/docs/concepts/configuration/assign-pod-node/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/id/docs/concepts/configuration/assign-pod-node/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/id/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Mempelajari Panduan Dasar Kubernetes</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/id/docs/tutorials/hello-minikube/">Mulai</a></h3>
+           <p>Siap untuk mengotori tanganmu? Yuk kita buat klaster Kubernetes sederhana yang menjalankan Node.js aplikasi "Halo Dunia".</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/id/docs/home/">Dokumentasi</a></h3>
+           <p>Mengerti penggunaan Kubernetes dengan belajar konsep, tutorial, dan referensinya. Kamupun bisa <a href="/editdocs/" data-auto-burger-exclude>bantu kami perbaiki dan lengkapi dokumentasinya</a>, yuk kontribusi!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Tertarik untuk ulik kode dari Kubernetes?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>Lihat di GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Jelajahi komunitasnya</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Kalender acara</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>Konsep</h1>
+<h5></h5>
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/id/docs/home/">HOME</a></li>
+		
+		
+		<li><a href="/id/docs/setup/">PERSIAPAN</a></li>
+		
+		
+		<li><a href="/id/docs/concepts/" class="YAH">KONSEP</a></li>
+		
+		
+		<li><a href="/id/docs/tutorials/">TUTORIALS</a></li>
+		
+		
+		<li><a href="/id/docs/contribute/">BERKONTRIBUSI</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Cari" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  dokumentasi sudah tidak dirawat lagi. Versi yang kamu lihat ini hanyalah snapshot statis. Untuk dokumentasi terkini, lihat 
+	 <a href="https://kubernetes.io/docs/home/">versi terkini.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Konsep" href="/id/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Ikhtisar">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Apa itu Kubernetes?" href="/id/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Komponen-Komponen Kubernetes" href="/id/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="API Kubernetes" href="/id/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Menggunakan Objek-Objek Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Memahami Konsep Objek-Objek yang ada pada Kubernetes" href="/id/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pengaturan Objek Kubernetes" href="/id/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Nama" href="/id/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Namespace" href="/id/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Label dan Selektor" href="/id/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Anotasi" href="/id/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Selektor Field" href="/id/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Label yang Disarankan" href="/id/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Pengelolaan Objek dengan kubectl">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Pengelolaan Objek Kubernetes dengan Perintah Imperatif" href="/id/docs/concepts/overview/object-management-kubectl/imperative-command/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Penglolaan Objek Kubernetes Secara Imperatif dengan Menggunakan File Konfigurasi" href="/id/docs/concepts/overview/object-management-kubectl/imperative-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pengelolaan Objek Kubernetes secara Deklaratif dengan Menggunakan File Konfigurasi" href="/id/docs/concepts/overview/object-management-kubectl/declarative-config/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Arsitektur Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Node" href="/id/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Komunikasi Master-Node" href="/id/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Controllers <small>(EN)</small>" href="/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Konsep-konsep di balik Controller Manager" href="/id/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kontainer">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Images <small>(EN)</small>" href="/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Runtime Class" href="/id/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Variabel Environment Kontainer" href="/id/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Lifecyle Hook pada Kontainer" href="/id/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Workloads">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pods">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Pengenalan Pod" href="/id/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod" href="/id/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Siklus Hidup Pod" href="/id/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Init Container" href="/id/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Preset" href="/id/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Topology Spread Constraints <small>(EN)</small>" href="/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Disrupsi" href="/id/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ephemeral Containers <small>(EN)</small>" href="/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Controllers">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/id/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ReplicationController" href="/id/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Deployment" href="/id/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StatefulSet" href="/id/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DaemonSet" href="/id/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Garbage Collection" href="/id/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pengendali TTL untuk Sumber Daya yang Telah Selesai Digunakan" href="/id/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Job - Dijalankan Hingga Selesai" href="/id/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CronJob" href="/id/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Services, Load Balancing, dan Jaringan">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="EndpointSlices <small>(EN)</small>" href="/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service" href="/id/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Topology <small>(EN)</small>" href="/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DNS untuk Service dan Pod" href="/id/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Menghubungkan aplikasi dengan Service" href="/id/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/id/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kontroler Ingress" href="/id/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="NetworkPolicy" href="/id/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Menambahkan Entry pada /etc/hosts Pod dengan HostAliases" href="/id/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="IPv4/IPv6 dual-stack <small>(EN)</small>" href="/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Storage">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Volume" href="/id/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Persistent Volume" href="/id/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="VolumeSnapshot" href="/id/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pengklonaan Volume CSI" href="/id/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StorageClass" href="/id/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="VolumeSnapshotClass" href="/id/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Penyediaan Volume Dinamis" href="/id/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Limit Volume yang Spesifik terhadap Node" href="/id/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Konfigurasi">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Konfigurasi dan Penerapan Konsep" href="/id/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Bin Packing for Extended Resources <small>(EN)</small>" href="/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Mengatur Sumber Daya Komputasi untuk Container" href="/id/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Overhead Pod" href="/id/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Menetapkan Pod ke Node" href="/id/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Taint dan Toleration" href="/id/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Secrets <small>(EN)</small>" href="/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Mengatur Akses Klaster Menggunakan Berkas kubeconfig" href="/id/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Prioritas dan Pemindahan Pod" href="/id/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduling Framework <small>(EN)</small>" href="/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Keamanan">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Ikhtisar Keamanan _Cloud Native_" href="/id/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Policies">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Resource Quota" href="/id/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Security Policy" href="/id/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Scheduling">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes Scheduler <small>(EN)</small>" href="/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduler Performance Tuning <small>(EN)</small>" href="/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Administrasi Klaster">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Ikhtisar Administrasi Klaster" href="/id/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Sertifikat" href="/id/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Penyedia Layanan Cloud" href="/id/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Mengelola Resource" href="/id/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Jaringan Kluster" href="/id/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Arsitektur Logging" href="/id/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Metrics For The Kubernetes Control Plane <small>(EN)</small>" href="/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Konfigurasi Garbage Collection pada kubelet" href="/id/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Federation" href="/id/docs/concepts/cluster-administration/federation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Berbagai Proxy di Kubernetes" href="/id/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Metrik controller manager" href="/id/docs/concepts/cluster-administration/controller-metrics/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Instalasi Add-ons" href="/id/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Memperluas Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Memperluas Klaster Kubernetes Kamu" href="/id/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Memperluas API Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Memperluas Kubernetes API dengan Lapisan Agregasi" href="/id/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Custom Resource" href="/id/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Ekstensi Komputasi, Penyimpanan, dan Jaringan">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Plugin Jaringan" href="/id/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Plugin Perangkat" href="/id/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Operator pattern <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service Catalog" href="/id/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Poseidon-Firmament - Sebuah Penjadwal Alternatif" href="/id/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/id/docs/concepts/configuration/assign-pod-node.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Menetapkan Pod ke Node</h1>
+
+
+
+<p>Kamu dapat memaksa sebuah <a href="/docs/concepts/workloads/pods/pod/">pod</a> untuk hanya dapat berjalan pada <a href="/docs/concepts/architecture/nodes/">node</a> tertentu atau mengajukannya agar berjalan pada node tertentu. Ada beberapa cara untuk melakukan hal tersebut. Semua cara yang direkomendasikan adalah dengan menggunakan <a href="/docs/concepts/overview/working-with-objects/labels/"><em>selector</em> label</a> untuk menetapkan pilihan yang kamu inginkan. Pada umumnya, pembatasan ini tidak dibutuhkan, sebagaimana <em>scheduler</em> akan melakukan penempatan yang proporsional dengan otomatis (seperti contohnya menyebar pod di node-node, tidak menempatkan pod pada node dengan sumber daya yang tidak memadai, dst.) tetapi ada keadaan-keadaan tertentu yang membuat kamu memiliki kendali lebih  terhadap node yang menjadi tempat pod dijalankan, contohnya untuk memastikan pod dijalankan pada mesin yang telah terpasang SSD, atau untuk menempatkan pod-pod dari dua servis yang berbeda yang sering berkomunikasi bersamaan ke dalam zona ketersediaan yang sama.</p>
+
+<p>Kamu dapat menemukan semua berkas untuk contoh-contoh berikut pada <a href="https://github.com/kubernetes/website/tree/release-1.17/content/en/docs/concepts/configuration/" target="_blank">dokumentasi yang kami sediakan di sini</a></p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#nodeselector">nodeSelector</a></li>
+
+
+
+
+<li><a href="#selingan-label-node-built-in">Selingan: label node <em>built-in</em></a></li>
+
+
+
+
+<li><a href="#isolasi-pembatasan-node">Isolasi/pembatasan Node</a></li>
+
+
+
+
+<li><a href="#afinitas-dan-anti-afinitas">Afinitas dan anti-afinitas</a></li>
+
+
+
+
+<li><a href="#nodename">nodeName</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<h2 id="nodeselector">nodeSelector</h2>
+
+<p>Penggunaan <code>nodeSelector</code> adalah cara pembatasan pemilihan node paling sederhana yang direkomendasikan. <code>nodeSelector</code> adalah sebuah <em>field</em> pada PodSpec. <code>nodeSelector</code> memerinci sebuah map berisi pasangan kunci-nilai. Agar pod dapat dijalankan pada sebuah node yang memenuhi syarat, node tersebut harus memiliki masing-masing dari pasangan kunci-nilai yang dinyatakan sebagai label (namun node juga dapat memiliki label tambahan diluar itu). Penggunaan paling umum adalah satu pasang kunci-nilai.</p>
+
+<p>Mari kita telusuri contoh dari penggunaan <code>nodeSelector</code>.</p>
+
+<h3 id="langkah-nol-prasyarat">Langkah Nol: Prasyarat</h3>
+
+<p>Contoh ini mengasumsikan bahwa kamu memiliki pemahaman dasar tentang pod Kubernetes dan kamu telah <a href="https://github.com/kubernetes/kubernetes#documentation" target="_blank">membuat klaster Kubernetes</a>.</p>
+
+<h3 id="langkah-satu-menyematkan-label-pada-node">Langkah Satu: Menyematkan label pada node</h3>
+
+<p>Jalankan <code>kubectl get nodes</code> untuk mendapatkan nama dari node-node yang ada dalam klaster kamu. Temukan node yang akan kamu tambahkan label, kemudian jalankan perintah <code>kubectl label nodes &lt;node-name&gt; &lt;label-key&gt;=&lt;label-value&gt;</code> untuk menambahkan label pada node yang telah kamu pilih. Sebagai contoh, jika nama node yang saya pilih adalah &lsquo;kubernetes-foo-node-1.c.a-robinson.internal&rsquo; dan label yang ingin saya tambahkan adalah &lsquo;disktype=ssd&rsquo;, maka saya dapat menjalankan <code>kubectl label nodes kubernetes-foo-node-1.c.a-robinson.internal disktype=ssd</code>.</p>
+
+<p>Jika terjadi kegagalan dengan kesalahan perintah yang tidak <em>valid</em> (&rdquo;<em>invalid command</em>&rdquo;), kemungkinan besar kamu menggunakan kubectl dengan versi lebih lama yang tidak memiliki perintah <code>label</code>. Dalam hal ini, lihat <a href="https://github.com/kubernetes/kubernetes/blob/a053dbc313572ed60d89dae9821ecab8bfd676dc/examples/node-selection/README.md" target="_blank">versi sebelumnya</a> dari petunjuk ini untuk instruksi tentang cara menetapkan label pada node.</p>
+
+<p>Kamu dapat memastikan perintah telah berhasil dengan menjalankan ulang perintah <code>kubectl get nodes --show-labels</code> and memeriksa bahwa node yang dipilih sekarang sudah memiliki label yang ditambahkan. Kamu juga dapat menggunakan <code>kubectl describe node &quot;nodename&quot;</code> untuk melihat daftar lengkap label yang dimiliki sebuah node.</p>
+
+<h3 id="langkah-dua-menambahkan-sebuah-nodeselector-ke-konfigurasi-pod-kamu">Langkah Dua: Menambahkan sebuah nodeSelector ke konfigurasi pod kamu</h3>
+
+<p>Ambil berkas konfigurasi pod manapun yang akan kamu jalankan, dan tambahkan sebuah bagian <code>nodeSelector</code> pada berkas tersebut, seperti berikut. Sebagai contoh, jika berikut ini adalah konfigurasi pod saya:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>env:<span style="color:#bbb"> </span>test<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>nginx</code></pre></div>
+<p>Kemudian tambahkan sebuah <code>nodeSelector</code> seperti berikut:</p>
+
+<table class="includecode" id="pods-pod-nginx-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/id/examples/pods/pod-nginx.yaml" download="pods/pod-nginx.yaml">
+                    <code>pods/pod-nginx.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-nginx-yaml')" title="Copy pods/pod-nginx.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>env:<span style="color:#bbb"> </span>test<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>imagePullPolicy:<span style="color:#bbb"> </span>IfNotPresent<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>nodeSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>disktype:<span style="color:#bbb"> </span>ssd<span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Ketika kamu menjalankan perintah <code>kubectl apply -f https://k8s.io/examples/pods/pod-nginx.yaml</code>, pod tersebut akan dijadwalkan pada node yang memiliki label yang dirinci. Kamu dapat memastikan penambahan nodeSelector berhasil dengan menjalankan <code>kubectl get pods -o wide</code> dan melihat &ldquo;NODE&rdquo; tempat Pod ditugaskan.</p>
+
+<h2 id="selingan-label-node-built-in">Selingan: label node <em>built-in</em></h2>
+
+<p>Sebagai tambahan dari label yang kamu <a href="#step-one-attach-label-to-the-node">sematkan</a>, node sudah terisi dengan satu set label standar. Pada Kubernetes v1.4 label tersebut adalah</p>
+
+<ul>
+<li><code>kubernetes.io/hostname</code></li>
+<li><code>failure-domain.beta.kubernetes.io/zone</code></li>
+<li><code>failure-domain.beta.kubernetes.io/region</code></li>
+<li><code>beta.kubernetes.io/instance-type</code></li>
+<li><code>kubernetes.io/os</code></li>
+<li><code>kubernetes.io/arch</code></li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>Catatan:</strong> Nilai dari label-label tersebut spesifik untuk setiap penyedia layanan <em>cloud</em> dan tidak dijamin reliabilitasnya.
+Contohnya, nilai dari <code>kubernetes.io/hostname</code> bisa saja sama dengan nama node pada beberapa lingkungan dan berbeda pada lingkungan lain.</div>
+</blockquote>
+
+<h2 id="isolasi-pembatasan-node">Isolasi/pembatasan Node</h2>
+
+<p>Menambahkan label pada objek node memungkinkan penargetan pod pada node atau grup node yang spesifik. Penambahan label ini dapat digunakan untuk memastikan pod yang spesifik hanya berjalan pada node dengan isolasi, keamanan, atau pengaturan tertentu. Saat menggunakan label untuk tujuan tersebut, memilih kunci label yang tidak bisa dimodifikasi oleh proses kubelet pada node sangat direkomendasikan. Hal ini mencegah node yang telah diubah untuk menggunakan kredensial kubelet-nya untuk mengatur label-label pada objek nodenya sediri, dan mempengaruhi scheduler untuk menjadwalkan <em>workload</em> ke node yang telah diubah tersebut.</p>
+
+<p><em>Plugin</em> penerimaan <code>NodeRestriction</code> mencegah kubeletes untuk megatur atau mengubah label dengan awalan <code>node-restriction.kubernetes.io/</code>.
+Untuk memanfaatkan awalan label untuk isolasi node:</p>
+
+<ol>
+<li><p>Pastikan kamu menggunakan <a href="/docs/reference/access-authn-authz/node/"><em>authorizer</em> node</a> dan mengaktifkan [<em>plugin admission NodeRestriction</em>(/docs/reference/access-authn-authz/admission-controllers/#noderestriction).</p></li>
+
+<li><p>Tambah label dengan awalan <code>node-restriction.kubernetes.io/</code> ke objek node kamu, dan gunakan label tersebut pada node <em>selector</em> kamu. Contohnya, <code>example.com.node-restriction.kubernetes.io/fips=true</code> or <code>example.com.node-restriction.kubernetes.io/pci-dss=true</code>.</p></li>
+</ol>
+
+<h2 id="afinitas-dan-anti-afinitas">Afinitas dan anti-afinitas</h2>
+
+<p><code>_Field_ nodeSelector</code> menyediakan cara yang sangat sederhana untuk membatasi pod ke node dengan label-label tertentu. Fitur afinitas/anti-afinitas saat ini bersifat beta dan memperluas tipe pembatasan yang dapat kamu nyatakan. Peningkatan kunci dari fitur ini adalah</p>
+
+<ol>
+<li>Bahasa yang lebih ekspresif (tidak hanya &ldquo;AND of exact match&rdquo;)</li>
+<li>Kamu dapat memberikan indikasi bahwa aturan yang dinyatakan bersifat rendah/preferensi dibanding dengan persyaratan mutlak sehingga jika scheduler tidak dapat memenuhinya, pod tetap akan dijadwalkan</li>
+<li>Kamu dapat membatasi dengan label pada pod-pod lain yang berjalan pada node (atau domain <em>topological</em> lain), daripada  dengan label pada node itu sendiri, yang memungkinkan pengaturan tentang pod yang dapat dan tidak dapat dilokasikan bersama.</li>
+</ol>
+
+<p>Fitur afinitas terdiri dari dua tipe afinitas yaitu &ldquo;node afinitas&rdquo; dan &ldquo;inter-pod afinitas/anti-afinitas&rdquo;
+Node afinitas adalah seperti <code>nodeSelector</code> yang telah ada (tetapi dengam dua kelebihan pertama yang terdaftar di atas), sementara inter-pod afinitas/anti-afinitas membatasi pada label pod daripada label node, seperti yang dijelaskan pada item ketiga pada daftar di atas, sebagai tambahan dari item pertama dan kedua.</p>
+
+<p><em>Field</em> <code>nodeSelector</code> tetap berjalan seperti biasa, namun pada akhirnya akan ditinggalkan karena afinitas node dapat menyatakan semua yang <code>nodeSelector</code> dapat nyatakan.</p>
+
+<h3 id="afinitas-node-fitur-beta">Afinitas node (fitur beta)</h3>
+
+<p>Afinitas node diperkenalkan sebagai fitur alfa pada Kubernetes 1.2.
+Afinitas node secara konseptual mirip dengan <code>nodeSelector</code> yang memungkinkan kamu untuk membatasi node yang memenuhi syarat untuk penjadwalan pod, berdasarkan label pada node.</p>
+
+<p>Saat ini ada dia tipe afinitas node, yaitu <code>requiredDuringSchedulingIgnoredDuringExecution</code> dan
+<code>preferredDuringSchedulingIgnoredDuringExecution</code>. Kamu dapat menganggap dua tipe ini sebagai &ldquo;kuat&rdquo; dan &ldquo;lemah&rdquo; secara berurutan, dalam arti tipe pertama menyatakan peraturan yang <em>harus</em> dipenuhi agar pod dapat dijadwalkan pada node (sama seperti <code>nodeSelector</code> tetapi menggunakan sintaksis yang lebih ekpresif), sementara tipe kedua menyatakan <em>preferensi</em> yang akan dicoba dilaksanakan tetapi tidak akan dijamin oleh scheduler. Bagian &ldquo;IgnoredDuringExecution&rdquo; dari nama tipe ini berarti, mirip dengan cara kerja <code>nodeSelector</code>, jika label pada node berubah pada <em>runtime</em> yang menyebabkan aturan afinitas pada pod tidak lagi terpenuhi, pod akan tetap berjalan pada node. Pada masa yang akan datang kami berencana menawarkan <code>requiredDuringSchedulingRequiredDuringExecution</code> yang akan berjalan seperti <code>requiredDuringSchedulingIgnoredDuringExecution</code> hanya saja tipe ini akan mengeluarkan pod dari node yang gagal untuk memenuhi persyaratan afinitas node pod.</p>
+
+<p>Dengan denikian, contoh dari <code>requiredDuringSchedulingIgnoredDuringExecution</code> adalah &ldquo;hanya jalankan pod pada node dengan Intel CPU&rdquo; dan contoh dari <code>preferredDuringSchedulingIgnoredDuringExecution</code> adalah &ldquo;coba jalankan set pod ini dalam zona ketersediaan XYZ, tetapi jika tidak memungkinkan, maka biarkan beberapa pod berjalan di tempat lain&rdquo;.</p>
+
+<p>Afinitas node dinyatakan sebagai <em>field</em> <code>nodeAffinity</code> dari <em>field</em> <code>affinity</code> pada PodSpec.</p>
+
+<p>Berikut ini contoh dari pod yang menggunakan afinitas node:</p>
+
+<table class="includecode" id="pods-pod-with-node-affinity-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/id/examples/pods/pod-with-node-affinity.yaml" download="pods/pod-with-node-affinity.yaml">
+                    <code>pods/pod-with-node-affinity.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-with-node-affinity-yaml')" title="Copy pods/pod-with-node-affinity.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>with-node-affinity<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>affinity:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>nodeAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>requiredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>nodeSelectorTerms:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>kubernetes.io/e2e-az-name<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>e2e-az1<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>e2e-az2<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>preferredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>weight:<span style="color:#bbb"> </span><span style="color:#666">1</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>preference:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>another-node-label-key<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>another-node-label-value<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>with-node-affinity<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/pause:<span style="color:#666">2.0</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Aturan afinitas node tersebut menyatakan pod hanya bisa ditugaskan pada node dengan label yang memiliki kunci <code>kubernetes.io/e2e-az-name</code> dan bernilai <code>e2e-az1</code> atau <code>e2e-az2</code>. Selain itu, dari semua node yang memenuhi kriteria tersebut, mode dengan label dengan kunci <code>another-node-label-key</code> and bernilai <code>another-node-label-value</code> harus lebih diutamakan.</p>
+
+<p>Kamu dapat meilhat operator <code>In</code> digunakan dalam contoh berikut. Sitaksis afinitas node yang baru mendukung operator-operator berikut: <code>In</code>, <code>NotIn</code>, <code>Exists</code>, <code>DoesNotExist</code>, <code>Gt</code>, <code>Lt</code>. Kamu dapat menggunakan <code>NotIn</code> dan <code>DoesNotExist</code> untuk mewujudkan perilaku node anti-afinitas, atau menggunakan <a href="/docs/concepts/configuration/taint-and-toleration/">node taints</a> untuk menolak pod dari node tertentu.</p>
+
+<p>Jika kamu menyatakan <code>nodeSelector</code> dan <code>nodeAffinity</code>. <em>keduanya</em> harus dipenuhi agar pod dapat dijadwalkan pada node kandidat.</p>
+
+<p>Jika kamu menyatakan beberapa <code>nodeSelectorTerms</code> yang terkait dengan tipe <code>nodeAffinity</code>, maka pod akan dijadwalkan pada node <strong>jika salah satu</strong> dari <code>nodeSelectorTerms</code> dapat terpenuhi.</p>
+
+<p>Jika kamu menyatakan beberapa <code>matchExpressions</code> yang terkait dengan <code>nodeSelectorTerms</code>, makan pod dapat dijadwalkan pada node <strong>hanya jika semua</strong> <code>matchExpressions</code> dapat terpenuhi.</p>
+
+<p>Jika kamu menghapus atau mengubah label pada node tempat pod dijadwalkan, pod tidak akan dihapus. Dengan kata lain, pemilihan afinitas hanya bekerja pada saat waktu penjadwalan pod.</p>
+
+<p><em>Field</em> <code>weight</code> pada <code>preferredDuringSchedulingIgnoredDuringExecution</code> berada pada rentang nilai 1-100. Untuk setiap node yang memenuhi semua persyaratan penjadwalan (permintaan sumber daya, pernyataan afinitas RequiredDuringScheduling, dll.), <em>scheduler</em> akan menghitung nilai jumlah dengan melakukan iterasi pada elemen-elemen dari <em>field</em> ini dan menambah &ldquo;bobot&rdquo; pada jumlah jika node cocok dengan MatchExpressions yang sesuai. Nilai ini kemudian digabungkan dengan nilai dari fungsi prioritas lain untuk node. Node dengan nilai tertinggi adalah node lebih diutamakan.</p>
+
+<p>Untuk informasi lebih lanjut tentang afinitas node kamu dapat melihat <a href="https://git.k8s.io/community/contributors/design-proposals/scheduling/nodeaffinity.md" target="_blank">design doc</a>.</p>
+
+<h3 id="afinitas-and-anti-afinitas-antar-pod-fitur-beta">Afinitas and anti-afinitas antar pod (fitur beta)</h3>
+
+<p>Afinitas and anti-afinitas antar pod diperkenalkan pada Kubernetes 1.4. Afinitas and anti-afinitas antar pod memungkinkan kamu untuk membatasi node yang memenuhi syarat untuk penjadwalan pod <em>berdasarkan label-label pada pod yang sudah berjalan pada node</em> daripada berdasarkan label-label pada node. Aturan tersebut berbentuk  &ldquo;pod ini harus (atau, dalam kasus
+anti-afinitas, tidak boleh) berjalan dalam X jika X itu sudah menjalankan satu atau lebih pod yang memenuhi aturan Y&rdquo;. Y dinyatakan sebagai sebuah LabelSelector dengan daftar namespace terkait; tidak seperti node, karena pod are namespaced (maka dari itu label-label pada pod diberi namespace secara implisit), sebuah label selector di atas label-label pod harus menentukan namespace yang akan diterapkan selector. Secara konsep X adalah domain topologi seperti node, rack, zona penyedia cloud, daerah penyedia cloud, dll. Kamu dapat menyatakannya menggunakan <code>topologyKey</code>  yang merupakan kunci untuk label node yang digunakan sistem untuk menunjukkan domain topologi tersebut, contohnya lihat kunci label yang terdaftar di atas pada bagian <a href="#interlude-built-in-node-labels">Selingan: label node built-in</a>.</p>
+
+<blockquote class="note">
+  <div><strong>Catatan:</strong> Afinitas and anti-afinitas antar pod membutuhkan jumlah pemrosesan yang substansial yang dapat memperlambat penjadwalan pada klaster berukuran besar secara signifikan. Kami tidak merekomendasikan penggunaan mereka pada klaster yang berukuran lebih besar dari beberapa ratus node.</div>
+</blockquote>
+
+<blockquote class="note">
+  <div><strong>Catatan:</strong> Anti-afinitas pod mengharuskan node untuk diberi label secara konsisten, misalnya setiap node dalam klaster harus memiliki label sesuai yang cocok dengan <code>topologyKey</code>. Jika sebagian atau semua node tidak memiliki label <code>topologyKey</code> yang dinyatakan, hal ini dapat menyebabkan perilaku yang tidak diinginkan.</div>
+</blockquote>
+
+<p>Seperti afinitas node, ada dua tipe afinitas dan anti-afinitas pod, yaitu <code>requiredDuringSchedulingIgnoredDuringExecution</code> dan
+<code>preferredDuringSchedulingIgnoredDuringExecution</code> yang menunjukan persyaratan &ldquo;kuat&rdquo; vs. &ldquo;lemah&rdquo;. Lihat deskripsi pada bagian afinitas node sebelumnya.
+Sebuah contoh dari afinitas <code>requiredDuringSchedulingIgnoredDuringExecution</code> adalah &ldquo;Tempatkan bersamaan pod layanan A dan layanan B di zona yang sama, karena mereka banyak berkomunikasi satu sama lain&rdquo;
+dan contoh <code>preferDuringSchedulingIgnoredDuringExecution</code> anti-afinitas akan menjadi &ldquo;sebarkan pod dari layanan ini di seluruh zona&rdquo; (persyaratan kuat tidak masuk akal, karena kamu mungkin memiliki lebih banyak pod daripada zona).</p>
+
+<p>Afinitas antar pod dinyatakan sebagai <em>field</em> <code>podAffinity</code> dari <em>field</em> <code>affinity</code> pada PodSpec dan anti-afinitas antar pod dinyatakan sebagai <em>field</em> <code>podAntiAffinity</code> dari <em>field</em> <code>affinity</code> pada PodSpec.</p>
+
+<h4 id="contoh-pod-yang-menggunakan-pod-affinity">Contoh pod yang menggunakan pod affinity:</h4>
+
+<table class="includecode" id="pods-pod-with-pod-affinity-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/id/examples/pods/pod-with-pod-affinity.yaml" download="pods/pod-with-pod-affinity.yaml">
+                    <code>pods/pod-with-pod-affinity.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('pods-pod-with-pod-affinity-yaml')" title="Copy pods/pod-with-pod-affinity.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>with-pod-affinity<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>affinity:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>podAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>requiredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>labelSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>security<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>S1<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>topologyKey:<span style="color:#bbb"> </span>failure-domain.beta.kubernetes.io/zone<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>podAntiAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>preferredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>weight:<span style="color:#bbb"> </span><span style="color:#666">100</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>podAffinityTerm:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>labelSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>security<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>-<span style="color:#bbb"> </span>S2<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>topologyKey:<span style="color:#bbb"> </span>failure-domain.beta.kubernetes.io/zone<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>with-pod-affinity<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/pause:<span style="color:#666">2.0</span><span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Afinitas pada pod tersebut menetapkan sebuah aturan afinitas pod dan aturan anti-afinitas pod. Pada contoh ini, <code>podAffinity</code> adalah <code>requiredDuringSchedulingIgnoredDuringExecution</code>
+sementara <code>podAntiAffinity</code> adalah <code>preferredDuringSchedulingIgnoredDuringExecution</code>. Aturan afinitas pod menyatakan bahwa pod dapat dijadwalkan pada node hanya jika node tersebut berada pada zona yang sama dengan minimal satu pod yang sudah berjalan yang memiliki label dengan kunci &ldquo;security&rdquo; dan bernilai &ldquo;S1&rdquo;. (Lebih detail, pod dapat berjalan pada node N jika node N memiliki label dengan kunci <code>failure-domain.beta.kubernetes.io/zone</code>dan nilai V sehingga ada minimal satu node dalam klaster dengan kunci <code>failure-domain.beta.kubernetes.io/zone</code> dan bernilai V yang menjalankan pod yang memiliki label dengan kunci &ldquo;security&rdquo; dan bernilai &ldquo;S1&rdquo;.) Aturan anti-afinitas pod menyatakan bahwa pod memilih untuk tidak dijadwalkan pada sebuah node jika node tersebut sudah menjalankan pod yang memiliki label dengan kunci &ldquo;security&rdquo; dan bernilai &ldquo;S2&rdquo;. (Jika <code>topologyKey</code> adalah <code>failure-domain.beta.kubernetes.io/zone</code> maka dapat diartikan bahwa pod tidak dapat dijadwalkan pada node jika node berada pada zona yang sama dengan pod yang memiliki label dengan kunci &ldquo;security&rdquo; dan bernilai &ldquo;S2&rdquo;.) Lihat <a href="https://git.k8s.io/community/contributors/design-proposals/scheduling/podaffinity.md" target="_blank">design doc</a> untuk lebih banyak contoh afinitas dan anti-afinitas pod, baik <code>requiredDuringSchedulingIgnoredDuringExecution</code>
+maupun <code>preferredDuringSchedulingIgnoredDuringExecution</code>.</p>
+
+<p>Operator yang sah untuk afinitas dan anti-afinitas pod adalah <code>In</code>, <code>NotIn</code>, <code>Exists</code>, <code>DoesNotExist</code>.</p>
+
+<p>Pada dasarnya, <code>topologyKey</code> dapat berupa label-kunci apapun yang sah. Namun, untuk alasan performa dan keamanan, ada beberapa batasan untuk <code>topologyKey</code>:</p>
+
+<ol>
+<li>Untuk afinitas and anti-afinitas pod <code>requiredDuringSchedulingIgnoredDuringExecution</code>, <code>topologyKey</code> tidak boleh kosong.</li>
+<li>Untuk anti-afinitas pod <code>requiredDuringSchedulingIgnoredDuringExecution</code>, pengontrol penerimaan <code>LimitPodHardAntiAffinityTopology</code> diperkenalkan untuk membatasi <code>topologyKey</code> pada <code>kubernetes.io/hostname</code>. Jika kamu menginginkan untuk membuatnya tersedia untuk topologi khusus, kamu dapat memodifikasi pengontrol penerimaan, atau cukup menonaktifkannya saja.</li>
+<li>Untuk anti-afinitas pod <code>preferredDuringSchedulingIgnoredDuringExecution</code>, <code>topologyKey</code> yang kosong diinterpretasikan sebagai &ldquo;semua topologi&rdquo; (&ldquo;semua topologi&rdquo; sekarang dibatasi pada kombinasi dari <code>kubernetes.io/hostname</code>, <code>failure-domain.beta.kubernetes.io/zone</code> dan <code>failure-domain.beta.kubernetes.io/region</code>).</li>
+<li>Kecuali untuk kasus-kasus di atas, <code>topologyKey</code> dapat berupa label-kunci apapun yang sah.</li>
+</ol>
+
+<p>Sebagai tambahan untuk <code>labelSelector</code> and <code>topologyKey</code>, kamu secara opsional dapat menyatakan daftar <code>namespaces</code> dari namespaces yang akan digunakan untuk mencocokan <code>labelSelector</code> (daftar ini berjalan pada level definisi yang sama dengan <code>labelSelector</code> dan <code>topologyKey</code>)</p>
+
+<p>Jika dihilangkan atau kosong, daftar ini sesuai standar akan merujuk pada <em>namespace</em> dari pod tempat definisi afinitas/anti-afinitas dinyatakan.</p>
+
+<p>Semua <code>matchExpressions</code> berkaitan dengan afinitas and anti-afinitas <code>requiredDuringSchedulingIgnoredDuringExecution</code> harus dipenuhi agar pod dapat dijadwalkan pada node.</p>
+
+<h4 id="penggunaan-yang-lebih-praktikal">Penggunaan yang lebih praktikal</h4>
+
+<p>Afinitas and anti-afinitas antar pod dapat menjadi lebih berguna saat digunakan bersamaan dengan koleksi dengan level yang lebih tinggi seperti ReplicaSets, StatefulSets, Deployments, dll. Pengguna dapat dengan mudah mengkonfigurasi bahwa satu set workload harus
+ditempatkan bersama dalam topologi yang didefinisikan sama, misalnya, node yang sama.</p>
+
+<h5 id="selalu-ditempatkan-bersamaan-pada-node-yang-sama">Selalu ditempatkan bersamaan pada node yang sama</h5>
+
+<p>Dalam klaster berisi 3 node, sebuah aplikasi web memiliki in-memory cache seperti redis. Kita menginginkan agar  <em>web-server</em> dari aplikasi ini sebisa mungkin ditempatkan bersamaan dengan cache.</p>
+
+<p>Berikut ini kutipan yaml dari deployment redis sederhana dengan 3 replika dan label selector <code>app=store</code>, Deployment memiliki konfigurasi <code>PodAntiAffinity</code> untuk memastikan <em>scheduler</em> tidak menempatkan replika bersamaan pada satu node.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>redis-cache<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>app:<span style="color:#bbb"> </span>store<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">3</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>store<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>affinity:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>podAntiAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>requiredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>labelSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>app<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>-<span style="color:#bbb"> </span>store<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>topologyKey:<span style="color:#bbb"> </span><span style="color:#b44">&#34;kubernetes.io/hostname&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>redis-server<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>redis:<span style="color:#666">3.2</span>-alpine</code></pre></div>
+<p>Kutipan yaml dari deployment webserver berikut ini memiliki konfigurasi <code>podAntiAffinity</code> dan <code>podAffinity</code>. Konfigurasi ini menginformasikan scheduler bahwa semua replika harus ditempatkan bersamaan dengan pod yang memiliki label selector <code>app=store</code>. Konfigurasi ini juga memastikan bahwa setiap replika webserver tidak ditempatkan bersamaan pada satu node.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>web-server<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>app:<span style="color:#bbb"> </span>web-store<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">3</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>web-store<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>affinity:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>podAntiAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>requiredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>labelSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>app<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>-<span style="color:#bbb"> </span>web-store<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>topologyKey:<span style="color:#bbb"> </span><span style="color:#b44">&#34;kubernetes.io/hostname&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>podAffinity:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>requiredDuringSchedulingIgnoredDuringExecution:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>-<span style="color:#bbb"> </span>labelSelector:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">              </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>app<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>operator:<span style="color:#bbb"> </span>In<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">                </span>-<span style="color:#bbb"> </span>store<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>topologyKey:<span style="color:#bbb"> </span><span style="color:#b44">&#34;kubernetes.io/hostname&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>web-app<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>nginx:<span style="color:#666">1.12</span>-alpine</code></pre></div>
+<p>Jika kita membuat kedua dployment di atas, klaster berisi 3 node kita seharusnya menjadi seperti berikut.</p>
+
+<table>
+<thead>
+<tr>
+<th align="center">node-1</th>
+<th align="center">node-2</th>
+<th align="center">node-3</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="center"><em>webserver-1</em></td>
+<td align="center"><em>webserver-2</em></td>
+<td align="center"><em>webserver-3</em></td>
+</tr>
+
+<tr>
+<td align="center"><em>cache-1</em></td>
+<td align="center"><em>cache-2</em></td>
+<td align="center"><em>cache-3</em></td>
+</tr>
+</tbody>
+</table>
+
+<p>st
+Seperti yang kamu lihat, semua 3 replika dari <code>web-server</code> secara otomatis ditempatkan bersama dengan cache seperti yang diharapkan.</p>
+
+<pre><code>$ kubectl get pods -o wide
+NAME                           READY     STATUS    RESTARTS   AGE       IP           NODE
+redis-cache-1450370735-6dzlj   1/1       Running   0          8m        10.192.4.2   kube-node-3
+redis-cache-1450370735-j2j96   1/1       Running   0          8m        10.192.2.2   kube-node-1
+redis-cache-1450370735-z73mh   1/1       Running   0          8m        10.192.3.1   kube-node-2
+web-server-1287567482-5d4dz    1/1       Running   0          7m        10.192.2.3   kube-node-1
+web-server-1287567482-6f7v5    1/1       Running   0          7m        10.192.4.3   kube-node-3
+web-server-1287567482-s330j    1/1       Running   0          7m        10.192.3.2   kube-node-2
+</code></pre>
+
+<h5 id="tidak-akan-pernah-ditempatkan-bersamaan-dalam-node-yang-sama">Tidak akan pernah ditempatkan bersamaan dalam node yang sama</h5>
+
+<p>Contoh di atas menggunakan aturan <code>PodAntiAffinity</code> dengan<code>topologyKey: &quot;kubernetes.io/hostname&quot;</code> untuk melakukan deploy klaster redis sehingga tidak ada dua instance terletak pada hos yang sama.
+Lihat <a href="/docs/tutorials/stateful-application/zookeeper/#tolerating-node-failure">tutorial ZooKeeper</a>  untuk contoh dari konfigurasi StatefulSet dengan anti-afinitas untuk ketersediaan tinggi, menggunakan teknik yang sama.</p>
+
+<p>Untuk informasi lebih lanjut tentang afinitas/anti-afinitas antar pod, lihat <a href="https://git.k8s.io/community/contributors/design-proposals/scheduling/podaffinity.md" target="_blank">design doc</a>.</p>
+
+<p>Kamu juga dapat mengecek <a href="/docs/concepts/configuration/taint-and-toleration/">Taints</a>, yang memungkinkan sebuah <em>node</em> untuk <em>menolak</em> sekumpulan pod.</p>
+
+<h2 id="nodename">nodeName</h2>
+
+<p><code>nodeName</code> adalah bentuk paling sederhana dari pembatasan pemilihan node, tetapi karena
+keterbatasannya biasanya tidak digunakan. <code>nodeName</code> adalah sebuah <em>field</em> dari
+PodSpec. Jika tidak kosong, scheduler mengabaikan pod dan
+kubelet yang berjalan pada node tersebut yang mencoba menjalankan pod.  Maka, jika
+<code>nodeName</code> disediakan dalam PodSpec, ia memiliki hak yang lebih tinggi dibanding metode-metode di atas untuk pemilihan node.</p>
+
+<p>Beberapa keterbatasan dari penggunaan <code>nodeName</code> untuk memilih node adalah:</p>
+
+<ul>
+<li>Jika node yang disebut tidak ada, maka pod tidak akan dijalankan, dan dalam beberapa kasus akan
+dihapus secara otomatis.</li>
+<li>Jika node yang disebut tidak memiliki resource yang cukup untuk mengakomodasi pod, pod akan gagal
+dan alasannya akan mengindikasikan sebab kegagalan, misalnya OutOfmemory atau OutOfcpu.</li>
+<li>Nama node pada lingkungan cloud tidak selalu dapat diprediksi atau stabil.</li>
+</ul>
+
+<p>Berikut ini contoh konfigurasi pod menggunakan <em>field</em> <code>nodeName</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>nodeName:<span style="color:#bbb"> </span>kube<span style="color:#666">-01</span></code></pre></div>
+<p>Pod di atas akan berjalan pada node kube-01.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Masukan</h2>
+  <p class="feedback--prompt">Apakah halaman ini berguna? </p>
+  <button class="button feedback--yes">Ya</button>
+  <button class="button feedback--no">Tidak</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/configuration/assign-pod-node.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/id\/docs\/concepts\/configuration\/assign-pod-node\/",
+    "title" : "Menetapkan Pod ke Node",
+    "permalink" : "https:\/\/kubernetes.io\/id\/docs\/concepts\/configuration\/assign-pod-node\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Buat isu</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/id/docs/concepts/configuration/assign-pod-node.md" class="button issue">Ubah halaman ini</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Halaman diubah terakhir kali pada February 18, 2020 at 9:19 AM PST oleh
+    <a href="https://github.com/kubernetes/website/commit/c2cc1a1c87dae46411b827da8a22ee687efb05b0/">Change Kontainer to Node (#19105)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/configuration/assign-pod-node.md">Riwayat halaman</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/id/docs/home/">Home</a>
+            
+            
+            
+            
+            
+            
+            
+            <a href="/id/community/">Komunitas</a>
+            
+            <a href="/id/case-studies/">Studi kasus</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Kalender acara</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Kontribusi</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 Para Pencipta Kubernetes | Dokumentasi didistribusikan melalui <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux Foundation &reg;. Hak cipta dilindungi. Linux Foundation telah mendaftarkan merek dagang dan pengunaannya. Perinciannya bisa dilihat pada <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">halaman penggunaan merek dagang</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

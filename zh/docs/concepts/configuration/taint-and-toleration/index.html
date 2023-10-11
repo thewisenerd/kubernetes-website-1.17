@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Taint 和 Toleration - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/concepts/configuration/taint-and-toleration/">
+<meta property="og:title" content="Taint 和 Toleration">
+<meta name="twitter:title" content="Taint 和 Toleration">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/configuration/taint-and-toleration/">English</a></li>
+                
+                    <li><a href="/id/docs/concepts/configuration/taint-and-toleration/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/concepts/configuration/taint-and-toleration/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/concepts/configuration/taint-and-toleration/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/concepts/configuration/taint-and-toleration/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/concepts/configuration/taint-and-toleration/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/concepts/configuration/taint-and-toleration/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>概念</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/" class="YAH">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="概念" href="/zh/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="概述">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="概述" href="/zh/docs/concepts/overview/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 是什么？" href="/zh/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 组件" href="/zh/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API" href="/zh/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="使用 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="理解 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 对象管理" href="/zh/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="名称" href="/zh/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间" href="/zh/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="标签和选择器" href="/zh/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="注解" href="/zh/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="字段选择器" href="/zh/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="推荐使用的标签" href="/zh/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes 架构">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 架构" href="/zh/docs/concepts/architecture/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="节点" href="/zh/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云控制器管理器的基础概念" href="/zh/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器" href="/zh/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Master 节点通信" href="/zh/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/cluster-administration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="集群管理概述" href="/zh/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书" href="/zh/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云驱动" href="/zh/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理资源" href="/zh/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 控制面板的指标" href="/zh/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="日志架构" href="/zh/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 kubelet 垃圾回收策略" href="/zh/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器管理器指标" href="/zh/docs/concepts/cluster-administration/controller-metrics/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 中的代理" href="/zh/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装扩展（Addons）" href="/zh/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦" href="/zh/docs/concepts/cluster-administration/federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/concepts/extend-kubernetes/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展 Kubernetes 集群" href="/zh/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes API">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Custom Resources <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过聚合层扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Operator 模式" href="/zh/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网络插件" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="服务目录" href="/zh/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="容器" href="/zh/docs/concepts/containers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="镜像" href="/zh/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器运行时类(Runtime Class)" href="/zh/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器生命周期钩子" href="/zh/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器环境变量" href="/zh/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="工作负载">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="工作负载" href="/zh/docs/concepts/workloads/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pods">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Pod 概览" href="/zh/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Preset" href="/zh/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 拓扑扩展约束" href="/zh/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="干扰" href="/zh/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="临时容器" href="/zh/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Init 容器" href="/zh/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 的生命周期" href="/zh/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="控制器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="控制器" href="/zh/docs/concepts/workloads/controllers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/zh/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ReplicationController" href="/zh/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Deployments" href="/zh/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StatefulSets" href="/zh/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DaemonSet" href="/zh/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="垃圾收集" href="/zh/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="已完成资源的 TTL 控制器" href="/zh/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Jobs - Run to Completion <small>(EN)</small>" href="/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CronJob" href="/zh/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="存储">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="存储" href="/zh/docs/concepts/storage/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Volumes" href="/zh/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Persistent Volumes <small>(EN)</small>" href="/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照" href="/zh/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CSI 卷克隆" href="/zh/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Storage Classes" href="/zh/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照类" href="/zh/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="动态卷供应" href="/zh/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="特定于节点的卷数限制" href="/zh/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置" href="/zh/docs/concepts/configuration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展资源的资源箱打包" href="/zh/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置最佳实践" href="/zh/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 开销" href="/zh/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器管理计算资源" href="/zh/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Taint 和 Toleration" href="/zh/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Secret" href="/zh/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeconfig 文件组织集群访问" href="/zh/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度框架" href="/zh/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="服务、负载均衡和联网">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="服务、负载均衡和联网" href="/zh/docs/concepts/services-networking/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Endpoint Slices" href="/zh/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service 拓扑" href="/zh/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Services" href="/zh/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 与 Service 的 DNS" href="/zh/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用连接到 Service" href="/zh/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/zh/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress 控制器" href="/zh/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="网络策略" href="/zh/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HostAliases 向 Pod /etc/hosts 文件添加条目" href="/zh/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IPv4/IPv6 双协议栈" href="/zh/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安全">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安全" href="/zh/docs/concepts/security/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Overview of Cloud Native Security <small>(EN)</small>" href="/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="调度">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="调度" href="/zh/docs/concepts/scheduling/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 调度器" href="/zh/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度器性能调优" href="/zh/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="策略">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="策略" href="/zh/docs/concepts/policy/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 安全策略" href="/zh/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源配额" href="/zh/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/configuration/taint-and-toleration.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Taint 和 Toleration</h1>
+
+
+
+<!--
+Node affinity, described [here](/docs/concepts/configuration/assign-pod-node/#node-affinity-beta-feature),
+is a property of *pods* that *attracts* them to a set of nodes (either as a
+preference or a hard requirement). Taints are the opposite -- they allow a
+*node* to *repel* a set of pods.
+-->
+
+<p>节点亲和性（详见<a href="/docs/concepts/configuration/assign-pod-node/#node-affinity-beta-feature">这里</a>），是 <em>pod</em> 的一种属性（偏好或硬性要求），它使 <em>pod</em> 被吸引到一类特定的节点。Taint 则相反，它使 <em>节点</em> 能够 <em>排斥</em> 一类特定的 pod。</p>
+
+<!--
+Taints and tolerations work together to ensure that pods are not scheduled
+onto inappropriate nodes. One or more taints are applied to a node; this
+marks that the node should not accept any pods that do not tolerate the taints.
+Tolerations are applied to pods, and allow (but do not require) the pods to schedule
+onto nodes with matching taints.
+-->
+
+<p>Taint 和 toleration 相互配合，可以用来避免 pod 被分配到不合适的节点上。每个节点上都可以应用一个或多个 taint ，这表示对于那些不能容忍这些 taint 的 pod，是不会被该节点接受的。如果将 toleration 应用于 pod 上，则表示这些 pod 可以（但不要求）被调度到具有匹配 taint 的节点上。</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e6%a6%82%e5%bf%b5">概念</a></li>
+
+
+
+
+<li><a href="#%e4%bd%bf%e7%94%a8%e4%be%8b%e5%ad%90">使用例子</a></li>
+
+
+
+
+<li><a href="#%e5%9f%ba%e4%ba%8e-taint-%e7%9a%84%e9%a9%b1%e9%80%90">基于 taint 的驱逐</a></li>
+
+
+
+
+<li><a href="#%e5%9f%ba%e4%ba%8e%e8%8a%82%e7%82%b9%e7%8a%b6%e6%80%81%e6%b7%bb%e5%8a%a0-taint">基于节点状态添加 taint</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<!--
+
+## Concepts
+
+-->
+
+<h2 id="概念">概念</h2>
+
+<!--
+You add a taint to a node using [kubectl taint](/docs/reference/generated/kubectl/kubectl-commands#taint).
+For example,
+-->
+
+<p>您可以使用命令 <a href="/docs/reference/generated/kubectl/kubectl-commands#taint">kubectl taint</a> 给节点增加一个 taint。比如，</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl taint nodes node1 <span style="color:#b8860b">key</span><span style="color:#666">=</span>value:NoSchedule</code></pre></div>
+<!--
+places a taint on node `node1`. The taint has key `key`, value `value`, and taint effect `NoSchedule`.
+This means that no pod will be able to schedule onto `node1` unless it has a matching toleration.
+You specify a toleration for a pod in the PodSpec. Both of the following tolerations "match" the
+taint created by the `kubectl taint` line above, and thus a pod with either toleration would be able
+to schedule onto `node1`:
+-->
+
+<p>给节点 <code>node1</code> 增加一个 taint，它的 key 是 <code>key</code>，value 是 <code>value</code>，effect 是 <code>NoSchedule</code>。这表示只有拥有和这个 taint 相匹配的 toleration 的 pod 才能够被分配到 <code>node1</code> 这个节点。您可以在 PodSpec 中定义 pod 的 toleration。下面两个 toleration 均与上面例子中使用 <code>kubectl taint</code> 命令创建的 taint 相匹配，因此如果一个 pod 拥有其中的任何一个 toleration 都能够被分配到 <code>node1</code> ：</p>
+
+<!--
+To remove the taint added by the command above, you can run:
+-->
+
+<p>想删除上述命令添加的 taint ，您可以运行：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl taint nodes node1 key:NoSchedule-</code></pre></div>
+<!--
+You specify a toleration for a pod in the PodSpec. Both of the following tolerations "match" the
+taint created by the `kubectl taint` line above, and thus a pod with either toleration would be able
+to schedule onto `node1`:
+-->
+
+<p>您可以在PodSpec中为容器设定容忍标签。以下两个容忍标签都与上面的 <code>kubectl taint</code> 创建的污点“匹配”，
+因此具有任一容忍标签的Pod都可以将其调度到“ node1”上：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span><span style="color:#b44">&#34;key&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>operator:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Equal&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;value&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>effect:<span style="color:#bbb"> </span><span style="color:#b44">&#34;NoSchedule&#34;</span></code></pre></div><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span><span style="color:#b44">&#34;key&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>operator:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Exists&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>effect:<span style="color:#bbb"> </span><span style="color:#b44">&#34;NoSchedule&#34;</span></code></pre></div>
+<!--
+A toleration "matches" a taint if the keys are the same and the effects are the same, and:
+
+* the `operator` is `Exists` (in which case no `value` should be specified), or
+* the `operator` is `Equal` and the `value`s are equal
+
+`Operator` defaults to `Equal` if not specified.
+-->
+
+<p>一个 toleration 和一个 taint 相“匹配”是指它们有一样的 key 和 effect ，并且：</p>
+
+<ul>
+<li>如果 <code>operator</code> 是 <code>Exists</code> （此时 toleration 不能指定 <code>value</code>），或者</li>
+<li>如果 <code>operator</code> 是 <code>Equal</code> ，则它们的 <code>value</code> 应该相等</li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+There are two special cases:
+
+* An empty `key` with operator `Exists` matches all keys, values and effects which means this
+will tolerate everything.
+-->
+
+<p>存在两种特殊情况：</p>
+
+<ul>
+<li><p>如果一个 toleration 的 <code>key</code> 为空且 operator 为 <code>Exists</code> ，表示这个 toleration 与任意的 key 、 value 和 effect 都匹配，即这个 toleration 能容忍任意 taint。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>operator:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Exists&#34;</span></code></pre></div></li>
+</ul>
+
+<!--
+* An empty `effect` matches all effects with key `key`.
+-->
+
+<ul>
+<li><p>如果一个 toleration 的 <code>effect</code> 为空，则 <code>key</code> 值与之相同的相匹配 taint 的 <code>effect</code> 可以是任意值。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span><span style="color:#b44">&#34;key&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>operator:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Exists&#34;</span></code></pre></div></li>
+</ul>
+</div>
+</blockquote>
+
+<!--
+The above example used `effect` of `NoSchedule`. Alternatively, you can use `effect` of `PreferNoSchedule`.
+This is a "preference" or "soft" version of `NoSchedule` -- the system will *try* to avoid placing a
+pod that does not tolerate the taint on the node, but it is not required. The third kind of `effect` is
+`NoExecute`, described later.
+-->
+
+<p>上述例子使用到的 <code>effect</code> 的一个值 <code>NoSchedule</code>，您也可以使用另外一个值 <code>PreferNoSchedule</code>。这是“优化”或“软”版本的 <code>NoSchedule</code>  ——系统会 <em>尽量</em> 避免将 pod 调度到存在其不能容忍 taint 的节点上，但这不是强制的。<code>effect</code> 的值还可以设置为 <code>NoExecute</code> ，下文会详细描述这个值。</p>
+
+<!--
+You can put multiple taints on the same node and multiple tolerations on the same pod.
+The way Kubernetes processes multiple taints and tolerations is like a filter: start
+with all of a node's taints, then ignore the ones for which the pod has a matching toleration; the
+remaining un-ignored taints have the indicated effects on the pod. In particular,
+-->
+
+<p>您可以给一个节点添加多个 taint ，也可以给一个 pod 添加多个 toleration。Kubernetes 处理多个 taint 和 toleration 的过程就像一个过滤器：从一个节点的所有 taint 开始遍历，过滤掉那些 pod 中存在与之相匹配的 toleration 的 taint。余下未被过滤的 taint 的 effect 值决定了 pod 是否会被分配到该节点，特别是以下情况：</p>
+
+<!--
+
+* if there is at least one un-ignored taint with effect `NoSchedule` then Kubernetes will not schedule
+the pod onto that node
+* if there is no un-ignored taint with effect `NoSchedule` but there is at least one un-ignored taint with
+effect `PreferNoSchedule` then Kubernetes will *try* to not schedule the pod onto the node
+* if there is at least one un-ignored taint with effect `NoExecute` then the pod will be evicted from
+the node (if it is already running on the node), and will not be
+scheduled onto the node (if it is not yet running on the node).
+-->
+
+<ul>
+<li>如果未被过滤的 taint 中存在一个以上 effect 值为 <code>NoSchedule</code> 的 taint，则 Kubernetes 不会将 pod 分配到该节点。</li>
+<li>如果未被过滤的 taint 中不存在 effect 值为 <code>NoSchedule</code> 的 taint，但是存在 effect 值为 <code>PreferNoSchedule</code> 的 taint，则 Kubernetes 会 <em>尝试</em> 将 pod 分配到该节点。</li>
+<li>如果未被过滤的 taint 中存在一个以上 effect 值为 <code>NoExecute</code> 的 taint，则 Kubernetes 不会将 pod 分配到该节点（如果 pod 还未在节点上运行），或者将 pod 从该节点驱逐（如果 pod 已经在节点上运行）。</li>
+</ul>
+
+<!--
+For example, imagine you taint a node like this
+-->
+
+<p>例如，假设您给一个节点添加了如下的 taint</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl taint nodes node1 <span style="color:#b8860b">key1</span><span style="color:#666">=</span>value1:NoSchedule
+kubectl taint nodes node1 <span style="color:#b8860b">key1</span><span style="color:#666">=</span>value1:NoExecute
+kubectl taint nodes node1 <span style="color:#b8860b">key2</span><span style="color:#666">=</span>value2:NoSchedule</code></pre></div>
+<!--
+And a pod has two tolerations:
+-->
+
+<p>然后存在一个 pod，它有两个 toleration</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span><span style="color:#b44">&#34;key1&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>operator:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Equal&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;value1&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>effect:<span style="color:#bbb"> </span><span style="color:#b44">&#34;NoSchedule&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span><span style="color:#b44">&#34;key1&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>operator:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Equal&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;value1&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>effect:<span style="color:#bbb"> </span><span style="color:#b44">&#34;NoExecute&#34;</span></code></pre></div>
+<!--
+In this case, the pod will not be able to schedule onto the node, because there is no
+toleration matching the third taint. But it will be able to continue running if it is
+already running on the node when the taint is added, because the third taint is the only
+one of the three that is not tolerated by the pod.
+-->
+
+<p>在这个例子中，上述 pod 不会被分配到上述节点，因为其没有 toleration 和第三个 taint 相匹配。但是如果在给节点添加 上述 taint 之前，该 pod 已经在上述节点运行，那么它还可以继续运行在该节点上，因为第三个 taint 是三个 taint 中唯一不能被这个 pod 容忍的。</p>
+
+<!--
+Normally, if a taint with effect `NoExecute` is added to a node, then any pods that do
+not tolerate the taint will be evicted immediately, and any pods that do tolerate the
+taint will never be evicted. However, a toleration with `NoExecute` effect can specify
+an optional `tolerationSeconds` field that dictates how long the pod will stay bound
+to the node after the taint is added. For example,
+-->
+
+<p>通常情况下，如果给一个节点添加了一个 effect 值为 <code>NoExecute</code> 的 taint，则任何不能忍受这个 taint 的 pod 都会马上被驱逐，任何可以忍受这个 taint 的 pod 都不会被驱逐。但是，如果 pod 存在一个 effect 值为 <code>NoExecute</code> 的 toleration 指定了可选属性 <code>tolerationSeconds</code> 的值，则表示在给节点添加了上述 taint 之后，pod 还能继续在节点上运行的时间。例如，</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span><span style="color:#b44">&#34;key1&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>operator:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Equal&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>value:<span style="color:#bbb"> </span><span style="color:#b44">&#34;value1&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>effect:<span style="color:#bbb"> </span><span style="color:#b44">&#34;NoExecute&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>tolerationSeconds:<span style="color:#bbb"> </span><span style="color:#666">3600</span></code></pre></div>
+<!--
+means that if this pod is running and a matching taint is added to the node, then
+the pod will stay bound to the node for 3600 seconds, and then be evicted. If the
+taint is removed before that time, the pod will not be evicted.
+-->
+
+<p>这表示如果这个 pod 正在运行，然后一个匹配的 taint 被添加到其所在的节点，那么 pod 还将继续在节点上运行 3600 秒，然后被驱逐。如果在此之前上述 taint 被删除了，则 pod 不会被驱逐。</p>
+
+<!--
+
+## Example Use Cases
+
+-->
+
+<h2 id="使用例子">使用例子</h2>
+
+<!--
+Taints and tolerations are a flexible way to steer pods *away* from nodes or evict
+pods that shouldn't be running. A few of the use cases are
+-->
+
+<p>通过 taint 和 toleration ，可以灵活地让 pod <em>避开</em> 某些节点或者将 pod 从某些节点驱逐。下面是几个使用例子：</p>
+
+<!--
+
+* **Dedicated Nodes**: If you want to dedicate a set of nodes for exclusive use by
+a particular set of users, you can add a taint to those nodes (say,
+`kubectl taint nodes nodename dedicated=groupName:NoSchedule`) and then add a corresponding
+toleration to their pods (this would be done most easily by writing a custom
+[admission controller](/docs/reference/access-authn-authz/admission-controllers/)).
+The pods with the tolerations will then be allowed to use the tainted (dedicated) nodes as
+well as any other nodes in the cluster. If you want to dedicate the nodes to them *and*
+ensure they *only* use the dedicated nodes, then you should additionally add a label similar
+to the taint to the same set of nodes (e.g. `dedicated=groupName`), and the admission
+controller should additionally add a node affinity to require that the pods can only schedule
+onto nodes labeled with `dedicated=groupName`.
+-->
+
+<ul>
+<li><strong>专用节点</strong>：如果您想将某些节点专门分配给特定的一组用户使用，您可以给这些节点添加一个 taint（即，
+<code>kubectl taint nodes nodename dedicated=groupName:NoSchedule</code>），然后给这组用户的 pod 添加一个相对应的 toleration（通过编写一个自定义的<a href="/docs/admin/admission-controllers/">admission controller</a>，很容易就能做到）。拥有上述 toleration 的 pod 就能够被分配到上述专用节点，同时也能够被分配到集群中的其它节点。如果您希望这些 pod 只能被分配到上述专用节点，那么您还需要给这些专用节点另外添加一个和上述 taint 类似的 label （例如：<code>dedicated=groupName</code>），同时 还要在上述 admission controller 中给 pod 增加节点亲和性要求上述 pod 只能被分配到添加了 <code>dedicated=groupName</code> 标签的节点上。</li>
+</ul>
+
+<!--
+
+* **Nodes with Special Hardware**: In a cluster where a small subset of nodes have specialized
+hardware (for example GPUs), it is desirable to keep pods that don't need the specialized
+hardware off of those nodes, thus leaving room for later-arriving pods that do need the
+specialized hardware. This can be done by tainting the nodes that have the specialized
+hardware (e.g. `kubectl taint nodes nodename special=true:NoSchedule` or
+`kubectl taint nodes nodename special=true:PreferNoSchedule`) and adding a corresponding
+toleration to pods that use the special hardware. As in the dedicated nodes use case,
+it is probably easiest to apply the tolerations using a custom
+[admission controller](/docs/reference/access-authn-authz/admission-controllers/).
+For example, it is recommended to use [Extended
+Resources](/docs/concepts/configuration/manage-compute-resources-container/#extended-resources)
+to represent the special hardware, taint your special hardware nodes with the
+extended resource name and run the
+[ExtendedResourceToleration](/docs/reference/access-authn-authz/admission-controllers/#extendedresourcetoleration)
+admission controller. Now, because the nodes are tainted, no pods without the
+toleration will schedule on them. But when you submit a pod that requests the
+extended resource, the `ExtendedResourceToleration` admission controller will
+automatically add the correct toleration to the pod and that pod will schedule
+on the special hardware nodes. This will make sure that these special hardware
+nodes are dedicated for pods requesting such hardware and you don't have to
+manually add tolerations to your pods.
+-->
+
+<ul>
+<li><strong>配备了特殊硬件的节点</strong>：在部分节点配备了特殊硬件（比如 GPU）的集群中，我们希望不需要这类硬件的 pod 不要被分配到这些特殊节点，以便为后继需要这类硬件的 pod 保留资源。要达到这个目的，可以先给配备了特殊硬件的节点添加 taint（例如 <code>kubectl taint nodes nodename special=true:NoSchedule</code> or <code>kubectl taint nodes nodename special=true:PreferNoSchedule</code>)，然后给使用了这类特殊硬件的 pod 添加一个相匹配的 toleration。和专用节点的例子类似，添加这个 toleration 的最简单的方法是使用自定义 <a href="/docs/reference/access-authn-authz/admission-controllers/">admission controller</a>。比如，我们推荐使用 <a href="/docs/concepts/configuration/manage-compute-resources-container/#extended-resources">Extended Resources</a> 来表示特殊硬件，给配置了特殊硬件的节点添加 taint 时包含 extended resource 名称，然后运行一个 <a href="/docs/reference/access-authn-authz/admission-controllers/#extendedresourcetoleration">ExtendedResourceToleration</a> admission controller。此时，因为节点已经被 taint 了，没有对应 toleration 的 Pod 会被调度到这些节点。但当你创建一个使用了 extended resource 的 Pod 时，<code>ExtendedResourceToleration</code> admission controller 会自动给 Pod 加上正确的 toleration ，这样 Pod 就会被自动调度到这些配置了特殊硬件件的节点上。这样就能够确保这些配置了特殊硬件的节点专门用于运行 需要使用这些硬件的 Pod，并且您无需手动给这些 Pod 添加 toleration。</li>
+</ul>
+
+<!--
+
+* **Taint based Evictions (beta feature)**: A per-pod-configurable eviction behavior
+when there are node problems, which is described in the next section.
+-->
+
+<ul>
+<li><strong>基于 taint 的驱逐 （beta 特性）</strong>: 这是在每个 pod 中配置的在节点出现问题时的驱逐行为，接下来的章节会描述这个特性</li>
+</ul>
+
+<!--
+
+## Taint based Evictions
+
+-->
+
+<h2 id="基于-taint-的驱逐">基于 taint 的驱逐</h2>
+
+<!--
+Earlier we mentioned the `NoExecute` taint effect, which affects pods that are already
+running on the node as follows
+
+ * pods that do not tolerate the taint are evicted immediately
+ * pods that tolerate the taint without specifying `tolerationSeconds` in
+   their toleration specification remain bound forever
+ * pods that tolerate the taint with a specified `tolerationSeconds` remain
+   bound for the specified amount of time
+-->
+
+<p>前文我们提到过 taint 的 effect 值 <code>NoExecute</code>  ，它会影响已经在节点上运行的 pod</p>
+
+<ul>
+<li>如果 pod 不能忍受effect 值为 <code>NoExecute</code> 的 taint，那么 pod 将马上被驱逐</li>
+<li>如果 pod 能够忍受effect 值为 <code>NoExecute</code> 的 taint，但是在 toleration 定义中没有指定 <code>tolerationSeconds</code>，则 pod 还会一直在这个节点上运行。</li>
+<li>如果 pod 能够忍受effect 值为 <code>NoExecute</code> 的 taint，而且指定了 <code>tolerationSeconds</code>，则 pod 还能在这个节点上继续运行这个指定的时间长度。</li>
+</ul>
+
+<!--
+In addition, Kubernetes 1.6 introduced alpha support for representing node
+problems. In other words, the node controller automatically taints a node when
+certain condition is true. The following taints are built in:
+
+ * `node.kubernetes.io/not-ready`: Node is not ready. This corresponds to
+   the NodeCondition `Ready` being "`False`".
+ * `node.kubernetes.io/unreachable`: Node is unreachable from the node
+   controller. This corresponds to the NodeCondition `Ready` being "`Unknown`".
+ * `node.kubernetes.io/out-of-disk`: Node becomes out of disk.
+ * `node.kubernetes.io/memory-pressure`: Node has memory pressure.
+ * `node.kubernetes.io/disk-pressure`: Node has disk pressure.
+ * `node.kubernetes.io/network-unavailable`: Node's network is unavailable.
+ * `node.kubernetes.io/unschedulable`: Node is unschedulable.
+ * `node.cloudprovider.kubernetes.io/uninitialized`: When the kubelet is started
+    with "external" cloud provider, this taint is set on a node to mark it
+    as unusable. After a controller from the cloud-controller-manager initializes
+    this node, the kubelet removes this taint.
+  -->
+
+<p>此外，Kubernetes 1.6 已经支持（alpha阶段）节点问题的表示。换句话说，当某种条件为真时，node controller会自动给节点添加一个 taint。当前内置的 taint 包括：</p>
+
+<ul>
+<li><code>node.kubernetes.io/not-ready</code>：节点未准备好。这相当于节点状态 <code>Ready</code> 的值为 &ldquo;<code>False</code>&ldquo;。</li>
+<li><code>node.kubernetes.io/unreachable</code>：node controller 访问不到节点. 这相当于节点状态 <code>Ready</code> 的值为 &ldquo;<code>Unknown</code>&ldquo;。</li>
+<li><code>node.kubernetes.io/out-of-disk</code>：节点磁盘耗尽。</li>
+<li><code>node.kubernetes.io/memory-pressure</code>：节点存在内存压力。</li>
+<li><code>node.kubernetes.io/disk-pressure</code>：节点存在磁盘压力。</li>
+<li><code>node.kubernetes.io/network-unavailable</code>：节点网络不可用。</li>
+<li><code>node.kubernetes.io/unschedulable</code>: 节点不可调度。</li>
+<li><code>node.cloudprovider.kubernetes.io/uninitialized</code>：如果 kubelet 启动时指定了一个 &ldquo;外部&rdquo; cloud provider，它将给当前节点添加一个 taint 将其标志为不可用。在 cloud-controller-manager 的一个 controller 初始化这个节点后，kubelet 将删除这个 taint。</li>
+</ul>
+
+<!--
+In version 1.13, the `TaintBasedEvictions` feature is promoted to beta and enabled by default, hence the taints are automatically
+added by the NodeController (or kubelet) and the normal logic for evicting pods from nodes
+based on the Ready NodeCondition is disabled.
+-->
+
+<p>在版本1.13中，<code>TaintBasedEvictions</code> 功能已升级为Beta，并且默认启用，因此污点会自动给节点添加这类 taint，上述基于节点状态 Ready 对 pod 进行驱逐的逻辑会被禁用。</p>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+To maintain the existing [rate limiting](/docs/concepts/architecture/nodes/)
+behavior of pod evictions due to node problems, the system actually adds the taints
+in a rate-limited way. This prevents massive pod evictions in scenarios such
+as the master becoming partitioned from the nodes.
+-->
+
+<p>为了保证由于节点问题引起的 pod 驱逐<a href="/docs/concepts/architecture/nodes/">rate limiting</a>行为正常，系统实际上会以 rate-limited 的方式添加 taint。在像 master 和 node 通讯中断等场景下，这避免了 pod 被大量驱逐。</div>
+</blockquote>
+
+<!--
+This beta feature, in combination with `tolerationSeconds`, allows a pod
+to specify how long it should stay bound to a node that has one or both of these problems.
+-->
+
+<p>使用这个 beta 功能特性，结合 <code>tolerationSeconds</code> ，pod 就可以指定当节点出现一个或全部上述问题时还将在这个节点上运行多长的时间。</p>
+
+<!--
+For example, an application with a lot of local state might want to stay
+bound to node for a long time in the event of network partition, in the hope
+that the partition will recover and thus the pod eviction can be avoided.
+The toleration the pod would use in that case would look like
+-->
+
+<p>比如，一个使用了很多本地状态的应用程序在网络断开时，仍然希望停留在当前节点上运行一段较长的时间，愿意等待网络恢复以避免被驱逐。在这种情况下，pod 的 toleration 可能是下面这样的：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">tolerations:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span><span style="color:#b44">&#34;node.kubernetes.io/unreachable&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>operator:<span style="color:#bbb"> </span><span style="color:#b44">&#34;Exists&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>effect:<span style="color:#bbb"> </span><span style="color:#b44">&#34;NoExecute&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>tolerationSeconds:<span style="color:#bbb"> </span><span style="color:#666">6000</span></code></pre></div>
+<!--
+Note that Kubernetes automatically adds a toleration for
+`node.kubernetes.io/not-ready` with `tolerationSeconds=300`
+unless the pod configuration provided
+by the user already has a toleration for `node.kubernetes.io/not-ready`.
+Likewise it adds a toleration for
+`node.kubernetes.io/unreachable` with `tolerationSeconds=300`
+unless the pod configuration provided
+by the user already has a toleration for `node.kubernetes.io/unreachable`.
+-->
+
+<p>注意，Kubernetes 会自动给 pod 添加一个 key 为 <code>node.kubernetes.io/not-ready</code> 的 toleration 并配置 <code>tolerationSeconds=300</code>，除非用户提供的 pod 配置中已经已存在了 key 为 <code>node.kubernetes.io/not-ready</code> 的 toleration。同样，Kubernetes 会给 pod 添加一个 key 为 <code>node.kubernetes.io/unreachable</code> 的 toleration 并配置 <code>tolerationSeconds=300</code>，除非用户提供的 pod 配置中已经已存在了 key 为 <code>node.kubernetes.io/unreachable</code> 的 toleration。</p>
+
+<!--
+These automatically-added tolerations ensure that
+the default pod behavior of remaining bound for 5 minutes after one of these
+problems is detected is maintained.
+The two default tolerations are added by the [DefaultTolerationSeconds
+admission controller](https://git.k8s.io/kubernetes/plugin/pkg/admission/defaulttolerationseconds).
+-->
+
+<p>这种自动添加 toleration 机制保证了在其中一种问题被检测到时 pod 默认能够继续停留在当前节点运行 5 分钟。这两个默认 toleration 是由 <a href="https://git.k8s.io/kubernetes/plugin/pkg/admission/defaulttolerationseconds" target="_blank">DefaultTolerationSeconds
+admission controller</a>添加的。</p>
+
+<!--
+[DaemonSet](/docs/concepts/workloads/controllers/daemonset/) pods are created with
+`NoExecute` tolerations for the following taints with no `tolerationSeconds`:
+
+  * `node.kubernetes.io/unreachable`
+  * `node.kubernetes.io/not-ready`
+
+This ensures that DaemonSet pods are never evicted due to these problems,
+which matches the behavior when this feature is disabled.
+-->
+
+<p><a href="/docs/concepts/workloads/controllers/daemonset/">DaemonSet</a> 中的 pod 被创建时，针对以下 taint 自动添加的 <code>NoExecute</code> 的 toleration 将不会指定 <code>tolerationSeconds</code>：</p>
+
+<ul>
+<li><code>node.kubernetes.io/unreachable</code></li>
+<li><code>node.kubernetes.io/not-ready</code></li>
+</ul>
+
+<p>这保证了出现上述问题时 DaemonSet 中的 pod 永远不会被驱逐，这和 <code>TaintBasedEvictions</code> 这个特性被禁用后的行为是一样的。</p>
+
+<!--
+## Taint Nodes by Condition
+-->
+
+<h2 id="基于节点状态添加-taint">基于节点状态添加 taint</h2>
+
+<!--
+The node lifecycle controller automatically creates taints corresponding to Node conditions.
+Similarly the scheduler does not check Node conditions; instead the scheduler checks taints. This assures that Node conditions don't affect what's scheduled onto the Node. The user can choose to ignore some of the Node's problems (represented as Node conditions) by adding appropriate Pod tolerations.
+Note that `TaintNodesByCondition` only taints nodes with `NoSchedule` effect. `NoExecute` effect is controlled by `TaintBasedEviction` which is a beta feature and enabled by default since version 1.13.
+
+Starting in Kubernetes 1.8, the DaemonSet controller automatically adds the
+following `NoSchedule` tolerations to all daemons, to prevent DaemonSets from
+breaking.
+
+  * `node.kubernetes.io/memory-pressure`
+  * `node.kubernetes.io/disk-pressure`
+  * `node.kubernetes.io/out-of-disk` (*only for critical pods*)
+  * `node.kubernetes.io/unschedulable` (1.10 or later)
+  * `node.kubernetes.io/network-unavailable` (*host network only*)
+-->
+
+<p>Node 生命周期控制器会自动创建与 Node 条件相对应的污点。
+同样，调度器不检查节点条件，而是检查节点污点。这确保了节点条件不会影响调度到节点上的内容。用户可以通过添加适当的 Pod 容忍度来选择忽略某些 Node 的问题(表示为 Node 的调度条件)。
+注意，<code>TaintNodesByCondition</code> 只会污染具有 <code>NoSchedule</code> 设定的节点。 <code>NoExecute</code> 效应由 <code>TaintBasedEviction</code> 控制，
+<code>TaintBasedEviction</code> 是 Beta 版功能，自 Kubernetes 1.13 起默认启用。</p>
+
+<ul>
+<li><code>node.kubernetes.io/memory-pressure</code></li>
+<li><code>node.kubernetes.io/disk-pressure</code></li>
+<li><code>node.kubernetes.io/out-of-disk</code> (<em>只适合 critical pod</em>)</li>
+<li><code>node.kubernetes.io/unschedulable</code> (1.10 或更高版本)</li>
+<li><code>node.kubernetes.io/network-unavailable</code> (<em>只适合 host network</em>)</li>
+</ul>
+
+<!--
+Adding these tolerations ensures backward compatibility. You can also add
+arbitrary tolerations to DaemonSets.
+-->
+
+<p>添加上述 toleration 确保了向后兼容，您也可以选择自由的向 DaemonSet 添加 toleration。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/configuration/taint-and-toleration.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/concepts\/configuration\/taint-and-toleration\/",
+    "title" : "Taint 和 Toleration",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/concepts\/configuration\/taint-and-toleration\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/configuration/taint-and-toleration.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 February 16, 2020 at 11:17 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/3a322f804817b7f30256bc36f6e09ed871e69e92/">Polish zh translation for taint-and-toleration (#19133)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/configuration/taint-and-toleration.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

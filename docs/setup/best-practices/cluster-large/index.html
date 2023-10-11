@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html id="docs" lang="en" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Building large clusters - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="Support At v1.17, Kubernetes supports clusters with up to 5000 nodes. More specifically, we support configurations that meet all of the following criteria:
+ No more than 5000 nodes No more than 150000 total pods No more than 300000 total containers No more than 100 pods per node  
+   Support Setup  Quota Issues Etcd storage Size of master and master components Addon Resources Allowing minor node failure at startup     Setup A cluster is a set of nodes (physical or virtual machines) running Kubernetes agents, managed by a &ldquo;master&rdquo; (the cluster-level control plane).">
+<meta property="og:description" content="Support At v1.17, Kubernetes supports clusters with up to 5000 nodes. More specifically, we support configurations that meet all of the following criteria:
+ No more than 5000 nodes No more than 150000 total pods No more than 300000 total containers No more than 100 pods per node  
+   Support Setup  Quota Issues Etcd storage Size of master and master components Addon Resources Allowing minor node failure at startup     Setup A cluster is a set of nodes (physical or virtual machines) running Kubernetes agents, managed by a &ldquo;master&rdquo; (the cluster-level control plane).">
+<meta name="twitter:description" content="Support At v1.17, Kubernetes supports clusters with up to 5000 nodes. More specifically, we support configurations that meet all of the following criteria:
+ No more than 5000 nodes No more than 150000 total pods No more than 300000 total containers No more than 100 pods per node  
+   Support Setup  Quota Issues Etcd storage Size of master and master components Addon Resources Allowing minor node failure at startup     Setup A cluster is a set of nodes (physical or virtual machines) running Kubernetes agents, managed by a &ldquo;master&rdquo; (the cluster-level control plane).">
+<meta property="og:url" content="https://kubernetes.io/docs/setup/best-practices/cluster-large/">
+<meta property="og:title" content="Building large clusters">
+<meta name="twitter:title" content="Building large clusters">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/" class="logo" title="Production-Grade Container Orchestration - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/blog/">Blog</a></li>
+            
+            <li><a href="/training/">Training</a></li>
+            
+            <li><a href="/partners/">Partners</a></li>
+            
+            <li><a href="/community/">Community</a></li>
+            
+            <li><a href="/case-studies/">Case Studies</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    English <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/zh/docs/setup/best-practices/cluster-large/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/docs/setup/best-practices/cluster-large/">한국어 Korean</a></li>
+                
+                    <li><a href="/ja/docs/setup/best-practices/cluster-large/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/docs/setup/best-practices/cluster-large/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/docs/setup/best-practices/cluster-large/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/docs/setup/best-practices/cluster-large/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/docs/setup/best-practices/cluster-large/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/docs/setup/best-practices/cluster-large/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Learn Kubernetes Basics</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/docs/home/">Documentation</a></h3>
+           <p>Learn how to use Kubernetes with conceptual, tutorial, and reference documentation. You can even <a href="/editdocs/" data-auto-burger-exclude>help contribute to the docs</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/blog/">Blog</a></h3>
+           <p>Read the latest news for Kubernetes and the containers space in general, and get technical how-tos hot off the presses.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Interested in hacking on the core Kubernetes code base?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>View On GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explore the community</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>Getting started</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/docs/home/">HOME</a></li>
+		
+		
+		<li><a href="/docs/setup/" class="YAH">GETTING STARTED</a></li>
+		
+		
+		<li><a href="/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/docs/tasks/">TASKS</a></li>
+		
+		
+		<li><a href="/docs/tutorials/">TUTORIALS</a></li>
+		
+		
+		<li><a href="/docs/reference/">REFERENCE</a></li>
+		
+		
+		<li><a href="/docs/contribute/">CONTRIBUTE</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Search" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation is no longer actively maintained. The version you are currently viewing is a static snapshot. For up-to-date documentation, see the 
+	 <a href="https://kubernetes.io/docs/home/">latest version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Getting started" href="/docs/setup/"></a>
+
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Release notes and version skew">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="v1.17 Release Notes" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes version and version skew support policy" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Learning environment">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Minikube" href="/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Kind" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Production environment">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Container runtimes" href="/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Bootstrapping clusters with kubeadm">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installing kubeadm" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Troubleshooting kubeadm" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Creating a single control-plane cluster with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Customizing control plane configuration with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Options for Highly Available topology" href="/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Creating Highly Available clusters with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Set up a High Availability etcd cluster with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuring each kubelet in your cluster using kubeadm" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuring your kubernetes cluster to self-host the control plane" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with kops" href="/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with KRIB" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Kubespray" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Turnkey Cloud Solutions">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Alibaba Cloud" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on AWS EC2" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Azure" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on CenturyLink Cloud" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Google Compute Engine" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Tencent Kubernetes Engine" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="On-Premises VMs">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Cloudstack" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes on DC/OS" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="oVirt" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows in Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Intro to Windows support in Kubernetes" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for adding Windows Nodes in Kubernetes" href="/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for scheduling Windows containers in Kubernetes" href="/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Best practices">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running in multiple zones" href="/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Building large clusters" href="/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Validate node setup" href="/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI certificates and requirements" href="/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/setup/best-practices/cluster-large.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Building large clusters</h1>
+
+
+
+
+
+<h2 id="support">Support</h2>
+
+<p>At v1.17, Kubernetes supports clusters with up to 5000 nodes. More specifically, we support configurations that meet <em>all</em> of the following criteria:</p>
+
+<ul>
+<li>No more than 5000 nodes</li>
+<li>No more than 150000 total pods</li>
+<li>No more than 300000 total containers</li>
+<li>No more than 100 pods per node</li>
+</ul>
+
+<p><br></p>
+
+<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#support">Support</a></li>
+<li><a href="#setup">Setup</a>
+<ul>
+<li><a href="#quota-issues">Quota Issues</a></li>
+<li><a href="#etcd-storage">Etcd storage</a></li>
+<li><a href="#size-of-master-and-master-components">Size of master and master components</a></li>
+<li><a href="#addon-resources">Addon Resources</a></li>
+<li><a href="#allowing-minor-node-failure-at-startup">Allowing minor node failure at startup</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+
+<h2 id="setup">Setup</h2>
+
+<p>A cluster is a set of nodes (physical or virtual machines) running Kubernetes agents, managed by a &ldquo;master&rdquo; (the cluster-level control plane).</p>
+
+<p>Normally the number of nodes in a cluster is controlled by the value <code>NUM_NODES</code> in the platform-specific <code>config-default.sh</code> file (for example, see <a href="http://releases.k8s.io/v1.17.17/cluster/gce/config-default.sh" target="_blank">GCE&rsquo;s <code>config-default.sh</code></a>).</p>
+
+<p>Simply changing that value to something very large, however, may cause the setup script to fail for many cloud providers. A GCE deployment, for example, will run in to quota issues and fail to bring the cluster up.</p>
+
+<p>When setting up a large Kubernetes cluster, the following issues must be considered.</p>
+
+<h3 id="quota-issues">Quota Issues</h3>
+
+<p>To avoid running into cloud provider quota issues, when creating a cluster with many nodes, consider:</p>
+
+<ul>
+<li>Increase the quota for things like CPU, IPs, etc.
+
+<ul>
+<li>In <a href="https://cloud.google.com/compute/docs/resource-quotas" target="_blank">GCE, for example,</a> you&rsquo;ll want to increase the quota for:</li>
+<li>CPUs</li>
+<li>VM instances</li>
+<li>Total persistent disk reserved</li>
+<li>In-use IP addresses</li>
+<li>Firewall Rules</li>
+<li>Forwarding rules</li>
+<li>Routes</li>
+<li>Target pools</li>
+</ul></li>
+<li>Gating the setup script so that it brings up new node VMs in smaller batches with waits in between, because some cloud providers rate limit the creation of VMs.</li>
+</ul>
+
+<h3 id="etcd-storage">Etcd storage</h3>
+
+<p>To improve performance of large clusters, we store events in a separate dedicated etcd instance.</p>
+
+<p>When creating a cluster, existing salt scripts:</p>
+
+<ul>
+<li>start and configure additional etcd instance</li>
+<li>configure api-server to use it for storing events</li>
+</ul>
+
+<h3 id="size-of-master-and-master-components">Size of master and master components</h3>
+
+<p>On GCE/Google Kubernetes Engine, and AWS, <code>kube-up</code> automatically configures the proper VM size for your master depending on the number of nodes
+in your cluster. On other providers, you will need to configure it manually. For reference, the sizes we use on GCE are</p>
+
+<ul>
+<li>1-5 nodes: n1-standard-1</li>
+<li>6-10 nodes: n1-standard-2</li>
+<li>11-100 nodes: n1-standard-4</li>
+<li>101-250 nodes: n1-standard-8</li>
+<li>251-500 nodes: n1-standard-16</li>
+<li>more than 500 nodes: n1-standard-32</li>
+</ul>
+
+<p>And the sizes we use on AWS are</p>
+
+<ul>
+<li>1-5 nodes: m3.medium</li>
+<li>6-10 nodes: m3.large</li>
+<li>11-100 nodes: m3.xlarge</li>
+<li>101-250 nodes: m3.2xlarge</li>
+<li>251-500 nodes: c4.4xlarge</li>
+<li>more than 500 nodes: c4.8xlarge</li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> <p>On Google Kubernetes Engine, the size of the master node adjusts automatically based on the size of your cluster. For more information, see <a href="https://cloudplatform.googleblog.com/2017/11/Cutting-Cluster-Management-Fees-on-Google-Kubernetes-Engine.html" target="_blank">this blog post</a>.</p>
+
+<p>On AWS, master node sizes are currently set at cluster startup time and do not change, even if you later scale your cluster up or down by manually removing or adding nodes or using a cluster autoscaler.</p>
+</div>
+</blockquote>
+
+<h3 id="addon-resources">Addon Resources</h3>
+
+<p>To prevent memory leaks or other resource issues in <a href="https://releases.k8s.io/v1.17.17/cluster/addons" target="_blank">cluster addons</a> from consuming all the resources available on a node, Kubernetes sets resource limits on addon containers to limit the CPU and Memory resources they can consume (See PR <a href="http://pr.k8s.io/10653/files" target="_blank">#10653</a> and <a href="http://pr.k8s.io/10778/files" target="_blank">#10778</a>).</p>
+
+<p>For example:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>fluentd-cloud-logging<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span>k8s.gcr.io/fluentd-gcp:<span style="color:#666">1.16</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>limits:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>cpu:<span style="color:#bbb"> </span>100m<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>memory:<span style="color:#bbb"> </span>200Mi</code></pre></div>
+<p>Except for Heapster, these limits are static and are based on data we collected from addons running on 4-node clusters (see <a href="http://issue.k8s.io/10335#issuecomment-117861225" target="_blank">#10335</a>). The addons consume a lot more resources when running on large deployment clusters (see <a href="http://issue.k8s.io/5880#issuecomment-113984085" target="_blank">#5880</a>). So, if a large cluster is deployed without adjusting these values, the addons may continuously get killed because they keep hitting the limits.</p>
+
+<p>To avoid running into cluster addon resource issues, when creating a cluster with many nodes, consider the following:</p>
+
+<ul>
+<li>Scale memory and CPU limits for each of the following addons, if used, as you scale up the size of cluster (there is one replica of each handling the entire cluster so memory and CPU usage tends to grow proportionally with size/load on cluster):
+
+<ul>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/cluster-monitoring/influxdb/influxdb-grafana-controller.yaml" target="_blank">InfluxDB and Grafana</a></li>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/dns/kube-dns/kube-dns.yaml.in" target="_blank">kubedns, dnsmasq, and sidecar</a></li>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/fluentd-elasticsearch/kibana-deployment.yaml" target="_blank">Kibana</a></li>
+</ul></li>
+<li>Scale number of replicas for the following addons, if used, along with the size of cluster (there are multiple replicas of each so increasing replicas should help handle increased load, but, since load per replica also increases slightly, also consider increasing CPU/memory limits):
+
+<ul>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/fluentd-elasticsearch/es-statefulset.yaml" target="_blank">elasticsearch</a></li>
+</ul></li>
+<li>Increase memory and CPU limits slightly for each of the following addons, if used, along with the size of cluster (there is one replica per node but CPU/memory usage increases slightly along with cluster load/size as well):
+
+<ul>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/fluentd-elasticsearch/fluentd-es-ds.yaml" target="_blank">FluentD with ElasticSearch Plugin</a></li>
+<li><a href="http://releases.k8s.io/v1.17.17/cluster/addons/fluentd-gcp/fluentd-gcp-ds.yaml" target="_blank">FluentD with GCP Plugin</a></li>
+</ul></li>
+</ul>
+
+<p>Heapster&rsquo;s resource limits are set dynamically based on the initial size of your cluster (see <a href="http://issue.k8s.io/16185" target="_blank">#16185</a>
+and <a href="http://issue.k8s.io/22940" target="_blank">#22940</a>). If you find that Heapster is running
+out of resources, you should adjust the formulas that compute heapster memory request (see those PRs for details).</p>
+
+<p>For directions on how to detect if addon containers are hitting resource limits, see the <a href="/docs/concepts/configuration/manage-compute-resources-container/#troubleshooting">Troubleshooting section of Compute Resources</a>.</p>
+
+<p>In the <a href="http://issue.k8s.io/13048" target="_blank">future</a>, we anticipate to set all cluster addon resource limits based on cluster size, and to dynamically adjust them if you grow or shrink your cluster.
+We welcome PRs that implement those features.</p>
+
+<h3 id="allowing-minor-node-failure-at-startup">Allowing minor node failure at startup</h3>
+
+<p>For various reasons (see <a href="https://github.com/kubernetes/kubernetes/issues/18969" target="_blank">#18969</a> for more details) running
+<code>kube-up.sh</code> with a very large <code>NUM_NODES</code> may fail due to a very small number of nodes not coming up properly.
+Currently you have two choices: restart the cluster (<code>kube-down.sh</code> and then <code>kube-up.sh</code> again), or before
+running <code>kube-up.sh</code> set the environment variable <code>ALLOWED_NOTREADY_NODES</code> to whatever value you feel comfortable
+with. This will allow <code>kube-up.sh</code> to succeed with fewer than <code>NUM_NODES</code> coming up. Depending on the
+reason for the failure, those additional nodes may join later or the cluster may remain at a size of
+<code>NUM_NODES - ALLOWED_NOTREADY_NODES</code>.</p>
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Was this page helpful? </p>
+  <button class="button feedback--yes">Yes</button>
+  <button class="button feedback--no">No</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/best-practices/cluster-large.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/docs\/setup\/best-practices\/cluster-large\/",
+    "title" : "Building large clusters",
+    "permalink" : "https:\/\/kubernetes.io\/docs\/setup\/best-practices\/cluster-large\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Create an Issue</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/setup/best-practices/cluster-large.md" class="button issue">Edit This Page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Page last modified on June 12, 2019 at 5:27 PM PST by
+    <a href="https://github.com/kubernetes/website/commit/55ac801bc447ae185b6d0dd22ac5793e91f329fe/">Restructure the left navigation pane of setup (#14826)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/best-practices/cluster-large.md">Page History</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/docs/home/">Home</a>
+            
+            <a href="/blog/">Blog</a>
+            
+            <a href="/training/">Training</a>
+            
+            <a href="/partners/">Partners</a>
+            
+            <a href="/community/">Community</a>
+            
+            <a href="/case-studies/">Case Studies</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribute</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

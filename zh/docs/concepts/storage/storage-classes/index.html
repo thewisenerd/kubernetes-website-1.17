@@ -1,0 +1,3458 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Storage Classes - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/concepts/storage/storage-classes/">
+<meta property="og:title" content="Storage Classes">
+<meta name="twitter:title" content="Storage Classes">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/storage/storage-classes/">English</a></li>
+                
+                    <li><a href="/id/docs/concepts/storage/storage-classes/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/concepts/storage/storage-classes/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/concepts/storage/storage-classes/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/concepts/storage/storage-classes/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/concepts/storage/storage-classes/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/concepts/storage/storage-classes/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>概念</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/" class="YAH">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="概念" href="/zh/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="概述">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="概述" href="/zh/docs/concepts/overview/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 是什么？" href="/zh/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 组件" href="/zh/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API" href="/zh/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="使用 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="理解 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 对象管理" href="/zh/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="名称" href="/zh/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间" href="/zh/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="标签和选择器" href="/zh/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="注解" href="/zh/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="字段选择器" href="/zh/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="推荐使用的标签" href="/zh/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes 架构">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 架构" href="/zh/docs/concepts/architecture/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="节点" href="/zh/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云控制器管理器的基础概念" href="/zh/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器" href="/zh/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Master 节点通信" href="/zh/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/cluster-administration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="集群管理概述" href="/zh/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书" href="/zh/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云驱动" href="/zh/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理资源" href="/zh/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 控制面板的指标" href="/zh/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="日志架构" href="/zh/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 kubelet 垃圾回收策略" href="/zh/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器管理器指标" href="/zh/docs/concepts/cluster-administration/controller-metrics/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 中的代理" href="/zh/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装扩展（Addons）" href="/zh/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦" href="/zh/docs/concepts/cluster-administration/federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/concepts/extend-kubernetes/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展 Kubernetes 集群" href="/zh/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes API">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Custom Resources <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过聚合层扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Operator 模式" href="/zh/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网络插件" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="服务目录" href="/zh/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="容器" href="/zh/docs/concepts/containers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="镜像" href="/zh/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器运行时类(Runtime Class)" href="/zh/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器生命周期钩子" href="/zh/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器环境变量" href="/zh/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="工作负载">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="工作负载" href="/zh/docs/concepts/workloads/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pods">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Pod 概览" href="/zh/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Preset" href="/zh/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 拓扑扩展约束" href="/zh/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="干扰" href="/zh/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="临时容器" href="/zh/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Init 容器" href="/zh/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 的生命周期" href="/zh/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="控制器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="控制器" href="/zh/docs/concepts/workloads/controllers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/zh/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ReplicationController" href="/zh/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Deployments" href="/zh/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StatefulSets" href="/zh/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DaemonSet" href="/zh/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="垃圾收集" href="/zh/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="已完成资源的 TTL 控制器" href="/zh/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Jobs - Run to Completion <small>(EN)</small>" href="/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CronJob" href="/zh/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="存储">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="存储" href="/zh/docs/concepts/storage/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Volumes" href="/zh/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Persistent Volumes <small>(EN)</small>" href="/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照" href="/zh/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CSI 卷克隆" href="/zh/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Storage Classes" href="/zh/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照类" href="/zh/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="动态卷供应" href="/zh/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="特定于节点的卷数限制" href="/zh/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置" href="/zh/docs/concepts/configuration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展资源的资源箱打包" href="/zh/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置最佳实践" href="/zh/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 开销" href="/zh/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器管理计算资源" href="/zh/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Taint 和 Toleration" href="/zh/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Secret" href="/zh/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeconfig 文件组织集群访问" href="/zh/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度框架" href="/zh/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="服务、负载均衡和联网">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="服务、负载均衡和联网" href="/zh/docs/concepts/services-networking/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Endpoint Slices" href="/zh/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service 拓扑" href="/zh/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Services" href="/zh/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 与 Service 的 DNS" href="/zh/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用连接到 Service" href="/zh/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/zh/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress 控制器" href="/zh/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="网络策略" href="/zh/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HostAliases 向 Pod /etc/hosts 文件添加条目" href="/zh/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IPv4/IPv6 双协议栈" href="/zh/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安全">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安全" href="/zh/docs/concepts/security/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Overview of Cloud Native Security <small>(EN)</small>" href="/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="调度">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="调度" href="/zh/docs/concepts/scheduling/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 调度器" href="/zh/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度器性能调优" href="/zh/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="策略">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="策略" href="/zh/docs/concepts/policy/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 安全策略" href="/zh/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源配额" href="/zh/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/storage/storage-classes.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Storage Classes</h1>
+
+
+
+<!--
+This document describes the concept of a StorageClass in Kubernetes. Familiarity
+with [volumes](/docs/concepts/storage/volumes/) and
+[persistent volumes](/docs/concepts/storage/persistent-volumes) is suggested.
+-->
+
+<p>本文描述了 Kubernetes 中 StorageClass 的概念。建议先熟悉 <a href="/docs/concepts/storage/volumes/">卷</a> 和
+<a href="/docs/concepts/storage/persistent-volumes">持久卷</a> 的概念。</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e4%bb%8b%e7%bb%8d">介绍</a></li>
+
+
+
+
+<li><a href="#storageclass-%e8%b5%84%e6%ba%90">StorageClass 资源</a></li>
+
+
+
+
+<li><a href="#%e5%8f%82%e6%95%b0">参数</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<!--
+## Introduction
+
+A `StorageClass` provides a way for administrators to describe the "classes" of
+storage they offer. Different classes might map to quality-of-service levels,
+or to backup policies, or to arbitrary policies determined by the cluster
+administrators. Kubernetes itself is unopinionated about what classes
+represent. This concept is sometimes called "profiles" in other storage
+systems.
+-->
+
+<h2 id="介绍">介绍</h2>
+
+<p><code>StorageClass</code> 为管理员提供了描述存储 <code>&quot;类&quot;</code> 的方法。
+不同的<code>类型</code>可能会映射到不同的服务质量等级或备份策略，或是由集群管理员制定的任意策略。
+Kubernetes 本身并不清楚各种<code>类</code>代表的什么。这个<code>类</code>的概念在其他存储系统中有时被称为&rdquo;配置文件&rdquo;。</p>
+
+<!--
+## The StorageClass Resource
+
+Each `StorageClass` contains the fields `provisioner`, `parameters`, and
+`reclaimPolicy`, which are used when a `PersistentVolume` belonging to the
+class needs to be dynamically provisioned.
+ -->
+
+<h2 id="storageclass-资源">StorageClass 资源</h2>
+
+<p>每个 <code>StorageClass</code> 都包含 <code>provisioner</code>、<code>parameters</code> 和 <code>reclaimPolicy</code> 字段，
+这些字段会在<code>StorageClass</code>需要动态分配 <code>PersistentVolume</code> 时会使用到。</p>
+
+<!--
+The name of a `StorageClass` object is significant, and is how users can
+request a particular class. Administrators set the name and other parameters
+of a class when first creating `StorageClass` objects, and the objects cannot
+be updated once they are created.
+ -->
+
+<p><code>StorageClass</code> 对象的命名很重要，用户使用这个命名来请求生成一个特定的类。
+当创建 <code>StorageClass</code> 对象时，管理员设置 StorageClass 对象的命名和其他参数，一旦创建了对象就不能再对其更新。</p>
+
+<!--
+Administrators can specify a default `StorageClass` just for PVCs that don't
+request any particular class to bind to: see the
+[`PersistentVolumeClaim` section](/docs/concepts/storage/persistent-volumes/#class-1)
+for details.
+ -->
+
+<p>管理员可以为没有申请绑定到特定 <code>StorageClass</code> 的 PVC 指定一个默认的存储<code>类</code> ：
+更多详情请参阅 <a href="/docs/concepts/storage/persistent-volumes/#class-1"><code>PersistentVolumeClaim</code> 章节</a>。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>standard<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/aws-ebs<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>type:<span style="color:#bbb"> </span>gp2<span style="color:#bbb">
+</span><span style="color:#bbb"></span>reclaimPolicy:<span style="color:#bbb"> </span>Retain<span style="color:#bbb">
+</span><span style="color:#bbb"></span>allowVolumeExpansion:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>mountOptions:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>debug<span style="color:#bbb">
+</span><span style="color:#bbb"></span>volumeBindingMode:<span style="color:#bbb"> </span>Immediate</code></pre></div>
+<!--
+### Provisioner
+
+Storage classes have a provisioner that determines what volume plugin is used
+for provisioning PVs. This field must be specified.
+ -->
+
+<h3 id="存储分配器">存储分配器</h3>
+
+<p><code>StorageClass</code> 有一个分配器，用来决定使用哪个<code>卷插件</code>分配<code>PV</code>。该字段必须指定。</p>
+
+<!--
+| Volume Plugin        | Internal Provisioner| Config Example                       |
+-->
+
+<table>
+<thead>
+<tr>
+<th align="left">卷插件</th>
+<th align="center">内置分配器</th>
+<th align="center">配置例子</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="left">AWSElasticBlockStore</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#aws-ebs">AWS EBS</a></td>
+</tr>
+
+<tr>
+<td align="left">AzureFile</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#azure-file">Azure File</a></td>
+</tr>
+
+<tr>
+<td align="left">AzureDisk</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#azure-disk">Azure Disk</a></td>
+</tr>
+
+<tr>
+<td align="left">CephFS</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">Cinder</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#openstack-cinder">OpenStack Cinder</a></td>
+</tr>
+
+<tr>
+<td align="left">FC</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">FlexVolume</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">Flocker</td>
+<td align="center">&#x2713;</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">GCEPersistentDisk</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#gce-pd">GCE PD</a></td>
+</tr>
+
+<tr>
+<td align="left">Glusterfs</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#glusterfs">Glusterfs</a></td>
+</tr>
+
+<tr>
+<td align="left">iSCSI</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">Quobyte</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#quobyte">Quobyte</a></td>
+</tr>
+
+<tr>
+<td align="left">NFS</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+
+<tr>
+<td align="left">RBD</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#ceph-rbd">Ceph RBD</a></td>
+</tr>
+
+<tr>
+<td align="left">VsphereVolume</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#vsphere">vSphere</a></td>
+</tr>
+
+<tr>
+<td align="left">PortworxVolume</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#portworx-volume">Portworx Volume</a></td>
+</tr>
+
+<tr>
+<td align="left">ScaleIO</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#scaleio">ScaleIO</a></td>
+</tr>
+
+<tr>
+<td align="left">StorageOS</td>
+<td align="center">&#x2713;</td>
+<td align="center"><a href="#storageos">StorageOS</a></td>
+</tr>
+
+<tr>
+<td align="left">Local</td>
+<td align="center">-</td>
+<td align="center"><a href="#local">Local</a></td>
+</tr>
+</tbody>
+</table>
+
+<!--
+You are not restricted to specifying the "internal" provisioners
+listed here (whose names are prefixed with "kubernetes.io" and shipped
+alongside Kubernetes). You can also run and specify external provisioners,
+which are independent programs that follow a [specification](https://git.k8s.io/community/contributors/design-proposals/storage/volume-provisioning.md)
+defined by Kubernetes. Authors of external provisioners have full discretion
+over where their code lives, how the provisioner is shipped, how it needs to be
+run, what volume plugin it uses (including Flex), etc. The repository
+[kubernetes-sigs/sig-storage-lib-external-provisioner](https://github.com/kubernetes-sigs/sig-storage-lib-external-provisioner)
+houses a library for writing external provisioners that implements the bulk of
+the specification. Some external provisioners are listed under the repository
+[kubernetes-incubator/external-storage](https://github.com/kubernetes-incubator/external-storage).
+ -->
+
+<p>您不限于指定此处列出的&rdquo;内置&rdquo;分配器（其名称前缀为 kubernetes.io 并打包在 Kubernetes 中）。
+您还可以运行和指定外部分配器，这些独立的程序遵循由 Kubernetes 定义的 <a href="https://git.k8s.io/community/contributors/design-proposals/storage/volume-provisioning.md" target="_blank">规范</a>。
+外部供应商的作者完全可以自由决定他们的代码保存于何处、打包方式、运行方式、使用的插件（包括 Flex）等。
+代码仓库 <a href="https://github.com/kubernetes-sigs/sig-storage-lib-external-provisioner" target="_blank">kubernetes-sigs/sig-storage-lib-external-provisioner</a>
+包含一个用于为外部分配器编写功能实现的类库。可以通过下面的代码仓库，查看外部分配器列表。</p>
+
+<p><a href="https://github.com/kubernetes-incubator/external-storage" target="_blank">kubernetes-incubator/external-storage</a>.</p>
+
+<!--
+For example, NFS doesn't provide an internal provisioner, but an external
+provisioner can be used. There are also cases when 3rd party storage
+vendors provide their own external provisioner.
+ -->
+
+<p>例如，NFS 没有内部分配器，但可以使用外部分配器。
+也有第三方存储供应商提供自己的外部分配器。</p>
+
+<!--
+### Reclaim Policy
+
+Persistent Volumes that are dynamically created by a storage class will have the
+reclaim policy specified in the `reclaimPolicy` field of the class, which can be
+either `Delete` or `Retain`. If no `reclaimPolicy` is specified when a
+`StorageClass` object is created, it will default to `Delete`.
+
+Persistent Volumes that are created manually and managed via a storage class will have
+whatever reclaim policy they were assigned at creation.
+ -->
+
+<h3 id="回收策略">回收策略</h3>
+
+<p>由 <code>StorageClass</code> 动态创建的持久化卷会在的 <code>reclaimPolicy</code> 字段中指定回收策略，可以是
+<code>Delete</code> 或者 <code>Retain</code>。如果 <code>StorageClass</code> 对象被创建时没有指定 <code>reclaimPolicy</code> ，它将默认为 <code>Delete</code>。</p>
+
+<p>通过 <code>StorageClass</code> 手动创建并管理的 Persistent Volume 会使用它们被创建时指定的回收政策。</p>
+
+<!--
+### Allow Volume Expansion
+-->
+
+<h3 id="允许卷扩展">允许卷扩展</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.11</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+该功能目前处于 <em>beta</em> 状态，意味着：</p>
+
+<ul>
+<li>版本名称包含 beta （例如 v2beta3）。</li>
+<li>代码经过了充分测试，启用该功能被认为是安全的。默认情况下被启用。</li>
+<li>对整体功能的支持在未来不会被移除，尽管细节上可能会做更改。</li>
+<li>在后续的 beta 或稳定版本中，对象的模式、语义可能以不兼容的方式发生变化。当这种情况发生时，我们将提供迁移到下一个版本的说明。这可能需要删除、编辑和重建 API 对象，编辑过程可能需要一些思考。这可能导致依赖该功能的应用程序停机一段时间。</li>
+<li>建议仅在非业务关键场景使用该功能，因为在后续版本中可能会发生不兼容的更改。如果您有多个可以独立升级的集群，那么您可能可以放松这个限制。</li>
+<li><strong>请尝试使用我们的 beta 版功能，并给出反馈！在它们退出 beta 测试阶段之后，我们将很难去做更多的更改。</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<!--
+Persistent Volumes can be configured to be expandable. This feature when set to `true`,
+allows the users to resize the volume by editing the corresponding PVC object.
+
+The following types of volumes support volume expansion, when the underlying
+Storage Class has the field `allowVolumeExpansion` set to true.
+-->
+
+<p>永久卷可以配置为可扩展。将此功能设置为 <code>true</code> 时，允许用户通过编辑相应的PVC对象来调整卷大小。</p>
+
+<p>当基础存储类的 <code>allowVolumeExpansion</code> 字段设置为true时，以下类型的卷支持卷扩展。</p>
+
+<ul>
+<li>gcePersistentDisk</li>
+<li>awsElasticBlockStore</li>
+<li>Cinder</li>
+<li>glusterfs</li>
+<li>rbd</li>
+<li>Azure File</li>
+<li>Azure Disk</li>
+<li>Portworx</li>
+<li>FlexVolumes</li>
+<li>CSI<br /></li>
+</ul>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.14</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>alpha</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="alpha">
+该功能目前处于 <em>alpha</em> 状态，意味着：</p>
+
+<ul>
+<li>版本名称包含 alpha（例如 v1alpha1）。</li>
+<li>可能存在问题，启用该功能可能会暴露 bug。默认情况下被禁用。</li>
+<li>对该功能的支持可能在任何时候被取消，而不另行通知。</li>
+<li>API 可能会在以后的软件版本中以不兼容的方式被更改，而不另行通知。</li>
+<li>建议仅在短期测试集群中使用该功能，这是因为使用该功能会增加出现 bug 的风险，而且缺乏长期支持。</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+This feature cannot be used to shrink volumes.
+-->
+
+<p>此功能不能用于缩小卷。</div>
+</blockquote>
+
+<!--
+### Mount Options
+
+Persistent Volumes that are dynamically created by a storage class will have the
+mount options specified in the `mountOptions` field of the class.
+
+If the volume plugin does not support mount options but mount options are
+specified, provisioning will fail. Mount options are not validated on either
+the class or PV, so mount of the PV will simply fail if one is invalid.
+ -->
+
+<h3 id="挂载选项">挂载选项</h3>
+
+<p>由 <code>StorageClass</code> 动态创建的 Persistent Volume 将使用<code>类</code>中 <code>mountOption</code> 字段指定的挂载选项。</p>
+
+<p>如果卷插件不支持挂载选项，却指定了该选项，则分配操作会失败。
+挂载选项在 <code>StorageClass</code> 和持久卷上都不会做验证，所以如果挂载选项无效，那么这个 PV 就会失败。</p>
+
+<!--
+### Volume Binding Mode
+ -->
+
+<h3 id="卷绑定模式">卷绑定模式</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.12</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+该功能目前处于 <em>beta</em> 状态，意味着：</p>
+
+<ul>
+<li>版本名称包含 beta （例如 v2beta3）。</li>
+<li>代码经过了充分测试，启用该功能被认为是安全的。默认情况下被启用。</li>
+<li>对整体功能的支持在未来不会被移除，尽管细节上可能会做更改。</li>
+<li>在后续的 beta 或稳定版本中，对象的模式、语义可能以不兼容的方式发生变化。当这种情况发生时，我们将提供迁移到下一个版本的说明。这可能需要删除、编辑和重建 API 对象，编辑过程可能需要一些思考。这可能导致依赖该功能的应用程序停机一段时间。</li>
+<li>建议仅在非业务关键场景使用该功能，因为在后续版本中可能会发生不兼容的更改。如果您有多个可以独立升级的集群，那么您可能可以放松这个限制。</li>
+<li><strong>请尝试使用我们的 beta 版功能，并给出反馈！在它们退出 beta 测试阶段之后，我们将很难去做更多的更改。</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<!--
+**Note:** This feature requires the `VolumeScheduling` feature gate to be
+enabled.
+ -->
+
+<p><strong>注意：</strong> 这个功能特性需要启用 <code>VolumeScheduling</code> 参数才能使用。</p>
+
+<!--
+The `volumeBindingMode` field controls when [volume binding and dynamic
+provisioning](/docs/concepts/storage/persistent-volumes/#provisioning) should occur.
+ -->
+
+<p><code>volumeBindingMode</code> 字段控制了 <a href="/docs/concepts/storage/persistent-volumes/#provisioning">卷绑定和动态分配</a>
+应该发生在什么时候。</p>
+
+<!--
+By default, the `Immediate` mode indicates that volume binding and dynamic
+provisioning occurs once the PersistentVolumeClaim is created. For storage
+backends that are topology-constrained and not globally accessible from all Nodes
+in the cluster, PersistentVolumes will be bound or provisioned without knowledge of the Pod's scheduling
+requirements. This may result in unschedulable Pods.
+ -->
+
+<p>默认情况下，<code>Immediate</code> 模式表示一旦创建了 PersistentVolumeClaim 也就完成了卷绑定和动态分配。
+对于由于拓扑限制而非集群所有节点可达的存储后端，PersistentVolume 会在不知道 Pod 调度要求的情况下绑定或者分配。</p>
+
+<!--
+A cluster administrator can address this issue by specifying the `WaitForFirstConsumer` mode which
+will delay the binding and provisioning of a PersistentVolume until a Pod using the PersistentVolumeClaim is created.
+PersistentVolumes will be selected or provisioned conforming to the topology that is
+specified by the Pod's scheduling constraints. These include, but are not limited to, [resource
+requirements](/docs/concepts/configuration/manage-compute-resources-container),
+[node selectors](/docs/concepts/configuration/assign-pod-node/#nodeselector),
+[pod affinity and
+anti-affinity](/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity),
+and [taints and tolerations](/docs/concepts/configuration/taint-and-toleration).
+-->
+
+<p>集群管理员可以通过指定 <code>WaitForFirstConsumer</code> 模式来解决此问题。
+该模式将延迟 PersistentVolume 的绑定和分配，直到使用该 PersistentVolumeClaim 的 Pod 被创建。
+PersistentVolume 会根据 Pod 调度约束指定的拓扑来选择或分配。这些包括但不限于 <a href="/docs/concepts/configuration/manage-compute-resources-container">资源需求</a>，
+<a href="/docs/concepts/configuration/assign-pod-node/#nodeselector">节点筛选器</a>，
+<a href="/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity">pod 亲和性和互斥性</a>,
+以及 <a href="/docs/concepts/configuration/taint-and-toleration">污点和容忍度</a>.</p>
+
+<!--
+The following plugins support `WaitForFirstConsumer` with dynamic provisioning:
+
+* [AWSElasticBlockStore](#aws-ebs)
+* [GCEPersistentDisk](#gce-pd)
+* [AzureDisk](#azure-disk)
+-->
+
+<p>以下插件支持动态分配的 <code>WaitForFirstConsumer</code> 模式:</p>
+
+<ul>
+<li><a href="#aws-ebs">AWSElasticBlockStore</a></li>
+<li><a href="#gce-pd">GCEPersistentDisk</a></li>
+<li><a href="#azure-disk">AzureDisk</a></li>
+</ul>
+
+<!--
+The following plugins support `WaitForFirstConsumer` with pre-created PersistentVolume binding:
+
+* All of the above
+* [Local](#local)
+-->
+
+<p>以下插件支持预创建绑定 PersistentVolume 的 <code>WaitForFirstConsumer</code> 模式：</p>
+
+<ul>
+<li>All of the above</li>
+<li><a href="#local">Local</a></li>
+</ul>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes 1.14</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+该功能目前处于 <em>beta</em> 状态，意味着：</p>
+
+<ul>
+<li>版本名称包含 beta （例如 v2beta3）。</li>
+<li>代码经过了充分测试，启用该功能被认为是安全的。默认情况下被启用。</li>
+<li>对整体功能的支持在未来不会被移除，尽管细节上可能会做更改。</li>
+<li>在后续的 beta 或稳定版本中，对象的模式、语义可能以不兼容的方式发生变化。当这种情况发生时，我们将提供迁移到下一个版本的说明。这可能需要删除、编辑和重建 API 对象，编辑过程可能需要一些思考。这可能导致依赖该功能的应用程序停机一段时间。</li>
+<li>建议仅在非业务关键场景使用该功能，因为在后续版本中可能会发生不兼容的更改。如果您有多个可以独立升级的集群，那么您可能可以放松这个限制。</li>
+<li><strong>请尝试使用我们的 beta 版功能，并给出反馈！在它们退出 beta 测试阶段之后，我们将很难去做更多的更改。</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<!--
+[CSI volumes](/docs/concepts/storage/volumes/#csi) are also supported with dynamic provisioning
+and pre-created PVs, but you'll need to look at the documentation for a specific CSI driver
+to see its supported topology keys and examples. The `CSINodeInfo` feature gate must be enabled.
+-->
+
+<p>动态配置和预先创建的PVs也支持 <a href="/docs/concepts/storage/volumes/#csi">CSI卷</a>，
+但是您需要查看特定CSI驱动程序的文档以查看其支持的拓扑密钥和例子。 必须启用 <code>CSINodeInfo</code> 特性。</p>
+
+<!--
+### Allowed Topologies
+-->
+
+<h3 id="允许的拓扑结构">允许的拓扑结构</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.12</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+该功能目前处于 <em>beta</em> 状态，意味着：</p>
+
+<ul>
+<li>版本名称包含 beta （例如 v2beta3）。</li>
+<li>代码经过了充分测试，启用该功能被认为是安全的。默认情况下被启用。</li>
+<li>对整体功能的支持在未来不会被移除，尽管细节上可能会做更改。</li>
+<li>在后续的 beta 或稳定版本中，对象的模式、语义可能以不兼容的方式发生变化。当这种情况发生时，我们将提供迁移到下一个版本的说明。这可能需要删除、编辑和重建 API 对象，编辑过程可能需要一些思考。这可能导致依赖该功能的应用程序停机一段时间。</li>
+<li>建议仅在非业务关键场景使用该功能，因为在后续版本中可能会发生不兼容的更改。如果您有多个可以独立升级的集群，那么您可能可以放松这个限制。</li>
+<li><strong>请尝试使用我们的 beta 版功能，并给出反馈！在它们退出 beta 测试阶段之后，我们将很难去做更多的更改。</strong></li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<!--
+**Note:** This feature requires the `VolumeScheduling` feature gate to be enabled.
+-->
+
+<p><strong>注意：</strong> 这个特性需要开启 <code>VolumeScheduling</code> 特性开关。</p>
+
+<!--
+When a cluster operator specifies the `WaitForFirstConsumer` volume binding mode, it is no longer necessary
+to restrict provisioning to specific topologies in most situations. However,
+if still required, `allowedTopologies` can be specified.
+-->
+
+<p>当集群操作人员使用了 <code>WaitForFirstConsumer</code> 的卷绑定模式，在大部分情况下就没有必要将配置限制为特定的拓扑结构。
+然而，如果还有需要的话，可以使用 <code>allowedTopologies</code>。</p>
+
+<!--
+This example demonstrates how to restrict the topology of provisioned volumes to specific
+zones and should be used as a replacement for the `zone` and `zones` parameters for the
+supported plugins.
+-->
+
+<p>这个例子描述了如何将分配卷限的拓扑限制在特定的区域，在使用时应该根据插件支持情况替换 <code>zone</code> 和 <code>zones</code> 参数。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>standard<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/gce-pd<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>type:<span style="color:#bbb"> </span>pd-standard<span style="color:#bbb">
+</span><span style="color:#bbb"></span>volumeBindingMode:<span style="color:#bbb"> </span>WaitForFirstConsumer<span style="color:#bbb">
+</span><span style="color:#bbb"></span>allowedTopologies:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>matchLabelExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>key:<span style="color:#bbb"> </span>failure-domain.beta.kubernetes.io/zone<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>values:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>us-central1-a<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>us-central1-b</code></pre></div>
+<!--
+## Parameters
+
+Storage classes have parameters that describe volumes belonging to the storage
+class. Different parameters may be accepted depending on the `provisioner`. For
+ example, the value `io1`, for the parameter `type`, and the parameter
+`iopsPerGB` are specific to EBS. When a parameter is omitted, some default is
+used.
+ -->
+
+<h2 id="参数">参数</h2>
+
+<p>Storage class 具有描述属于卷的参数。取决于分配器，可以接受不同的参数。
+例如，参数 type 的值 io1 和参数 iopsPerGB 特定于 EBS PV。当参数被省略时，会使用默认值。</p>
+
+<h3 id="aws-ebs">AWS EBS</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>slow<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/aws-ebs<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>type:<span style="color:#bbb"> </span>io1<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>iopsPerGB:<span style="color:#bbb"> </span><span style="color:#b44">&#34;10&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>fsType:<span style="color:#bbb"> </span>ext4</code></pre></div>
+<!--
+* `type`: `io1`, `gp2`, `sc1`, `st1`. See
+  [AWS docs](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
+  for details. Default: `gp2`.
+* `zone` (Deprecated): AWS zone. If neither `zone` nor `zones` is specified, volumes are
+  generally round-robin-ed across all active zones where Kubernetes cluster
+  has a node. `zone` and `zones` parameters must not be used at the same time.
+* `zones` (Deprecated): A comma separated list of AWS zone(s). If neither `zone` nor `zones`
+  is specified, volumes are generally round-robin-ed across all active zones
+  where Kubernetes cluster has a node. `zone` and `zones` parameters must not
+  be used at the same time.
+* `iopsPerGB`: only for `io1` volumes. I/O operations per second per GiB. AWS
+  volume plugin multiplies this with size of requested volume to compute IOPS
+  of the volume and caps it at 20 000 IOPS (maximum supported by AWS, see
+  [AWS docs](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html).
+  A string is expected here, i.e. `"10"`, not `10`.
+* `fsType`: fsType that is supported by kubernetes. Default: `"ext4"`.
+* `encrypted`: denotes whether the EBS volume should be encrypted or not.
+  Valid values are `"true"` or `"false"`. A string is expected here,
+  i.e. `"true"`, not `true`.
+* `kmsKeyId`: optional. The full Amazon Resource Name of the key to use when
+  encrypting the volume. If none is supplied but `encrypted` is true, a key is
+  generated by AWS. See AWS docs for valid ARN value.
+-->
+
+<ul>
+<li><code>type</code>：<code>io1</code>，<code>gp2</code>，<code>sc1</code>，<code>st1</code>。详细信息参见 <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html" target="_blank">AWS 文档</a>。默认值：<code>gp2</code>。</li>
+<li><code>zone</code>(弃用)：AWS 区域。如果没有指定 <code>zone</code> 和 <code>zones</code>，通常卷会在 Kubernetes 集群节点所在的活动区域中轮询调度分配。<code>zone</code> 和 <code>zones</code> 参数不能同时使用。</li>
+<li><code>zones</code>(弃用)：以逗号分隔的 AWS 区域列表。如果没有指定 <code>zone</code> 和 <code>zones</code>，通常卷会在 Kubernetes 集群节点所在的活动区域中轮询调度分配。<code>zone</code>和<code>zones</code>参数不能同时使用。</li>
+<li><code>iopsPerGB</code>：只适用于 <code>io1</code> 卷。每 GiB 每秒 I/O 操作。AWS 卷插件将其与请求卷的大小相乘以计算 IOPS 的容量，并将其限制在 20 000 IOPS（AWS 支持的最高值，请参阅 <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html" target="_blank">AWS 文档</a>。
+这里需要输入一个字符串，即 <code>&quot;10&quot;</code>，而不是 <code>10</code>。</li>
+<li><code>fsType</code>：受 Kubernetes 支持的文件类型。默认值：<code>&quot;ext4&quot;</code>。</li>
+<li><code>encrypted</code>：指定 EBS 卷是否应该被加密。合法值为 <code>&quot;true&quot;</code> 或者 <code>&quot;false&quot;</code>。这里需要输入字符串，即 <code>&quot;true&quot;</code>, 而非 <code>true</code>。</li>
+<li><code>kmsKeyId</code>：可选。加密卷时使用密钥的完整 Amazon 资源名称。如果没有提供，但 <code>encrypted</code> 值为 true，AWS 生成一个密钥。关于有效的 ARN 值，请参阅 AWS 文档。</li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+`zone` and `zones` parameters are deprecated and replaced with
+[allowedTopologies](#allowed-topologies)
+ -->
+
+<p><code>zone</code> 和 <code>zones</code> 已被弃用并被 <a href="#allowed-topologies">允许的拓扑结构</a> 取代。</div>
+</blockquote>
+
+<h3 id="gce-pd">GCE PD</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>slow<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/gce-pd<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>type:<span style="color:#bbb"> </span>pd-standard<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replication-type:<span style="color:#bbb"> </span>none</code></pre></div>
+<!--
+* `type`: `pd-standard` or `pd-ssd`. Default: `pd-standard`
+* `zone` (Deprecated): GCE zone. If neither `zone` nor `zones` is specified, volumes are
+  generally round-robin-ed across all active zones where Kubernetes cluster has
+  a node. `zone` and `zones` parameters must not be used at the same time.
+* `zones` (Deprecated): A comma separated list of GCE zone(s). If neither `zone` nor `zones`
+  is specified, volumes are generally round-robin-ed across all active zones
+  where Kubernetes cluster has a node. `zone` and `zones` parameters must not
+  be used at the same time.
+* `replication-type`: `none` or `regional-pd`. Default: `none`.
+-->
+
+<ul>
+<li><code>type</code>：<code>pd-standard</code> 或者 <code>pd-ssd</code>。默认：<code>pd-standard</code></li>
+<li><code>zone</code>(弃用)：GCE 区域。如果没有指定 <code>zone</code> 和 <code>zones</code>，通常卷会在 Kubernetes 集群节点所在的活动区域中轮询调度分配。<code>zone</code> 和 <code>zones</code> 参数不能同时使用。</li>
+<li><code>zones</code>(弃用)：逗号分隔的 GCE 区域列表。如果没有指定 <code>zone</code> 和 <code>zones</code>，通常卷会在 Kubernetes 集群节点所在的活动区域中轮询调度（round-robin）分配。<code>zone</code> 和 <code>zones</code> 参数不能同时使用。</li>
+<li><code>replication-type</code>：<code>none</code> 或者 <code>regional-pd</code>。默认值：<code>none</code>。</li>
+</ul>
+
+<!--
+If `replication-type` is set to `none`, a regular (zonal) PD will be provisioned.
+-->
+
+<p>如果 <code>replication-type</code> 设置为 <code>none</code>，会分配一个常规（当前区域内的）持久化磁盘。</p>
+
+<!--
+If `replication-type` is set to `regional-pd`, a
+[Regional Persistent Disk](https://cloud.google.com/compute/docs/disks/#repds)
+will be provisioned. In this case, users must use `zones` instead of `zone` to
+specify the desired replication zones. If exactly two zones are specified, the
+Regional PD will be provisioned in those zones. If more than two zones are
+specified, Kubernetes will arbitrarily choose among the specified zones. If the
+`zones` parameter is omitted, Kubernetes will arbitrarily choose among zones
+managed by the cluster.
+-->
+
+<p>如果 <code>replication-type</code> 设置为 <code>regional-pd</code>，会分配一个 <a href="https://cloud.google.com/compute/docs/disks/#repds" target="_blank">区域性持久化磁盘（Regional Persistent Disk）</a>。在这种情况下，用户必须使用 <code>zones</code> 而非 <code>zone</code> 来指定期望的复制区域（zone）。如果指定来两个特定的区域，区域性持久化磁盘会在这两个区域里分配。如果指定了多于两个的区域，Kubernetes 会选择其中任意两个区域。如果省略了 <code>zones</code> 参数，Kubernetes 会在集群管理的区域中任意选择。</p>
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <!--
+`zone` and `zones` parameters are deprecated and replaced with
+[allowedTopologies](#allowed-topologies)
+-->
+
+<p><code>zone</code> 和 <code>zones</code> 已被弃用并被 <a href="#allowed-topologies">allowedTopologies</a> 取代。</div>
+</blockquote>
+
+<h3 id="glusterfs">Glusterfs</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>slow<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/glusterfs<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resturl:<span style="color:#bbb"> </span><span style="color:#b44">&#34;http://127.0.0.1:8081&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>clusterid:<span style="color:#bbb"> </span><span style="color:#b44">&#34;630372ccdc720a92c681fb928f27b53f&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restauthenabled:<span style="color:#bbb"> </span><span style="color:#b44">&#34;true&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restuser:<span style="color:#bbb"> </span><span style="color:#b44">&#34;admin&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>secretNamespace:<span style="color:#bbb"> </span><span style="color:#b44">&#34;default&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>secretName:<span style="color:#bbb"> </span><span style="color:#b44">&#34;heketi-secret&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>gidMin:<span style="color:#bbb"> </span><span style="color:#b44">&#34;40000&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>gidMax:<span style="color:#bbb"> </span><span style="color:#b44">&#34;50000&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumetype:<span style="color:#bbb"> </span><span style="color:#b44">&#34;replicate:3&#34;</span></code></pre></div>
+<!--
+* `resturl`: Gluster REST service/Heketi service url which provision gluster
+  volumes on demand. The general format should be `IPaddress:Port` and this is
+  a mandatory parameter for GlusterFS dynamic provisioner. If Heketi service is
+  exposed as a routable service in openshift/kubernetes setup, this can have a
+  format similar to `http://heketi-storage-project.cloudapps.mystorage.com`
+  where the fqdn is a resolvable Heketi service url.
+* `restauthenabled` : Gluster REST service authentication boolean that enables
+  authentication to the REST server. If this value is `"true"`, `restuser` and
+  `restuserkey` or `secretNamespace` + `secretName` have to be filled. This
+  option is deprecated, authentication is enabled when any of `restuser`,
+  `restuserkey`, `secretName` or `secretNamespace` is specified.
+* `restuser` : Gluster REST service/Heketi user who has access to create volumes
+  in the Gluster Trusted Pool.
+* `restuserkey` : Gluster REST service/Heketi user's password which will be used
+  for authentication to the REST server. This parameter is deprecated in favor
+  of `secretNamespace` + `secretName`.
+-->
+
+<ul>
+<li><code>resturl</code>：分配 gluster 卷的需求的 Gluster REST 服务/Heketi 服务 url。
+通用格式应该是 <code>IPaddress:Port</code>，这是 GlusterFS 动态分配器的必需参数。
+如果 Heketi 服务在 openshift/kubernetes 中安装并暴露为可路由服务，则可以使用类似于
+<code>http://heketi-storage-project.cloudapps.mystorage.com</code> 的格式，其中 fqdn 是可解析的 heketi 服务网址。</li>
+<li><code>restauthenabled</code>：Gluster REST 服务身份验证布尔值，用于启用对 REST 服务器的身份验证。如果此值为 &lsquo;true&rsquo;，则必须填写 <code>restuser</code> 和 <code>restuserkey</code> 或 <code>secretNamespace</code> + <code>secretName</code>。此选项已弃用，当在指定 <code>restuser</code>，<code>restuserkey</code>，<code>secretName</code> 或  <code>secretNamespace</code> 时，身份验证被启用。</li>
+<li><code>restuser</code>：在 Gluster 可信池中有权创建卷的 Gluster REST服务/Heketi 用户。</li>
+<li><code>restuserkey</code>：Gluster REST 服务/Heketi 用户的密码将被用于对 REST 服务器进行身份验证。此参数已弃用，取而代之的是 <code>secretNamespace</code> + <code>secretName</code>。</li>
+</ul>
+
+<!--
+* `secretNamespace`, `secretName` : Identification of Secret instance that
+  contains user password to use when talking to Gluster REST service. These
+  parameters are optional, empty password will be used when both
+  `secretNamespace` and `secretName` are omitted. The provided secret must have
+  type `"kubernetes.io/glusterfs"`, e.g. created in this way:
+
+    ```
+    kubectl create secret generic heketi-secret \
+      --type="kubernetes.io/glusterfs" --from-literal=key='opensesame' \
+      --namespace=default
+    ```
+
+    Example of a secret can be found in
+    [glusterfs-provisioning-secret.yaml](https://github.com/kubernetes/examples/tree/master/staging/persistent-volume-provisioning/glusterfs/glusterfs-secret.yaml).
+-->
+
+<ul>
+<li><p><code>secretNamespace</code>，<code>secretName</code>：Secret 实例的标识，包含与 Gluster REST 服务交互时使用的用户密码。
+这些参数是可选的，<code>secretNamespace</code> 和 <code>secretName</code> 都省略时使用空密码。所提供的 Secret 必须将类型设置为 &ldquo;kubernetes.io/glusterfs&rdquo;，例如以这种方式创建：</p>
+
+<pre><code>kubectl create secret generic heketi-secret \
+  --type=&quot;kubernetes.io/glusterfs&quot; --from-literal=key='opensesame' \
+  --namespace=default
+</code></pre>
+
+<p>secret 的例子可以在 <a href="https://github.com/kubernetes/examples/tree/master/staging/persistent-volume-provisioning/glusterfs/glusterfs-secret.yaml" target="_blank">glusterfs-provisioning-secret.yaml</a> 中找到。</p></li>
+</ul>
+
+<!--
+* `clusterid`: `630372ccdc720a92c681fb928f27b53f` is the ID of the cluster
+  which will be used by Heketi when provisioning the volume. It can also be a
+  list of clusterids, for example:
+  `"8452344e2becec931ece4e33c4674e4e,42982310de6c63381718ccfa6d8cf397"`. This
+  is an optional parameter.
+* `gidMin`, `gidMax` : The minimum and maximum value of GID range for the
+  storage class. A unique value (GID) in this range ( gidMin-gidMax ) will be
+  used for dynamically provisioned volumes. These are optional values. If not
+  specified, the volume will be provisioned with a value between 2000-2147483647
+  which are defaults for gidMin and gidMax respectively.
+-->
+
+<ul>
+<li><code>clusterid</code>：<code>630372ccdc720a92c681fb928f27b53f</code> 是集群的 ID，当分配卷时，Heketi 将会使用这个文件。它也可以是一个 clusterid 列表，例如：
+<code>&quot;8452344e2becec931ece4e33c4674e4e,42982310de6c63381718ccfa6d8cf397&quot;</code>。这个是可选参数。</li>
+<li><code>gidMin</code>，<code>gidMax</code>：storage class GID 范围的最小值和最大值。在此范围（gidMin-gidMax）内的唯一值（GID）将用于动态分配卷。这些是可选的值。如果不指定，卷将被分配一个 2000-2147483647 之间的值，这是 gidMin 和 gidMax 的默认值。</li>
+</ul>
+
+<!--
+* `volumetype` : The volume type and its parameters can be configured with this
+  optional value. If the volume type is not mentioned, it's up to the provisioner
+  to decide the volume type.
+
+    For example:
+    * Replica volume: `volumetype: replicate:3` where '3' is replica count.
+    * Disperse/EC volume: `volumetype: disperse:4:2` where '4' is data and '2' is the redundancy count.
+    * Distribute volume: `volumetype: none`
+
+    For available volume types and administration options, refer to the
+    [Administration Guide](https://access.redhat.com/documentation/en-US/Red_Hat_Storage/3.1/html/Administration_Guide/part-Overview.html).
+
+    For further reference information, see
+    [How to configure Heketi](https://github.com/heketi/heketi/wiki/Setting-up-the-topology).
+
+    When persistent volumes are dynamically provisioned, the Gluster plugin
+    automatically creates an endpoint and a headless service in the name
+    `gluster-dynamic-<claimname>`. The dynamic endpoint and service are automatically
+    deleted when the persistent volume claim is deleted.
+-->
+
+<ul>
+<li><p><code>volumetype</code>：卷的类型及其参数可以用这个可选值进行配置。如果未声明卷类型，则由分配器决定卷的类型。</p>
+
+<p>例如：
+&lsquo;Replica volume&rsquo;: <code>volumetype: replicate:3</code> 其中 &lsquo;3&rsquo; 是 replica 数量.
+&lsquo;Disperse/EC volume&rsquo;: <code>volumetype: disperse:4:2</code> 其中 &lsquo;4&rsquo; 是数据，&rsquo;2&rsquo; 是冗余数量.
+&lsquo;Distribute volume&rsquo;: <code>volumetype: none</code></p>
+
+<p>有关可用的卷类型和管理选项，请参阅 <a href="https://access.redhat.com/documentation/en-US/Red_Hat_Storage/3.1/html/Administration_Guide/part-Overview.html" target="_blank">管理指南</a>。</p>
+
+<p>更多相关的参考信息，请参阅 <a href="https://github.com/heketi/heketi/wiki/Setting-up-the-topology" target="_blank">如何配置 Heketi</a>。</p>
+
+<p>当动态分配持久卷时，Gluster 插件自动创建名为 <code>gluster-dynamic-&lt;claimname&gt;</code> 的端点和 headless service。在 PVC 被删除时动态端点和 headless service 会自动被删除。</p></li>
+</ul>
+
+<h3 id="openstack-cinder">OpenStack Cinder</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>gold<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/cinder<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>availability:<span style="color:#bbb"> </span>nova</code></pre></div>
+<!--
+* `availability`: Availability Zone. If not specified, volumes are generally
+  round-robin-ed across all active zones where Kubernetes cluster has a node.
+-->
+
+<ul>
+<li><code>availability</code>：可用区域。如果没有指定，通常卷会在 Kubernetes 集群节点所在的活动区域中轮询调度分配。</li>
+</ul>
+
+<!--
+<blockquote class="note">
+  <div><strong>注意：</strong> <div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes 1.11</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>废弃</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="废弃">
+该功能已被*弃用*。有关此状态的更多信息，请参见<a href="/docs/reference/deprecation-policy/">Kubernetes 弃用策略</a>。
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>This internal provisioner of OpenStack is deprecated. Please use <a href="https://github.com/kubernetes/cloud-provider-openstack" target="_blank">the external cloud provider for OpenStack</a>.</div>
+</blockquote>
+ -->
+
+<blockquote class="note">
+  <div><strong>注意：</strong> <div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes 1.11</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>废弃</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="废弃">
+该功能已被*弃用*。有关此状态的更多信息，请参见<a href="/docs/reference/deprecation-policy/">Kubernetes 弃用策略</a>。
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>OpenStack 的内部驱动程序已经被弃用。请使用 <a href="https://github.com/kubernetes/cloud-provider-openstack" target="_blank">OpenStack 的外部驱动程序</a>。</div>
+</blockquote>
+
+<h3 id="vsphere">vSphere</h3>
+
+<!--
+1. Create a StorageClass with a user specified disk format.
+ -->
+
+<ol>
+<li><p>使用用户指定的磁盘格式创建一个 StorageClass。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>fast<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/vsphere-volume<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>diskformat:<span style="color:#bbb"> </span>zeroedthick</code></pre></div></li>
+</ol>
+
+<!--
+    `diskformat`: `thin`, `zeroedthick` and `eagerzeroedthick`. Default: `"thin"`.
+ -->
+
+<pre><code>`diskformat`: `thin`, `zeroedthick` 和 `eagerzeroedthick`。默认值: `&quot;thin&quot;`。
+</code></pre>
+
+<!--
+2. Create a StorageClass with a disk format on a user specified datastore.
+-->
+
+<ol>
+<li><p>在用户指定的数据存储上创建磁盘格式的 StorageClass。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>fast<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/vsphere-volume<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>diskformat:<span style="color:#bbb"> </span>zeroedthick<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>datastore:<span style="color:#bbb"> </span>VSANDatastore</code></pre></div></li>
+</ol>
+
+<!--
+    `datastore`: The user can also specify the datastore in the StorageClass.
+    The volume will be created on the datastore specified in the storage class,
+    which in this case is `VSANDatastore`. This field is optional. If the
+    datastore is not specified, then the volume will be created on the datastore
+    specified in the vSphere config file used to initialize the vSphere Cloud
+    Provider.
+-->
+
+<pre><code>`datastore`：用户也可以在 StorageClass 中指定数据存储。卷将在 storage class 中指定的数据存储上创建，在这种情况下是 `VSANDatastore`。该字段是可选的。如果未指定数据存储，则将在用于初始化 vSphere Cloud Provider 的 vSphere 配置文件中指定的数据存储上创建该卷。
+</code></pre>
+
+<!--
+3. Storage Policy Management inside kubernetes
+-->
+
+<ol>
+<li>Kubernetes 中的存储策略管理</li>
+</ol>
+
+<!--
+    * Using existing vCenter SPBM policy
+
+        One of the most important features of vSphere for Storage Management is
+        policy based Management. Storage Policy Based Management (SPBM) is a
+        storage policy framework that provides a single unified control plane
+        across a broad range of data services and storage solutions. SPBM enables
+        vSphere administrators to overcome upfront storage provisioning challenges,
+        such as capacity planning, differentiated service levels and managing
+        capacity headroom.
+
+        The SPBM policies can be specified in the StorageClass using the
+        `storagePolicyName` parameter.
+-->
+
+<pre><code>* 使用现有的 vCenter SPBM 策略
+
+    vSphere 用于存储管理的最重要特性之一是基于策略的管理。基于存储策略的管理（SPBM）是一个存储策略框架，提供单一的统一控制平面的跨越广泛的数据服务和存储解决方案。 SPBM 使能 vSphere 管理员克服先期的存储配置挑战，如容量规划，差异化服务等级和管理容量空间。
+
+    SPBM 策略可以在 StorageClass 中使用 `storagePolicyName` 参数声明。
+</code></pre>
+
+<!--
+    * Virtual SAN policy support inside Kubernetes
+
+        Vsphere Infrastructure (VI) Admins will have the ability to specify custom
+        Virtual SAN Storage Capabilities during dynamic volume provisioning. You
+        can now define storage requirements, such as performance and availability,
+        in the form of storage capabilities during dynamic volume provisioning.
+        The storage capability requirements are converted into a Virtual SAN
+        policy which are then pushed down to the Virtual SAN layer when a
+        persistent volume (virtual disk) is being created. The virtual disk is
+        distributed across the Virtual SAN datastore to meet the requirements.
+
+        You can see [Storage Policy Based Management for dynamic provisioning of volumes](https://vmware.github.io/vsphere-storage-for-kubernetes/documentation/policy-based-mgmt.html)
+        for more details on how to use storage policies for persistent volumes
+        management.
+-->
+
+<pre><code>* Kubernetes 内的 Virtual SAN 策略支持
+
+    Vsphere Infrastructure（VI）管理员将能够在动态卷配置期间指定自定义 Virtual SAN 存储功能。您现在可以定义存储需求，例如性能和可用性，当动态卷供分配时会以存储功能的形式提供。存储功能需求会转换为 Virtual SAN 策略，然后当 persistent volume（虚拟磁盘）在创建时，会将其推送到 Virtual SAN 层。虚拟磁盘分布在 Virtual SAN 数据存储中以满足要求。
+
+    更多有关 persistent volume 管理的存储策略的详细信息，
+    您可以参考 [基于存储策略的动态分配卷管理](https://vmware.github.io/vsphere-storage-for-kubernetes/documentation/policy-based-mgmt.html)。
+</code></pre>
+
+<!--
+There are few
+[vSphere examples](https://github.com/kubernetes/examples/tree/master/staging/volumes/vsphere)
+which you try out for persistent volume management inside Kubernetes for vSphere.
+-->
+
+<p>有几个 <a href="https://github.com/kubernetes/examples/tree/master/staging/volumes/vsphere" target="_blank">vSphere 例子</a>
+供您在 Kubernetes for vSphere 中尝试进行 persistent volume 管理。</p>
+
+<h3 id="ceph-rbd">Ceph RBD</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>fast<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/rbd<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>monitors:<span style="color:#bbb"> </span><span style="color:#666">10.16.153.105</span>:<span style="color:#666">6789</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>adminId:<span style="color:#bbb"> </span>kube<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>adminSecretName:<span style="color:#bbb"> </span>ceph-secret<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>adminSecretNamespace:<span style="color:#bbb"> </span>kube-system<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>pool:<span style="color:#bbb"> </span>kube<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>userId:<span style="color:#bbb"> </span>kube<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>userSecretName:<span style="color:#bbb"> </span>ceph-secret-user<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>userSecretNamespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>fsType:<span style="color:#bbb"> </span>ext4<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>imageFormat:<span style="color:#bbb"> </span><span style="color:#b44">&#34;2&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>imageFeatures:<span style="color:#bbb"> </span><span style="color:#b44">&#34;layering&#34;</span></code></pre></div>
+<!--
+* `monitors`: Ceph monitors, comma delimited. This parameter is required.
+* `adminId`: Ceph client ID that is capable of creating images in the pool.
+  Default is "admin".
+* `adminSecretName`: Secret Name for `adminId`. This parameter is required.
+  The provided secret must have type "kubernetes.io/rbd".
+* `adminSecretNamespace`: The namespace for `adminSecretName`. Default is "default".
+* `pool`: Ceph RBD pool. Default is "rbd".
+* `userId`: Ceph client ID that is used to map the RBD image. Default is the
+  same as `adminId`.
+-->
+
+<ul>
+<li><code>monitors</code>：Ceph monitor，逗号分隔。该参数是必需的。</li>
+<li><code>adminId</code>：Ceph 客户端 ID，用于在池 ceph 池中创建映像。默认是 &ldquo;admin&rdquo;。</li>
+<li><code>adminSecret</code>：<code>adminId</code> 的 Secret 名称。该参数是必需的。
+提供的 secret 必须有值为 &ldquo;kubernetes.io/rbd&rdquo; 的 type 参数。</li>
+<li><code>adminSecretNamespace</code>：<code>adminSecret</code> 的命名空间。默认是 &ldquo;default&rdquo;。</li>
+<li><code>pool</code>: Ceph RBD 池. 默认是 &ldquo;rbd&rdquo;。</li>
+<li><code>userId</code>：Ceph 客户端 ID，用于映射 RBD 镜像。默认与 <code>adminId</code> 相同。</li>
+</ul>
+
+<!--
+* `userSecretName`: The name of Ceph Secret for `userId` to map RBD image. It
+  must exist in the same namespace as PVCs. This parameter is required.
+  The provided secret must have type "kubernetes.io/rbd", e.g. created in this
+  way:
+
+    ```shell
+    kubectl create secret generic ceph-secret --type="kubernetes.io/rbd" \
+      --from-literal=key='QVFEQ1pMdFhPUnQrSmhBQUFYaERWNHJsZ3BsMmNjcDR6RFZST0E9PQ==' \
+      --namespace=kube-system
+    ```
+-->
+
+<ul>
+<li><p><code>userSecretName</code>：用于映射 RBD 镜像的 <code>userId</code> 的 Ceph Secret 的名字。
+它必须与 PVC 存在于相同的 namespace 中。该参数是必需的。
+提供的 secret 必须具有值为 &ldquo;kubernetes.io/rbd&rdquo; 的 type 参数，例如以这样的方式创建：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create secret generic ceph-secret --type<span style="color:#666">=</span><span style="color:#b44">&#34;kubernetes.io/rbd&#34;</span> <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --from-literal<span style="color:#666">=</span><span style="color:#b8860b">key</span><span style="color:#666">=</span><span style="color:#b44">&#39;QVFEQ1pMdFhPUnQrSmhBQUFYaERWNHJsZ3BsMmNjcDR6RFZST0E9PQ==&#39;</span> <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --namespace<span style="color:#666">=</span>kube-system</code></pre></div></li>
+</ul>
+
+<!--
+* `userSecretNamespace`: The namespace for `userSecretName`.
+* `fsType`: fsType that is supported by kubernetes. Default: `"ext4"`.
+* `imageFormat`: Ceph RBD image format, "1" or "2". Default is "2".
+* `imageFeatures`: This parameter is optional and should only be used if you
+  set `imageFormat` to "2". Currently supported features are `layering` only.
+  Default is "", and no features are turned on.
+-->
+
+<ul>
+<li><code>userSecretNamespace</code>：<code>userSecretName</code> 的命名空间。</li>
+<li><code>fsType</code>：Kubernetes 支持的 fsType。默认：<code>&quot;ext4&quot;</code>。</li>
+<li><code>imageFormat</code>：Ceph RBD 镜像格式，&rdquo;1&rdquo; 或者 &ldquo;2&rdquo;。默认值是 &ldquo;1&rdquo;。</li>
+<li><code>imageFeatures</code>：这个参数是可选的，只能在你将 <code>imageFormat</code> 设置为 &ldquo;2&rdquo; 才使用。
+目前支持的功能只是 <code>layering</code>。默认是 &ldquo;&ldquo;，没有功能打开。</li>
+</ul>
+
+<h3 id="quobyte">Quobyte</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">   </span>name:<span style="color:#bbb"> </span>slow<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/quobyte<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>quobyteAPIServer:<span style="color:#bbb"> </span><span style="color:#b44">&#34;http://138.68.74.142:7860&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>registry:<span style="color:#bbb"> </span><span style="color:#b44">&#34;138.68.74.142:7861&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>adminSecretName:<span style="color:#bbb"> </span><span style="color:#b44">&#34;quobyte-admin-secret&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>adminSecretNamespace:<span style="color:#bbb"> </span><span style="color:#b44">&#34;kube-system&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>user:<span style="color:#bbb"> </span><span style="color:#b44">&#34;root&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>group:<span style="color:#bbb"> </span><span style="color:#b44">&#34;root&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>quobyteConfig:<span style="color:#bbb"> </span><span style="color:#b44">&#34;BASE&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>quobyteTenant:<span style="color:#bbb"> </span><span style="color:#b44">&#34;DEFAULT&#34;</span></code></pre></div>
+<!--
+* `quobyteAPIServer`: API Server of Quobyte in the format
+  `"http(s)://api-server:7860"`
+* `registry`: Quobyte registry to use to mount the volume. You can specify the
+  registry as ``<host>:<port>`` pair or if you want to specify multiple
+  registries you just have to put a comma between them e.q.
+  ``<host1>:<port>,<host2>:<port>,<host3>:<port>``.
+  The host can be an IP address or if you have a working DNS you can also
+  provide the DNS names.
+* `adminSecretNamespace`: The namespace for `adminSecretName`.
+  Default is "default".
+-->
+
+<ul>
+<li><code>quobyteAPIServer</code>：Quobyte API 服务器的格式是
+<code>&quot;http(s)://api-server:7860&quot;</code></li>
+<li><code>registry</code>：用于挂载卷的 Quobyte registry。你可以指定 registry 为 <code>&lt;host&gt;:&lt;port&gt;</code>
+或者如果你想指定多个 registry，你只需要在他们之间添加逗号，例如
+<code>&lt;host1&gt;:&lt;port&gt;,&lt;host2&gt;:&lt;port&gt;,&lt;host3&gt;:&lt;port&gt;</code>。
+主机可以是一个 IP 地址，或者如果您有正在运行的 DNS，您也可以提供 DNS 名称。</li>
+<li><code>adminSecretNamespace</code>：<code>adminSecretName</code>的 namespace。
+默认值是 &ldquo;default&rdquo;。</li>
+</ul>
+
+<!--
+* `adminSecretName`: secret that holds information about the Quobyte user and
+  the password to authenticate against the API server. The provided secret
+  must have type "kubernetes.io/quobyte" and the keys `user` and `password`,
+  e.g. created in this way:
+
+    ```shell
+    kubectl create secret generic quobyte-admin-secret \
+      --type="kubernetes.io/quobyte" --from-literal=user='admin' --from-literal=password='opensesame' \
+      --namespace=kube-system
+    ```
+-->
+
+<ul>
+<li><p><code>adminSecretName</code>：保存关于 Quobyte 用户和密码的 secret，用于对 API 服务器进行身份验证。
+提供的 secret 必须有值为 &ldquo;kubernetes.io/quobyte&rdquo; 的 type 参数 和 <code>user</code> 与 <code>password</code> 的键值，
+例如以这种方式创建：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create secret generic quobyte-admin-secret <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --type<span style="color:#666">=</span><span style="color:#b44">&#34;kubernetes.io/quobyte&#34;</span> --from-literal<span style="color:#666">=</span><span style="color:#b8860b">key</span><span style="color:#666">=</span><span style="color:#b44">&#39;opensesame&#39;</span> <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --namespace<span style="color:#666">=</span>kube-system</code></pre></div></li>
+</ul>
+
+<!--
+* `user`: maps all access to this user. Default is "root".
+* `group`: maps all access to this group. Default is "nfsnobody".
+* `quobyteConfig`: use the specified configuration to create the volume. You
+  can create a new configuration or modify an existing one with the Web
+  console or the quobyte CLI. Default is "BASE".
+* `quobyteTenant`: use the specified tenant ID to create/delete the volume.
+  This Quobyte tenant has to be already present in Quobyte.
+  Default is "DEFAULT".
+-->
+
+<ul>
+<li><code>user</code>：对这个用户映射的所有访问权限。默认是 &ldquo;root&rdquo;。</li>
+<li><code>group</code>：对这个组映射的所有访问权限。默认是 &ldquo;nfsnobody&rdquo;。</li>
+<li><code>quobyteConfig</code>：使用指定的配置来创建卷。您可以创建一个新的配置，或者，可以修改 Web console 或
+quobyte CLI 中现有的配置。默认是 &ldquo;BASE&rdquo;。</li>
+<li><code>quobyteTenant</code>：使用指定的租户 ID 创建/删除卷。这个 Quobyte 租户必须已经于 Quobyte。
+默认是 &ldquo;DEFAULT&rdquo;。</li>
+</ul>
+
+<!--
+### Azure Disk
+-->
+
+<h3 id="azure-磁盘">Azure 磁盘</h3>
+
+<!--
+#### Azure Unmanaged Disk Storage Class
+-->
+
+<h4 id="azure-unmanaged-disk-storage-class-非托管磁盘存储类">Azure Unmanaged Disk Storage Class（非托管磁盘存储类）</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>slow<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/azure-disk<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>skuName:<span style="color:#bbb"> </span>Standard_LRS<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>location:<span style="color:#bbb"> </span>eastus<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageAccount:<span style="color:#bbb"> </span>azure_storage_account_name</code></pre></div>
+<!--
+* `skuName`: Azure storage account Sku tier. Default is empty.
+* `location`: Azure storage account location. Default is empty.
+* `storageAccount`: Azure storage account name. If a storage account is provided,
+  it must reside in the same resource group as the cluster, and `location` is
+  ignored. If a storage account is not provided, a new storage account will be
+  created in the same resource group as the cluster.
+-->
+
+<ul>
+<li><code>skuName</code>：Azure 存储帐户 Sku 层。默认为空。</li>
+<li><code>location</code>：Azure 存储帐户位置。默认为空。</li>
+<li><code>storageAccount</code>：Azure 存储帐户名称。如果提供存储帐户，它必须位于与集群相同的资源组中，并且 <code>location</code> 是被忽略的。如果未提供存储帐户，则会在与群集相同的资源组中创建新的存储帐户。</li>
+</ul>
+
+<!--
+#### New Azure Disk Storage Class (starting from v1.7.2)
+-->
+
+<h4 id="新的-azure-磁盘-storage-class-从-v1-7-2-开始">新的 Azure 磁盘 Storage Class（从 v1.7.2 开始）</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>slow<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/azure-disk<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageaccounttype:<span style="color:#bbb"> </span>Standard_LRS<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kind:<span style="color:#bbb"> </span>Shared</code></pre></div>
+<!--
+* `storageaccounttype`: Azure storage account Sku tier. Default is empty.
+* `kind`: Possible values are `shared` (default), `dedicated`, and `managed`.
+  When `kind` is `shared`, all unmanaged disks are created in a few shared
+  storage accounts in the same resource group as the cluster. When `kind` is
+  `dedicated`, a new dedicated storage account will be created for the new
+  unmanaged disk in the same resource group as the cluster. When `kind` is
+  `managed`, all managed disks are created in the same resource group as
+  the cluster.
+-->
+
+<ul>
+<li><code>storageaccounttype</code>：Azure 存储帐户 Sku 层。默认为空。</li>
+<li><code>kind</code>：可能的值是 <code>shared</code>（默认）、<code>dedicated</code> 和 <code>managed</code>。
+当 <code>kind</code> 的值是 <code>shared</code> 时，所有非托管磁盘都在集群的同一个资源组中的几个共享存储帐户中创建。
+当 <code>kind</code> 的值是 <code>dedicated</code> 时，将为在集群的同一个资源组中新的非托管磁盘创建新的专用存储帐户。</li>
+</ul>
+
+<!--
+- Premium VM can attach both Standard_LRS and Premium_LRS disks, while Standard
+  VM can only attach Standard_LRS disks.
+- Managed VM can only attach managed disks and unmanaged VM can only attach
+  unmanaged disks.
+-->
+
+<ul>
+<li>Premium VM 可以同时添加 Standard_LRS 和 Premium_LRS 磁盘，而 Standard 虚拟机只能添加 Standard_LRS 磁盘。</li>
+<li>托管虚拟机只能连接托管磁盘，非托管虚拟机只能连接非托管磁盘。</li>
+</ul>
+
+<!--
+### Azure File
+-->
+
+<h3 id="azure-文件">Azure 文件</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>azurefile<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/azure-file<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>skuName:<span style="color:#bbb"> </span>Standard_LRS<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>location:<span style="color:#bbb"> </span>eastus<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageAccount:<span style="color:#bbb"> </span>azure_storage_account_name</code></pre></div>
+<!--
+* `skuName`: Azure storage account Sku tier. Default is empty.
+* `location`: Azure storage account location. Default is empty.
+* `storageAccount`: Azure storage account name.  Default is empty. If a storage
+  account is not provided, all storage accounts associated with the resource
+  group are searched to find one that matches `skuName` and `location`. If a
+  storage account is provided, it must reside in the same resource group as the
+  cluster, and `skuName` and `location` are ignored.
+* `secretNamespace`: the namespace of the secret that contains the Azure Storage
+  Account Name and Key. Default is the same as the Pod.
+* `secretName`: the name of the secret that contains the Azure Storage Account Name and
+  Key. Default is `azure-storage-account-<accountName>-secret`
+* `readOnly`: a flag indicating whether the storage will be mounted as read only.
+  Defaults to false which means a read/write mount. This setting will impact the
+  `ReadOnly` setting in VolumeMounts as well.
+-->
+
+<ul>
+<li><code>skuName</code>：Azure 存储帐户 Sku 层。默认为空。</li>
+<li><code>location</code>：Azure 存储帐户位置。默认为空。</li>
+<li><code>storageAccount</code>：Azure 存储帐户名称。默认为空。
+如果不提供存储帐户，会搜索所有与资源相关的存储帐户，以找到一个匹配 <code>skuName</code> 和 <code>location</code> 的账号。
+如果提供存储帐户，它必须存在于与集群相同的资源组中，<code>skuName</code> 和 <code>location</code> 会被忽略。</li>
+<li><code>secretNamespace</code>：包含 Azure 存储帐户名称和密钥的密钥的名称空间。 默认值与 Pod 相同。</li>
+<li><code>secretName</code>：包含 Azure 存储帐户名称和密钥的密钥的名称。 默认值为 <code>azure-storage-account-&lt;accountName&gt;-secret</code></li>
+<li><code>readOnly</code>：指示是否将存储安装为只读的标志。默认为 false，表示 读/写 挂载。 该设置也会影响VolumeMounts中的 <code>ReadOnly</code> 设置。</li>
+</ul>
+
+<!--
+During storage provisioning, a secret named by `secretName` is created for the
+mounting credentials. If the cluster has enabled both
+[RBAC](/docs/reference/access-authn-authz/rbac/) and
+[Controller Roles](/docs/reference/access-authn-authz/rbac/#controller-roles),
+add the `create` permission of resource `secret` for clusterrole
+`system:controller:persistent-volume-binder`.
+-->
+
+<p>在存储分配期间，为挂载凭证创建一个名为 <code>secretName</code> 的 secret。如果集群同时启用了 <a href="/docs/admin/authorization/rbac/">RBAC</a> 和 <a href="/docs/admin/authorization/rbac/#controller-roles">Controller Roles</a>，
+为 <code>system:controller:persistent-volume-binder</code> 的 clusterrole 添加 <code>secret</code> 资源的 <code>create</code> 权限。</p>
+
+<!--
+In a multi-tenancy context, it is strongly recommended to set the value for
+`secretNamespace` explicitly, otherwise the storage account credentials may
+be read by other users.
+-->
+
+<p>在多租户上下文中，强烈建议显式设置 <code>secretNamespace</code> 的值，否则其他用户可能会读取存储帐户凭据。</p>
+
+<!--
+### Portworx Volume
+ -->
+
+<h3 id="portworx-卷">Portworx 卷</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>portworx-io-priority-high<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/portworx-volume<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>repl:<span style="color:#bbb"> </span><span style="color:#b44">&#34;1&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>snap_interval:<span style="color:#bbb">   </span><span style="color:#b44">&#34;70&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>io_priority:<span style="color:#bbb">  </span><span style="color:#b44">&#34;high&#34;</span></code></pre></div>
+<!--
+* `fs`: filesystem to be laid out: `none/xfs/ext4` (default: `ext4`).
+* `block_size`: block size in Kbytes (default: `32`).
+* `repl`: number of synchronous replicas to be provided in the form of
+  replication factor `1..3` (default: `1`) A string is expected here i.e.
+  `"1"` and not `1`.
+* `io_priority`: determines whether the volume will be created from higher
+  performance or a lower priority storage `high/medium/low` (default: `low`).
+* `snap_interval`: clock/time interval in minutes for when to trigger snapshots.
+  Snapshots are incremental based on difference with the prior snapshot, 0
+  disables snaps (default: `0`). A string is expected here i.e.
+  `"70"` and not `70`.
+* `aggregation_level`: specifies the number of chunks the volume would be
+  distributed into, 0 indicates a non-aggregated volume (default: `0`). A string
+  is expected here i.e. `"0"` and not `0`
+* `ephemeral`: specifies whether the volume should be cleaned-up after unmount
+  or should be persistent. `emptyDir` use case can set this value to true and
+  `persistent volumes` use case such as for databases like Cassandra should set
+  to false, `true/false` (default `false`). A string is expected here i.e.
+  `"true"` and not `true`.
+-->
+
+<ul>
+<li><code>fs</code>：选择的文件系统：<code>none/xfs/ext4</code>（默认：<code>ext4</code>）。</li>
+<li><code>block_size</code>：以 Kbytes 为单位的块大小（默认值：<code>32</code>）。</li>
+<li><code>repl</code>：同步副本数量，以复制因子 <code>1..3</code>（默认值：<code>1</code>）的形式提供。
+这里需要填写字符串，即，<code>&quot;1&quot;</code> 而不是 <code>1</code>。</li>
+<li><code>io_priority</code>：决定是否从更高性能或者较低优先级存储创建卷 <code>high/medium/low</code>（默认值：<code>low</code>）。</li>
+<li><code>snap_interval</code>：触发快照的时钟/时间间隔（分钟）。快照是基于与先前快照的增量变化，0 是禁用快照（默认：<code>0</code>）。
+这里需要填写字符串，即，是 <code>&quot;70&quot;</code> 而不是 <code>70</code>。</li>
+<li><code>aggregation_level</code>：指定卷分配到的块数量，0 表示一个非聚合卷（默认：<code>0</code>）。
+这里需要填写字符串，即，是 <code>&quot;0&quot;</code> 而不是 <code>0</code>。</li>
+<li><code>ephemeral</code>：指定卷在卸载后进行清理还是持久化。 <code>emptyDir</code> 的使用场景可以将这个值设置为 true ，
+<code>persistent volumes</code> 的使用场景可以将这个值设置为 false（例如 Cassandra 这样的数据库）<code>true/false</code>（默认为 <code>false</code>）。这里需要填写字符串，即，是 <code>&quot;true&quot;</code> 而不是 <code>true</code>。</li>
+</ul>
+
+<h3 id="scaleio">ScaleIO</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>slow<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/scaleio<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>gateway:<span style="color:#bbb"> </span>https://<span style="color:#666">192.168.99.200</span>:<span style="color:#666">443</span>/api<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>system:<span style="color:#bbb"> </span>scaleio<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>protectionDomain:<span style="color:#bbb"> </span>pd0<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storagePool:<span style="color:#bbb"> </span>sp1<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageMode:<span style="color:#bbb"> </span>ThinProvisioned<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>secretRef:<span style="color:#bbb"> </span>sio-secret<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">false</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>fsType:<span style="color:#bbb"> </span>xfs</code></pre></div>
+<!--
+* `provisioner`: attribute is set to `kubernetes.io/scaleio`
+* `gateway`: address to a ScaleIO API gateway (required)
+* `system`: the name of the ScaleIO system (required)
+* `protectionDomain`: the name of the ScaleIO protection domain (required)
+* `storagePool`: the name of the volume storage pool (required)
+* `storageMode`: the storage provision mode: `ThinProvisioned` (default) or
+  `ThickProvisioned`
+* `secretRef`: reference to a configured Secret object (required)
+* `readOnly`: specifies the access mode to the mounted volume (default false)
+* `fsType`: the file system to use for the volume (default ext4)
+-->
+
+<ul>
+<li><code>provisioner</code>：属性设置为 <code>kubernetes.io/scaleio</code></li>
+<li><code>gateway</code> 到 ScaleIO API 网关的地址（必需）</li>
+<li><code>system</code>：ScaleIO 系统的名称（必需）</li>
+<li><code>protectionDomain</code>：ScaleIO 保护域的名称（必需）</li>
+<li><code>storagePool</code>：卷存储池的名称（必需）</li>
+<li><code>storageMode</code>：存储提供模式：<code>ThinProvisioned</code>（默认）或 <code>ThickProvisioned</code></li>
+<li><code>secretRef</code>：对已配置的 Secret 对象的引用（必需）</li>
+<li><code>readOnly</code>：指定挂载卷的访问模式（默认为 false）</li>
+<li><code>fsType</code>：卷的文件系统（默认是 ext4）</li>
+</ul>
+
+<!--
+The ScaleIO Kubernetes volume plugin requires a configured Secret object.
+The secret must be created with type `kubernetes.io/scaleio` and use the same
+namespace value as that of the PVC where it is referenced
+as shown in the following command:
+
+```shell
+kubectl create secret generic sio-secret --type="kubernetes.io/scaleio" \
+--from-literal=username=sioadmin --from-literal=password=d2NABDNjMA== \
+--namespace=default
+```
+-->
+
+<p>ScaleIO Kubernetes 卷插件需要配置一个 Secret 对象。
+secret 必须用 <code>kubernetes.io/scaleio</code> 类型创建，并与引用它的 PVC 所属的名称空间使用相同的值
+如下面的命令所示：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create secret generic sio-secret --type<span style="color:#666">=</span><span style="color:#b44">&#34;kubernetes.io/scaleio&#34;</span> <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--from-literal<span style="color:#666">=</span><span style="color:#b8860b">username</span><span style="color:#666">=</span>sioadmin --from-literal<span style="color:#666">=</span><span style="color:#b8860b">password</span><span style="color:#666">=</span><span style="color:#b8860b">d2NABDNjMA</span><span style="color:#666">==</span> <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--namespace<span style="color:#666">=</span>default</code></pre></div>
+<h3 id="storageos">StorageOS</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>fast<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/storageos<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>pool:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>description:<span style="color:#bbb"> </span>Kubernetes<span style="color:#bbb"> </span>volume<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>fsType:<span style="color:#bbb"> </span>ext4<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>adminSecretNamespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>adminSecretName:<span style="color:#bbb"> </span>storageos-secret</code></pre></div>
+<!--
+* `pool`: The name of the StorageOS distributed capacity pool to provision the
+  volume from.  Uses the `default` pool which is normally present if not specified.
+* `description`: The description to assign to volumes that were created dynamically.
+  All volume descriptions will be the same for the storage class, but different
+  storage classes can be used to allow descriptions for different use cases.
+  Defaults to `Kubernetes volume`.
+* `fsType`: The default filesystem type to request. Note that user-defined rules
+  within StorageOS may override this value.  Defaults to `ext4`.
+* `adminSecretNamespace`: The namespace where the API configuration secret is
+  located. Required if adminSecretName set.
+* `adminSecretName`: The name of the secret to use for obtaining the StorageOS
+  API credentials. If not specified, default values will be attempted.
+-->
+
+<ul>
+<li><code>pool</code>：分配卷的 StorageOS 分布式容量池的名称。如果未指定，则使用通常存在的 <code>default</code> 池。</li>
+<li><code>description</code>：分配给动态创建的卷的描述。所有卷描述对于 storage class 都是相同的，
+但不同的 storage class 可以使用不同的描述，以区分不同的使用场景。
+默认为 <code>Kubernetas volume</code>。</li>
+<li><code>fsType</code>：请求的默认文件系统类型。请注意，在 StorageOS 中用户定义的规则可以覆盖此值。默认为 <code>ext4</code></li>
+<li><code>adminSecretNamespace</code>：API 配置 secret 所在的命名空间。如果设置了 adminSecretName，则是必需的。</li>
+<li><code>adminSecretName</code>：用于获取 StorageOS API 凭证的 secret 名称。如果未指定，则将尝试默认值。</li>
+</ul>
+
+<!--
+The StorageOS Kubernetes volume plugin can use a Secret object to specify an
+endpoint and credentials to access the StorageOS API. This is only required when
+the defaults have been changed.
+The secret must be created with type `kubernetes.io/storageos` as shown in the
+following command:
+
+```shell
+kubectl create secret generic storageos-secret \
+--type="kubernetes.io/storageos" \
+--from-literal=apiAddress=tcp://localhost:5705 \
+--from-literal=apiUsername=storageos \
+--from-literal=apiPassword=storageos \
+--namespace=default
+```
+-->
+
+<p>StorageOS Kubernetes 卷插件可以使 Secret 对象来指定用于访问 StorageOS API 的端点和凭据。
+只有当默认值已被更改时，这才是必须的。
+secret 必须使用 <code>kubernetes.io/storageos</code> 类型创建，如以下命令：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create secret generic storageos-secret <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--type<span style="color:#666">=</span><span style="color:#b44">&#34;kubernetes.io/storageos&#34;</span> <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--from-literal<span style="color:#666">=</span><span style="color:#b8860b">apiAddress</span><span style="color:#666">=</span>tcp://localhost:5705 <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--from-literal<span style="color:#666">=</span><span style="color:#b8860b">apiUsername</span><span style="color:#666">=</span>storageos <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--from-literal<span style="color:#666">=</span><span style="color:#b8860b">apiPassword</span><span style="color:#666">=</span>storageos <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--namespace<span style="color:#666">=</span>default</code></pre></div>
+<!--
+Secrets used for dynamically provisioned volumes may be created in any namespace
+and referenced with the `adminSecretNamespace` parameter. Secrets used by
+pre-provisioned volumes must be created in the same namespace as the PVC that
+references it.
+-->
+
+<p>用于动态分配卷的 Secret 可以在任何名称空间中创建，并通过 <code>adminSecretNamespace</code> 参数引用。
+预先配置的卷使用的 Secret 必须在与引用它的 PVC 在相同的名称空间中。</p>
+
+<!--
+### Local
+-->
+
+<h3 id="本地">本地</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.14</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>稳定</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="稳定">
+该功能是“稳定的”，意味着：</p>
+
+<ul>
+<li>版本名是 vX，其中 X 是整数。</li>
+<li>该功能将出现在多个后续释出的软件稳定版中。</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>local-storage<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/no-provisioner<span style="color:#bbb">
+</span><span style="color:#bbb"></span>volumeBindingMode:<span style="color:#bbb"> </span>WaitForFirstConsumer</code></pre></div>
+<!--
+Local volumes do not currently support dynamic provisioning, however a StorageClass
+should still be created to delay volume binding until pod scheduling. This is
+specified by the `WaitForFirstConsumer` volume binding mode.
+-->
+
+<p>本地卷还不支持动态分配，然而还是需要创建 StorageClass 以延迟卷绑定，直到完成 pod 的调度。这是由 <code>WaitForFirstConsumer</code> 卷绑定模式指定的。</p>
+
+<!--
+Delaying volume binding allows the scheduler to consider all of a pod's
+scheduling constraints when choosing an appropriate PersistentVolume for a
+PersistentVolumeClaim.
+-->
+
+<p>延迟卷绑定使得调度器在为 PersistentVolumeClaim 选择一个合适的 PersistentVolume 时能考虑到所有 pod 的调度限制。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/storage/storage-classes.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/concepts\/storage\/storage-classes\/",
+    "title" : "Storage Classes",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/concepts\/storage\/storage-classes\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/storage/storage-classes.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 March 07, 2020 at 12:15 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/e9342c00a208a63521cd87c7a66ebb952991ba60/">Translation modification (#19250)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/storage/storage-classes.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

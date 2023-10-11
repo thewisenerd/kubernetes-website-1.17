@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html id="docs" lang="en" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Example: Add logging and metrics to the PHP / Redis Guestbook example - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">
+<meta property="og:title" content="Example: Add logging and metrics to the PHP / Redis Guestbook example">
+<meta name="twitter:title" content="Example: Add logging and metrics to the PHP / Redis Guestbook example">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/" class="logo" title="Production-Grade Container Orchestration - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/blog/">Blog</a></li>
+            
+            <li><a href="/training/">Training</a></li>
+            
+            <li><a href="/partners/">Partners</a></li>
+            
+            <li><a href="/community/">Community</a></li>
+            
+            <li><a href="/case-studies/">Case Studies</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    English <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/ko/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">한국어 Korean</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Learn Kubernetes Basics</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/docs/home/">Documentation</a></h3>
+           <p>Learn how to use Kubernetes with conceptual, tutorial, and reference documentation. You can even <a href="/editdocs/" data-auto-burger-exclude>help contribute to the docs</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/blog/">Blog</a></h3>
+           <p>Read the latest news for Kubernetes and the containers space in general, and get technical how-tos hot off the presses.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Interested in hacking on the core Kubernetes code base?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>View On GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explore the community</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1>Tutorials</h1>
+<h5></h5>
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/docs/home/">HOME</a></li>
+		
+		
+		<li><a href="/docs/setup/">GETTING STARTED</a></li>
+		
+		
+		<li><a href="/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/docs/tasks/">TASKS</a></li>
+		
+		
+		<li><a href="/docs/tutorials/" class="YAH">TUTORIALS</a></li>
+		
+		
+		<li><a href="/docs/reference/">REFERENCE</a></li>
+		
+		
+		<li><a href="/docs/contribute/">CONTRIBUTE</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Search" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation is no longer actively maintained. The version you are currently viewing is a static snapshot. For up-to-date documentation, see the 
+	 <a href="https://kubernetes.io/docs/home/">latest version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Tutorials" href="/docs/tutorials/"></a>
+
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Hello Minikube" href="/docs/tutorials/hello-minikube/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Learn Kubernetes Basics">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Learn Kubernetes Basics" href="/docs/tutorials/kubernetes-basics/"></a>
+		
+		
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Create a Cluster">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Using Minikube to Create a Cluster" href="/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interactive Tutorial - Creating a Cluster" href="/docs/tutorials/kubernetes-basics/create-cluster/cluster-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Deploy an App">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Using kubectl to Create a Deployment" href="/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interactive Tutorial - Deploying an App" href="/docs/tutorials/kubernetes-basics/deploy-app/deploy-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Explore Your App">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Viewing Pods and Nodes" href="/docs/tutorials/kubernetes-basics/explore/explore-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interactive Tutorial - Exploring Your App" href="/docs/tutorials/kubernetes-basics/explore/explore-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Expose Your App Publicly">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Using a Service to Expose Your App" href="/docs/tutorials/kubernetes-basics/expose/expose-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interactive Tutorial - Exposing Your App" href="/docs/tutorials/kubernetes-basics/expose/expose-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Scale Your App">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running Multiple Instances of Your App" href="/docs/tutorials/kubernetes-basics/scale/scale-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interactive Tutorial - Scaling Your App" href="/docs/tutorials/kubernetes-basics/scale/scale-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Update Your App">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Performing a Rolling Update" href="/docs/tutorials/kubernetes-basics/update/update-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Interactive Tutorial - Updating Your App" href="/docs/tutorials/kubernetes-basics/update/update-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Configuration">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Configuring Redis using a ConfigMap" href="/docs/tutorials/configuration/configure-redis-using-configmap/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Stateless Applications">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Exposing an External IP Address to Access an Application in a Cluster" href="/docs/tutorials/stateless-application/expose-external-ip-address/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Example: Deploying PHP Guestbook application with Redis" href="/docs/tutorials/stateless-application/guestbook/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Example: Add logging and metrics to the PHP / Redis Guestbook example" href="/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Stateful Applications">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="StatefulSet Basics" href="/docs/tutorials/stateful-application/basic-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Example: Deploying WordPress and MySQL with Persistent Volumes" href="/docs/tutorials/stateful-application/mysql-wordpress-persistent-volume/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Example: Deploying Cassandra with Stateful Sets" href="/docs/tutorials/stateful-application/cassandra/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running ZooKeeper, A Distributed System Coordinator" href="/docs/tutorials/stateful-application/zookeeper/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Clusters">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="AppArmor" href="/docs/tutorials/clusters/apparmor/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Services">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Using Source IP" href="/docs/tutorials/services/source-ip/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Example: Add logging and metrics to the PHP / Redis Guestbook example</h1>
+
+
+
+<p>This tutorial builds upon the <a href="../guestbook">PHP Guestbook with Redis</a> tutorial. Lightweight log, metric, and network data open source shippers, or <em>Beats</em>, from Elastic are deployed in the same Kubernetes cluster as the guestbook. The Beats collect, parse, and index the data into Elasticsearch so that you can view and analyze the resulting operational information in Kibana. This example consists of the following components:</p>
+
+<ul>
+<li>A running instance of the <a href="../guestbook">PHP Guestbook with Redis tutorial</a></li>
+<li>Elasticsearch and Kibana</li>
+<li>Filebeat</li>
+<li>Metricbeat</li>
+<li>Packetbeat</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#objectives">Objectives</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#before-you-begin">Before you begin</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#start-up-the-php-guestbook-with-redis">Start up the  PHP Guestbook with Redis</a></li>
+
+
+
+
+<li><a href="#add-a-cluster-role-binding">Add a Cluster role binding</a></li>
+
+
+
+
+<li><a href="#install-kube-state-metrics">Install kube-state-metrics</a></li>
+
+
+
+
+<li><a href="#clone-the-elastic-examples-github-repo">Clone the Elastic examples GitHub repo</a></li>
+
+
+
+
+<li><a href="#create-a-kubernetes-secret">Create a Kubernetes Secret</a></li>
+
+
+
+
+<li><a href="#managed-service">Managed service</a></li>
+
+
+
+
+<li><a href="#deploy-the-beats">Deploy the Beats</a></li>
+
+
+
+
+<li><a href="#view-in-kibana">View in Kibana</a></li>
+
+
+
+
+<li><a href="#scale-your-deployments-and-see-new-pods-being-monitored">Scale your deployments and see new pods being monitored</a></li>
+
+
+
+
+<li><a href="#view-the-changes-in-kibana">View the changes in Kibana</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#cleaning-up">Cleaning up</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#what-s-next">What's next</a></li>
+
+
+
+</ul>
+
+
+
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>Start up the PHP Guestbook with Redis.</li>
+<li>Install kube-state-metrics.</li>
+<li>Create a Kubernetes secret.</li>
+<li>Deploy the Beats.</li>
+<li>View dashboards of your logs and metrics.</li>
+</ul>
+
+
+
+
+
+<h2 id="before-you-begin">Before you begin</h2>
+<p>You need to have a Kubernetes cluster, and the kubectl command-line tool must
+be configured to communicate with your cluster. If you do not already have a
+cluster, you can create one by using
+<a href="/docs/setup/learning-environment/minikube/">Minikube</a>,
+or you can use one of these Kubernetes playgrounds:</p>
+
+<ul>
+<li><a href="https://www.katacoda.com/courses/kubernetes/playground" target="_blank">Katacoda</a></li>
+<li><a href="http://labs.play-with-k8s.com/" target="_blank">Play with Kubernetes</a></li>
+</ul>
+
+<p>To check the version, enter <code>kubectl version</code>.</p>
+
+<p>Additionally you need:</p>
+
+<ul>
+<li><p>A running deployment of the <a href="../guestbook">PHP Guestbook with Redis</a> tutorial.</p></li>
+
+<li><p>A running Elasticsearch and Kibana deployment.  You can use <a href="https://cloud.elastic.co" target="_blank">Elasticsearch Service in Elastic Cloud</a>, run the <a href="https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html" target="_blank">download files</a> on your workstation or servers, or the <a href="https://github.com/elastic/helm-charts" target="_blank">Elastic Helm Charts</a>.</p></li>
+</ul>
+
+
+
+
+<h2 id="start-up-the-php-guestbook-with-redis">Start up the  PHP Guestbook with Redis</h2>
+
+<p>This tutorial builds on the <a href="../guestbook">PHP Guestbook with Redis</a> tutorial.  If you have the guestbook application running, then you can monitor that.  If you do not have it running then follow the instructions to deploy the guestbook and do not perform the <strong>Cleanup</strong> steps.  Come back to this page when you have the guestbook running.</p>
+
+<h2 id="add-a-cluster-role-binding">Add a Cluster role binding</h2>
+
+<p>Create a <a href="/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding">cluster level role binding</a> so that you can deploy kube-state-metrics and the Beats at the cluster level (in kube-system).</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrolebinding cluster-admin-binding <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span> --clusterrole<span style="color:#666">=</span>cluster-admin --user<span style="color:#666">=</span>&lt;your email associated with the k8s provider account&gt;</code></pre></div>
+<h2 id="install-kube-state-metrics">Install kube-state-metrics</h2>
+
+<p>Kubernetes <a href="https://github.com/kubernetes/kube-state-metrics" target="_blank"><em>kube-state-metrics</em></a> is a simple service that listens to the Kubernetes API server and generates metrics about the state of the objects.  Metricbeat reports these metrics.  Add kube-state-metrics to the Kubernetes cluster that the guestbook is running in.</p>
+
+<h3 id="check-to-see-if-kube-state-metrics-is-running">Check to see if kube-state-metrics is running</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods --namespace<span style="color:#666">=</span>kube-system | grep kube-state</code></pre></div>
+<h3 id="install-kube-state-metrics-if-needed">Install kube-state-metrics if needed</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">git clone https://github.com/kubernetes/kube-state-metrics.git kube-state-metrics
+kubectl create -f examples/standard
+kubectl get pods --namespace<span style="color:#666">=</span>kube-system | grep kube-state-metrics</code></pre></div>
+<p>Verify that kube-state-metrics is running and ready</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods -n kube-system -l app.kubernetes.io/name<span style="color:#666">=</span>kube-state-metrics</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME                                 READY   STATUS    RESTARTS   AGE
+kube-state-metrics-89d656bf8-vdthm   <span style="color:#666">2</span>/2     Running     <span style="color:#666">0</span>          21s</code></pre></div>
+<h2 id="clone-the-elastic-examples-github-repo">Clone the Elastic examples GitHub repo</h2>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">git clone https://github.com/elastic/examples.git</code></pre></div>
+<p>The rest of the commands will reference files in the <code>examples/beats-k8s-send-anywhere</code> directory, so change dir there:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#a2f">cd</span> examples/beats-k8s-send-anywhere</code></pre></div>
+<h2 id="create-a-kubernetes-secret">Create a Kubernetes Secret</h2>
+
+<p>A Kubernetes <a class='glossary-tooltip' href='/docs/concepts/configuration/secret/' target='_blank'>Secret<span class='tooltip-text'>Stores sensitive information, such as passwords, OAuth tokens, and ssh keys.</span>
+</a> is an object that contains a small amount of sensitive data such as a password, a token, or a key. Such information might otherwise be put in a Pod specification or in an image; putting it in a Secret object allows for more control over how it is used, and reduces the risk of accidental exposure.</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> There are two sets of steps here, one for <em>self managed</em> Elasticsearch and Kibana (running on your servers or using the Elastic Helm Charts), and a second separate set for the <em>managed service</em> Elasticsearch Service in Elastic Cloud.  Only create the secret for the type of Elasticsearch and Kibana system that you will use for this tutorial.</div>
+</blockquote>
+
+<div id="tab-with-md">
+<ul>
+    
+      
+  <li><a href="#tab-with-md-0">Self Managed</a></li>
+
+      
+  <li><a href="#tab-with-md-1">Managed service</a></li>
+
+</ul>
+
+
+<div id="tab-with-md-0">
+    
+        <h3 id="self-managed">Self managed</h3>
+
+<p>Switch to the <strong>Managed service</strong> tab if you are connecting to Elasticsearch Service in Elastic Cloud.</p>
+
+<h3 id="set-the-credentials">Set the credentials</h3>
+
+<p>There are four files to edit to create a k8s secret when you are connecting to self managed Elasticsearch and Kibana (self managed is effectively anything other than the managed Elasticsearch Service in Elastic Cloud).  The files are:</p>
+
+<ol>
+<li>ELASTICSEARCH_HOSTS</li>
+<li>ELASTICSEARCH_PASSWORD</li>
+<li>ELASTICSEARCH_USERNAME</li>
+<li>KIBANA_HOST</li>
+</ol>
+
+<p>Set these with the information for your Elasticsearch cluster and your Kibana host.  Here are some examples (also see <a href="https://stackoverflow.com/questions/59892896/how-to-connect-from-minikube-to-elasticsearch-installed-on-host-local-developme/59892897#59892897" target="_blank"><em>this configuration</em></a>)</p>
+
+<h4 id="elasticsearch-hosts"><code>ELASTICSEARCH_HOSTS</code></h4>
+
+<ol>
+<li><p>A nodeGroup from the Elastic Elasticsearch Helm Chart:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#666">[</span><span style="color:#b44">&#34;http://elasticsearch-master.default.svc.cluster.local:9200&#34;</span><span style="color:#666">]</span></code></pre></div></li>
+
+<li><p>A single Elasticsearch node running on a Mac where your Beats are running in Docker for Mac:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#666">[</span><span style="color:#b44">&#34;http://host.docker.internal:9200&#34;</span><span style="color:#666">]</span></code></pre></div></li>
+
+<li><p>Two Elasticsearch nodes running in VMs or on physical hardware:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#666">[</span><span style="color:#b44">&#34;http://host1.example.com:9200&#34;</span>, <span style="color:#b44">&#34;http://host2.example.com:9200&#34;</span><span style="color:#666">]</span></code></pre></div></li>
+</ol>
+
+<p>Edit <code>ELASTICSEARCH_HOSTS</code></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">vi ELASTICSEARCH_HOSTS</code></pre></div>
+<h4 id="elasticsearch-password"><code>ELASTICSEARCH_PASSWORD</code></h4>
+
+<p>Just the password; no whitespace, quotes, or &lt;&gt;:</p>
+
+<pre><code>&lt;yoursecretpassword&gt;
+</code></pre>
+
+<p>Edit <code>ELASTICSEARCH_PASSWORD</code></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">vi ELASTICSEARCH_PASSWORD</code></pre></div>
+<h4 id="elasticsearch-username"><code>ELASTICSEARCH_USERNAME</code></h4>
+
+<p>Just the username; no whitespace, quotes, or &lt;&gt;:</p>
+
+<pre><code>&lt;your ingest username for Elasticsearch&gt;
+</code></pre>
+
+<p>Edit <code>ELASTICSEARCH_USERNAME</code></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">vi ELASTICSEARCH_USERNAME</code></pre></div>
+<h4 id="kibana-host"><code>KIBANA_HOST</code></h4>
+
+<ol>
+<li><p>The Kibana instance from the Elastic Kibana Helm Chart.  The subdomain <code>default</code> refers to the default namespace.  If you have deployed the Helm Chart using a different namespace, then your subdomain will be different:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b44">&#34;kibana-kibana.default.svc.cluster.local:5601&#34;</span></code></pre></div></li>
+
+<li><p>A Kibana instance running on a Mac where your Beats are running in Docker for Mac:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b44">&#34;host.docker.internal:5601&#34;</span></code></pre></div></li>
+
+<li><p>Two Elasticsearch nodes running in VMs or on physical hardware:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b44">&#34;host1.example.com:5601&#34;</span></code></pre></div></li>
+</ol>
+
+<p>Edit <code>KIBANA_HOST</code></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">vi KIBANA_HOST</code></pre></div>
+<h3 id="create-a-kubernetes-secret">Create a Kubernetes secret</h3>
+
+<p>This command creates a secret in the Kubernetes system level namespace (kube-system) based on the files you just edited:</p>
+
+<pre><code>kubectl create secret generic dynamic-logging \
+  --from-file=./ELASTICSEARCH_HOSTS \
+  --from-file=./ELASTICSEARCH_PASSWORD \
+  --from-file=./ELASTICSEARCH_USERNAME \
+  --from-file=./KIBANA_HOST \
+  --namespace=kube-system
+</code></pre>
+
+    
+</div>
+
+<div id="tab-with-md-1">
+    
+        <h2 id="managed-service">Managed service</h2>
+
+<p>This tab is for Elasticsearch Service in Elastic Cloud only, if you have already created a secret for a self managed Elasticsearch and Kibana deployment, then continue with <a href="#deploy-the-beats">Deploy the Beats</a>.</p>
+
+<h3 id="set-the-credentials">Set the credentials</h3>
+
+<p>There are two files to edit to create a k8s secret when you are connecting to the managed Elasticsearch Service in Elastic Cloud.  The files are:</p>
+
+<ol>
+<li>ELASTIC_CLOUD_AUTH</li>
+<li>ELASTIC_CLOUD_ID</li>
+</ol>
+
+<p>Set these with the information provided to you from the Elasticsearch Service console when you created the deployment.  Here are some examples:</p>
+
+<h4 id="elastic-cloud-id">ELASTIC_CLOUD_ID</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">devk8s:ABC123def456ghi789jkl123mno456pqr789stu123vwx456yza789bcd012efg345hijj678klm901nop345zEwOTJjMTc5YWQ0YzQ5OThlN2U5MjAwYTg4NTIzZQ<span style="color:#666">==</span></code></pre></div>
+<h4 id="elastic-cloud-auth">ELASTIC_CLOUD_AUTH</h4>
+
+<p>Just the username, a colon (<code>:</code>), and the password, no whitespace or quotes:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">elastic:VFxJJf9Tjwer90wnfTghsn8w</code></pre></div>
+<h3 id="edit-the-required-files">Edit the required files:</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">vi ELASTIC_CLOUD_ID
+vi ELASTIC_CLOUD_AUTH</code></pre></div>
+<h3 id="create-a-kubernetes-secret">Create a Kubernetes secret</h3>
+
+<p>This command creates a secret in the Kubernetes system level namespace (kube-system) based on the files you just edited:</p>
+
+<pre><code>kubectl create secret generic dynamic-logging \
+  --from-file=./ELASTIC_CLOUD_ID \
+  --from-file=./ELASTIC_CLOUD_AUTH \
+  --namespace=kube-system
+</code></pre>
+
+    
+</div>
+
+<p></div></p>
+
+<script>$(function(){$("#tab-with-md").tabs();});</script>
+
+<h2 id="deploy-the-beats">Deploy the Beats</h2>
+
+<p>Manifest files are provided for each Beat.  These manifest files use the secret created earlier to configure the Beats to connect to your Elasticsearch and Kibana servers.</p>
+
+<h3 id="about-filebeat">About Filebeat</h3>
+
+<p>Filebeat will collect logs from the Kubernetes nodes and the containers running in each pod running on those nodes.  Filebeat is deployed as a <a class='glossary-tooltip' href='/docs/concepts/workloads/controllers/daemonset' target='_blank'>DaemonSet<span class='tooltip-text'>Ensures a copy of a Pod is running across a set of nodes in a cluster.</span>
+</a>.  Filebeat can autodiscover applications running in your Kubernetes cluster. At startup Filebeat scans existing containers and launches the proper configurations for them, then it will watch for new start/stop events.</p>
+
+<p>Here is the autodiscover configuration that enables Filebeat to locate and parse Redis logs from the Redis containers deployed with the guestbook application.  This configuration is in the file <code>filebeat-kubernetes.yaml</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">-<span style="color:#bbb"> </span>condition.contains:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kubernetes.labels.app:<span style="color:#bbb"> </span>redis<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>config:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>module:<span style="color:#bbb"> </span>redis<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>log:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>input:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>type:<span style="color:#bbb"> </span>docker<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>containers.ids:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>${data.kubernetes.container.id}<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>slowlog:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>enabled:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>var.hosts:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;${data.host}:${data.port}&#34;</span>]</code></pre></div>
+<p>This configures Filebeat to apply the Filebeat module <code>redis</code> when a container is detected with a label <code>app</code> containing the string <code>redis</code>.  The redis module has the ability to collect the <code>log</code> stream from the container by using the docker input type (reading the file on the Kubernetes node associated with the STDOUT stream from this Redis container).  Additionally, the module has the ability to collect Redis <code>slowlog</code> entries by connecting to the proper pod host and port, which is provided in the container metadata.</p>
+
+<h3 id="deploy-filebeat">Deploy Filebeat:</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f filebeat-kubernetes.yaml</code></pre></div>
+<h4 id="verify">Verify</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods -n kube-system -l k8s-app<span style="color:#666">=</span>filebeat-dynamic</code></pre></div>
+<h3 id="about-metricbeat">About Metricbeat</h3>
+
+<p>Metricbeat autodiscover is configured in the same way as Filebeat.  Here is the Metricbeat autodiscover configuration for the Redis containers.  This configuration is in the file <code>metricbeat-kubernetes.yaml</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">-<span style="color:#bbb"> </span>condition.equals:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kubernetes.labels.tier:<span style="color:#bbb"> </span>backend<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>config:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>module:<span style="color:#bbb"> </span>redis<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>metricsets:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;info&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;keyspace&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>period:<span style="color:#bbb"> </span>10s<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#080;font-style:italic"># Redis hosts</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>hosts:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;${data.host}:${data.port}&#34;</span>]</code></pre></div>
+<p>This configures Metricbeat to apply the Metricbeat module <code>redis</code> when a container is detected with a label <code>tier</code> equal to the string <code>backend</code>.  The <code>redis</code> module has the ability to collect the <code>info</code> and <code>keyspace</code> metrics from the container by connecting to the proper pod host and port, which is provided in the container metadata.</p>
+
+<h3 id="deploy-metricbeat">Deploy Metricbeat</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f metricbeat-kubernetes.yaml</code></pre></div>
+<h4 id="verify-1">Verify</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods -n kube-system -l k8s-app<span style="color:#666">=</span>metricbeat</code></pre></div>
+<h3 id="about-packetbeat">About Packetbeat</h3>
+
+<p>Packetbeat configuration is different than Filebeat and Metricbeat.  Rather than specify patterns to match against container labels the configuration is based on the protocols and port numbers involved.  Shown below is a subset of the port numbers.</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> If you are running a service on a non-standard port add that port number to the appropriate type in <code>filebeat.yaml</code> and delete / create the Packetbeat DaemonSet.</div>
+</blockquote>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">packetbeat.interfaces.device:<span style="color:#bbb"> </span>any<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>packetbeat.protocols:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>dns<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb"> </span>[<span style="color:#666">53</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>include_authorities:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>include_additionals:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>http<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb"> </span>[<span style="color:#666">80</span>,<span style="color:#bbb"> </span><span style="color:#666">8000</span>,<span style="color:#bbb"> </span><span style="color:#666">8080</span>,<span style="color:#bbb"> </span><span style="color:#666">9200</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>mysql<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb"> </span>[<span style="color:#666">3306</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>redis<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb"> </span>[<span style="color:#666">6379</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>packetbeat.flows:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>timeout:<span style="color:#bbb"> </span>30s<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>period:<span style="color:#bbb"> </span>10s</code></pre></div>
+<h4 id="deploy-packetbeat">Deploy Packetbeat</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f packetbeat-kubernetes.yaml</code></pre></div>
+<h4 id="verify-2">Verify</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods -n kube-system -l k8s-app<span style="color:#666">=</span>packetbeat-dynamic</code></pre></div>
+<h2 id="view-in-kibana">View in Kibana</h2>
+
+<p>Open Kibana in your browser and then open the <strong>Dashboard</strong> application.  In the search bar type Kubernetes and click on the Metricbeat dashboard for Kubernetes.  This dashboard reports on the state of your Nodes, deployments, etc.</p>
+
+<p>Search for Packetbeat on the Dashboard page, and view the Packetbeat overview.</p>
+
+<p>Similarly, view dashboards for Apache and Redis.  You will see dashboards for logs and metrics for each.  The Apache Metricbeat dashboard will be blank.  Look at the Apache Filebeat dashboard and scroll to the bottom to view the Apache error logs.  This will tell you why there are no metrics available for Apache.</p>
+
+<p>To enable Metricbeat to retrieve the Apache metrics, enable server-status by adding a ConfigMap including a mod-status configuration file and re-deploy the guestbook.</p>
+
+<h2 id="scale-your-deployments-and-see-new-pods-being-monitored">Scale your deployments and see new pods being monitored</h2>
+
+<p>List the existing deployments:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get deployments</code></pre></div>
+<p>The output:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME            READY   UP-TO-DATE   AVAILABLE   AGE
+frontend        <span style="color:#666">3</span>/3     <span style="color:#666">3</span>            <span style="color:#666">3</span>           3h27m
+redis-master    <span style="color:#666">1</span>/1     <span style="color:#666">1</span>            <span style="color:#666">1</span>           3h27m
+redis-slave     <span style="color:#666">2</span>/2     <span style="color:#666">2</span>            <span style="color:#666">2</span>           3h27m</code></pre></div>
+<p>Scale the frontend down to two pods:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl scale --replicas<span style="color:#666">=</span><span style="color:#666">2</span> deployment/frontend</code></pre></div>
+<p>The output:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">deployment.extensions/frontend scaled</code></pre></div>
+<h2 id="view-the-changes-in-kibana">View the changes in Kibana</h2>
+
+<p>See the screenshot, add the indicated filters and then add the columns to the view.  You can see the ScalingReplicaSet entry that is marked, following from there to the top of the list of events shows the image being pulled, the volumes mounted, the pod starting, etc.
+<img src="https://raw.githubusercontent.com/elastic/examples/master/beats-k8s-send-anywhere/scaling-discover.png" alt="Kibana Discover" /></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="cleaning-up">Cleaning up</h2>
+<p>Deleting the Deployments and Services also deletes any running Pods. Use labels to delete multiple resources with one command.</p>
+
+<ol>
+<li><p>Run the following commands to delete all Pods, Deployments, and Services.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  kubectl delete deployment -l <span style="color:#b8860b">app</span><span style="color:#666">=</span>redis
+  kubectl delete service -l <span style="color:#b8860b">app</span><span style="color:#666">=</span>redis
+  kubectl delete deployment -l <span style="color:#b8860b">app</span><span style="color:#666">=</span>guestbook
+  kubectl delete service -l <span style="color:#b8860b">app</span><span style="color:#666">=</span>guestbook
+  kubectl delete -f filebeat-kubernetes.yaml
+  kubectl delete -f metricbeat-kubernetes.yaml
+  kubectl delete -f packetbeat-kubernetes.yaml
+  kubectl delete secret dynamic-logging -n kube-system</code></pre></div></li>
+
+<li><p>Query the list of Pods to verify that no Pods are running:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  kubectl get pods</code></pre></div>
+<p>The response should be this:</p>
+
+<pre><code>  No resources found.
+</code></pre></li>
+</ol>
+
+
+
+
+
+<h2 id="what-s-next">What&#39;s next</h2>
+<ul>
+<li>Learn about <a href="/docs/tasks/debug-application-cluster/resource-usage-monitoring/">tools for monitoring resources</a></li>
+<li>Read more about <a href="/docs/concepts/cluster-administration/logging/">logging architecture</a></li>
+<li>Read more about <a href="/docs/tasks/debug-application-cluster/">application introspection and debugging</a></li>
+<li>Read more about <a href="/docs/tasks/debug-application-cluster/resource-usage-monitoring/">troubleshoot applications</a></li>
+</ul>
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Was this page helpful? </p>
+  <button class="button feedback--yes">Yes</button>
+  <button class="button feedback--no">No</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/docs\/tutorials\/stateless-application\/guestbook-logs-metrics-with-elk\/",
+    "title" : "Example: Add logging and metrics to the PHP \/ Redis Guestbook example",
+    "permalink" : "https:\/\/kubernetes.io\/docs\/tutorials\/stateless-application\/guestbook-logs-metrics-with-elk\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Create an Issue</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk.md" class="button issue">Edit This Page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Page last modified on March 16, 2020 at 5:40 AM PST by
+    <a href="https://github.com/kubernetes/website/commit/7007e8156fb04d1ec3ce292ae5c9f2bdfd94cc34/">Config elasticsearch installed in minikube host (#19200)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk.md">Page History</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/docs/home/">Home</a>
+            
+            <a href="/blog/">Blog</a>
+            
+            <a href="/training/">Training</a>
+            
+            <a href="/partners/">Partners</a>
+            
+            <a href="/community/">Community</a>
+            
+            <a href="/case-studies/">Case Studies</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribute</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

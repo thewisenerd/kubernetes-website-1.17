@@ -1,0 +1,2119 @@
+<!DOCTYPE html>
+<html id="docs" lang="en" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Using RBAC Authorization - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/docs/reference/access-authn-authz/rbac/">
+<meta property="og:title" content="Using RBAC Authorization">
+<meta name="twitter:title" content="Using RBAC Authorization">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/" class="logo" title="Production-Grade Container Orchestration - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/blog/">Blog</a></li>
+            
+            <li><a href="/training/">Training</a></li>
+            
+            <li><a href="/partners/">Partners</a></li>
+            
+            <li><a href="/community/">Community</a></li>
+            
+            <li><a href="/case-studies/">Case Studies</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    English <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/zh/docs/reference/access-authn-authz/rbac/">中文 Chinese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/docs/reference/access-authn-authz/rbac/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/docs/reference/access-authn-authz/rbac/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/docs/reference/access-authn-authz/rbac/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/docs/reference/access-authn-authz/rbac/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/docs/reference/access-authn-authz/rbac/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Learn Kubernetes Basics</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/docs/home/">Documentation</a></h3>
+           <p>Learn how to use Kubernetes with conceptual, tutorial, and reference documentation. You can even <a href="/editdocs/" data-auto-burger-exclude>help contribute to the docs</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/blog/">Blog</a></h3>
+           <p>Read the latest news for Kubernetes and the containers space in general, and get technical how-tos hot off the presses.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Interested in hacking on the core Kubernetes code base?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>View On GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explore the community</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1>Reference</h1>
+<h5></h5>
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/docs/home/">HOME</a></li>
+		
+		
+		<li><a href="/docs/setup/">GETTING STARTED</a></li>
+		
+		
+		<li><a href="/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/docs/tasks/">TASKS</a></li>
+		
+		
+		<li><a href="/docs/tutorials/">TUTORIALS</a></li>
+		
+		
+		<li><a href="/docs/reference/" class="YAH">REFERENCE</a></li>
+		
+		
+		<li><a href="/docs/contribute/">CONTRIBUTE</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Search" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation is no longer actively maintained. The version you are currently viewing is a static snapshot. For up-to-date documentation, see the 
+	 <a href="https://kubernetes.io/docs/home/">latest version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Reference" href="/docs/reference/"></a>
+
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Standardized Glossary" href="/docs/reference/glossary/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes Issues and Security">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes Issue Tracker" href="/docs/reference/issues-security/issues/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes Security and Disclosure Information" href="/docs/reference/issues-security/security/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Using the Kubernetes API">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API Overview" href="/docs/reference/using-api/api-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API Concepts" href="/docs/reference/using-api/api-concepts/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Client Libraries" href="/docs/reference/using-api/client-libraries/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes Deprecation Policy" href="/docs/reference/using-api/deprecation-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Accessing the API">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Controlling Access to the Kubernetes API" href="/docs/reference/access-authn-authz/controlling-access/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Authenticating" href="/docs/reference/access-authn-authz/authentication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Authenticating with Bootstrap Tokens" href="/docs/reference/access-authn-authz/bootstrap-tokens/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using Admission Controllers" href="/docs/reference/access-authn-authz/admission-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Dynamic Admission Control" href="/docs/reference/access-authn-authz/extensible-admission-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Managing Service Accounts" href="/docs/reference/access-authn-authz/service-accounts-admin/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Authorization Overview" href="/docs/reference/access-authn-authz/authorization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using RBAC Authorization" href="/docs/reference/access-authn-authz/rbac/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using ABAC Authorization" href="/docs/reference/access-authn-authz/abac/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Using Node Authorization" href="/docs/reference/access-authn-authz/node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Webhook Mode" href="/docs/reference/access-authn-authz/webhook/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="API Reference">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="v1.17" href="/docs/reference/kubernetes-api/api-index/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Well-Known Labels, Annotations and Taints" href="/docs/reference/kubernetes-api/labels-annotations-taints/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Setup tools reference">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Kubeadm">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Overview of kubeadm" href="/docs/reference/setup-tools/kubeadm/kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm init" href="/docs/reference/setup-tools/kubeadm/kubeadm-init/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm join" href="/docs/reference/setup-tools/kubeadm/kubeadm-join/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm upgrade" href="/docs/reference/setup-tools/kubeadm/kubeadm-upgrade/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm config" href="/docs/reference/setup-tools/kubeadm/kubeadm-config/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm reset" href="/docs/reference/setup-tools/kubeadm/kubeadm-reset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm token" href="/docs/reference/setup-tools/kubeadm/kubeadm-token/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm version" href="/docs/reference/setup-tools/kubeadm/kubeadm-version/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm alpha" href="/docs/reference/setup-tools/kubeadm/kubeadm-alpha/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm init phase" href="/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm join phase" href="/docs/reference/setup-tools/kubeadm/kubeadm-join-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm reset phase" href="/docs/reference/setup-tools/kubeadm/kubeadm-reset-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeadm upgrade phase" href="/docs/reference/setup-tools/kubeadm/kubeadm-upgrade-phase/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Implementation details" href="/docs/reference/setup-tools/kubeadm/implementation-details/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Command line tools reference">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Feature Gates" href="/docs/reference/command-line-tools-reference/feature-gates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="cloud-controller-manager" href="/docs/reference/command-line-tools-reference/cloud-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-apiserver" href="/docs/reference/command-line-tools-reference/kube-apiserver/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-controller-manager" href="/docs/reference/command-line-tools-reference/kube-controller-manager/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-proxy" href="/docs/reference/command-line-tools-reference/kube-proxy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kube-scheduler" href="/docs/reference/command-line-tools-reference/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubelet" href="/docs/reference/command-line-tools-reference/kubelet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubelet authentication/authorization" href="/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="TLS bootstrapping" href="/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="kubectl CLI">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Overview of kubectl" href="/docs/reference/kubectl/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="JSONPath Support" href="/docs/reference/kubectl/jsonpath/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl" href="/docs/reference/kubectl/kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl Cheat Sheet" href="/docs/reference/kubectl/cheatsheet/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl Commands" href="/docs/reference/kubectl/kubectl-cmds/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl for Docker Users" href="/docs/reference/kubectl/docker-cli-to-kubectl/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubectl Usage Conventions" href="/docs/reference/kubectl/conventions/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Tools" href="/docs/reference/tools/"></a>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/reference/access-authn-authz/rbac.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Using RBAC Authorization</h1>
+
+
+
+<p>Role-based access control (RBAC) is a method of regulating access to computer or
+network resources based on the roles of individual users within your organization.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#api-overview">API objects</a></li>
+
+
+
+
+<li><a href="#default-roles-and-role-bindings">Default roles and role bindings</a></li>
+
+
+
+
+<li><a href="#privilege-escalation-prevention-and-bootstrapping">Privilege escalation prevention and bootstrapping</a></li>
+
+
+
+
+<li><a href="#command-line-utilities">Command-line utilities</a></li>
+
+
+
+
+<li><a href="#service-account-permissions">ServiceAccount permissions</a></li>
+
+
+
+
+<li><a href="#upgrading-from-abac">Upgrading from ABAC</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<p>RBAC authorization uses the <code>rbac.authorization.k8s.io</code>
+<a class='glossary-tooltip' href='/docs/concepts/overview/kubernetes-api/#api-groups' target='_blank'>API group<span class='tooltip-text'>A set of related paths in the Kubernetes API.</span>
+</a> to drive authorization
+decisions, allowing you to dynamically configure policies through the Kubernetes API.</p>
+
+<p>To enable RBAC, start the <a class='glossary-tooltip' href='/docs/reference/generated/kube-apiserver/' target='_blank'>API server<span class='tooltip-text'>Control plane component that serves the Kubernetes API.</span>
+</a>
+with the <code>--authorization-mode</code> flag set to a comma-separated list that includes <code>RBAC</code>;
+for example:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kube-apiserver --authorization-mode<span style="color:#666">=</span>Example,RBAC --other-options --more-options</code></pre></div>
+<h2 id="api-overview">API objects</h2>
+
+<p>The RBAC API declares four kinds of Kubernetes object: <em>Role</em>, <em>ClusterRole</em>,
+<em>RoleBinding</em> and <em>ClusterRoleBinding</em>. You can
+<a href="/docs/concepts/overview/working-with-objects/kubernetes-objects/#understanding-kubernetes-objects">describe objects</a>,
+or amend them, using tools such as <code>kubectl,</code> just like any other Kubernetes object.</p>
+
+<blockquote class="caution">
+  <div><strong>Caution:</strong> These objects, by design, impose access restrictions. If you are making changes
+to a cluster as you learn, see
+<a href="#privilege-escalation-prevention-and-bootstrapping">privilege escalation prevention and bootstrapping</a>
+to understand how those restrictions can prevent you making some changes.</div>
+</blockquote>
+
+<h3 id="role-and-clusterrole">Role and ClusterRole</h3>
+
+<p>An RBAC <em>Role</em> or <em>ClusterRole</em> contains rules that represent a set of permissions.
+Permissions are purely additive (there are no &ldquo;deny&rdquo; rules).</p>
+
+<p>A Role always sets permissions within a particular <a class='glossary-tooltip' href='/docs/concepts/overview/working-with-objects/namespaces' target='_blank'>namespace<span class='tooltip-text'>An abstraction used by Kubernetes to support multiple virtual clusters on the same physical cluster.</span>
+</a>;
+when you create a Role, you have to specify the namespace it belongs in.</p>
+
+<p>ClusterRole, by contrast, is a non-namespaced resource. The resources have different names (Role
+and ClusterRole) because a Kubernetes object always has to be either namespaced or not namespaced;
+it can&rsquo;t be both.</p>
+
+<p>ClusterRoles have several uses. You can use a ClusterRole to:</p>
+
+<ol>
+<li>define permissions on namespaced resources and be granted within individual namespace(s)</li>
+<li>define permissions on namespaced resources and be granted across all namespaces</li>
+<li>define permissions on cluster-scoped resources</li>
+</ol>
+
+<p>If you want to define a role within a namespace, use a Role; if you want to define
+a role cluster-wide, use a ClusterRole.</p>
+
+<h4 id="role-example">Role example</h4>
+
+<p>Here&rsquo;s an example Role in the &ldquo;default&rdquo; namespace that can be used to grant read access to
+<a class='glossary-tooltip' href='/docs/concepts/workloads/pods/pod-overview/' target='_blank'>pods<span class='tooltip-text'>The smallest and simplest Kubernetes object. A Pod represents a set of running containers on your cluster.</span>
+</a>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Role<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>pod-reader<span style="color:#bbb">
+</span><span style="color:#bbb"></span>rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;&#34;</span>]<span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># &#34;&#34; indicates the core API group</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;pods&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;watch&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;list&#34;</span>]</code></pre></div>
+<h4 id="clusterrole-example">ClusterRole example</h4>
+
+<p>A ClusterRole can be used to grant the same permissions as a Role.
+Because ClusterRoles are cluster-scoped, you can also use them to grant access to:</p>
+
+<ul>
+<li>cluster-scoped resources (like <a class='glossary-tooltip' href='/docs/concepts/architecture/nodes/' target='_blank'>nodes<span class='tooltip-text'>A node is a worker machine in Kubernetes.</span>
+</a>)</li>
+<li>non-resource endpoints (like <code>/healthz</code>)</li>
+<li>namespaced resources (like Pods), across all namespaces<br />
+For example: you can use a ClusterRole to allow a particular user to run
+<code>kubectl get pods --all-namespaces</code>.</li>
+</ul>
+
+<p>Here is an example of a ClusterRole that can be used to grant read access to
+<a class='glossary-tooltip' href='/docs/concepts/configuration/secret/' target='_blank'>secrets<span class='tooltip-text'>Stores sensitive information, such as passwords, OAuth tokens, and ssh keys.</span>
+</a> in any particular namespace,
+or across all namespaces (depending on how it is <a href="#rolebinding-and-clusterrolebinding">bound</a>):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ClusterRole<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># &#34;namespace&#34; omitted since ClusterRoles are not namespaced</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>secret-reader<span style="color:#bbb">
+</span><span style="color:#bbb"></span>rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic">#</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># at the HTTP level, the name of the resource for accessing Secret</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># objects is &#34;secrets&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;secrets&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;watch&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;list&#34;</span>]</code></pre></div>
+<p>The name of a Role or a ClusterRole object must be a valid
+<a href="/docs/concepts/overview/working-with-objects/names#path-segment-names">path segment name</a>.</p>
+
+<h3 id="rolebinding-and-clusterrolebinding">RoleBinding and ClusterRoleBinding</h3>
+
+<p>A role binding grants the permissions defined in a role to a user or set of users.
+It holds a list of <em>subjects</em> (users, groups, or service accounts), and a reference to the
+role being granted.
+A RoleBinding grants permissions within a specific namespace whereas a ClusterRoleBinding
+grants that access cluster-wide.</p>
+
+<p>A RoleBinding may reference any Role in the same namespace. Alternatively, a RoleBinding
+can reference a ClusterRole and bind that ClusterRole to the namespace of the RoleBinding.
+If you want to bind a ClusterRole to all the namespaces in your cluster, you use a
+ClusterRoleBinding.</p>
+
+<p>The name of a RoleBinding or ClusterRoleBinding object must be a valid
+<a href="/docs/concepts/overview/working-with-objects/names#path-segment-names">path segment name</a>.</p>
+
+<h4 id="rolebinding-example">RoleBinding examples</h4>
+
+<p>Here is an example of a RoleBinding that grants the &ldquo;pod-reader&rdquo; Role to the user &ldquo;jane&rdquo;
+within the &ldquo;default&rdquo; namespace.
+This allows &ldquo;jane&rdquo; to read pods in the &ldquo;default&rdquo; namespace.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#080;font-style:italic"># This role binding allows &#34;jane&#34; to read pods in the &#34;default&#34; namespace.</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#080;font-style:italic"># You need to already have a Role named &#34;pod-reader&#34; in that namespace.</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>RoleBinding<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>read-pods<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#080;font-style:italic"># You can specify more than one &#34;subject&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>User<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>jane<span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># &#34;name&#34; is case sensitive</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io<span style="color:#bbb">
+</span><span style="color:#bbb"></span>roleRef:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># &#34;roleRef&#34; specifies the binding to a Role / ClusterRole</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kind:<span style="color:#bbb"> </span>Role<span style="color:#bbb"> </span><span style="color:#080;font-style:italic">#this must be Role or ClusterRole</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>pod-reader<span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># this must match the name of the Role or ClusterRole you wish to bind to</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io</code></pre></div>
+<p>A RoleBinding can also reference a ClusterRole to grant the permissions defined in that
+ClusterRole to resources inside the RoleBinding&rsquo;s namespace. This kind of reference
+lets you define a set of common roles across your cluster, then reuse them within
+multiple namespaces.</p>
+
+<p>For instance, even though the following RoleBinding refers to a ClusterRole,
+&ldquo;dave&rdquo; (the subject, case sensitive) will only be able to read Secrets in the &ldquo;development&rdquo;
+namespace, because the RoleBinding&rsquo;s namespace (in its metadata) is &ldquo;development&rdquo;.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#080;font-style:italic"># This role binding allows &#34;dave&#34; to read secrets in the &#34;development&#34; namespace.</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#080;font-style:italic"># You need to already have a ClusterRole named &#34;secret-reader&#34;.</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>RoleBinding<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>read-secrets<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic">#</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># The namespace of the RoleBinding determines where the permissions are granted.</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># This only grants permissions within the &#34;development&#34; namespace.</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>development<span style="color:#bbb">
+</span><span style="color:#bbb"></span>subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>User<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>dave<span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># Name is case sensitive</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io<span style="color:#bbb">
+</span><span style="color:#bbb"></span>roleRef:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kind:<span style="color:#bbb"> </span>ClusterRole<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>secret-reader<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io</code></pre></div>
+<h4 id="clusterrolebinding-example">ClusterRoleBinding example</h4>
+
+<p>To grant permissions across a whole cluster, you can use a ClusterRoleBinding.
+The following ClusterRoleBinding allows any user in the group &ldquo;manager&rdquo; to read
+secrets in any namespace.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#080;font-style:italic"># This cluster role binding allows anyone in the &#34;manager&#34; group to read secrets in any namespace.</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ClusterRoleBinding<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>read-secrets-global<span style="color:#bbb">
+</span><span style="color:#bbb"></span>subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>Group<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>manager<span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># Name is case sensitive</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io<span style="color:#bbb">
+</span><span style="color:#bbb"></span>roleRef:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kind:<span style="color:#bbb"> </span>ClusterRole<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>secret-reader<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io</code></pre></div>
+<p>After you create a binding, you cannot change the Role or ClusterRole that it refers to.
+If you try to change a binding&rsquo;s <code>roleRef</code>, you get a validation error. If you do want
+to change the <code>roleRef</code> for a binding, you need to remove the binding object and create
+a replacement.</p>
+
+<p>There are two reasons for this restriction:</p>
+
+<ol>
+<li>Making <code>roleRef</code> immutable allows granting someone <code>update</code> permission on an existing binding
+object, so that they can manage the list of subjects, without being able to change
+the role that is granted to those subjects.</li>
+<li>A binding to a different role is a fundamentally different binding.<br />
+Requiring a binding to be deleted/recreated in order to change the <code>roleRef</code>
+ensures the full list of subjects in the binding is intended to be granted
+the new role (as opposed to enabling accidentally modifying just the roleRef
+without verifying all of the existing subjects should be given the new role&rsquo;s
+permissions).</li>
+</ol>
+
+<p>The <code>kubectl auth reconcile</code> command-line utility creates or updates a manifest file containing RBAC objects,
+and handles deleting and recreating binding objects if required to change the role they refer to.<br />
+See <a href="#kubectl-auth-reconcile">command usage and examples</a> for more information.</p>
+
+<h3 id="referring-to-resources">Referring to resources</h3>
+
+<p>In the Kubernetes API, most resources are represented and accessed using a string representation of
+their object name, such as <code>pods</code> for a Pod. RBAC refers to resources using exactly the same
+name that appears in the URL for the relevant API endpoint.
+Some Kubernetes APIs involve a
+<em>subresource</em>, such as the logs for a Pod. A request for a Pod&rsquo;s logs looks like:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-http" data-lang="http"><span style="">GET /api/v1/namespaces/{namespace}/pods/{name}/log</span></code></pre></div>
+<p>In this case, <code>pods</code> is the namespaced resource for Pod resources, and <code>log</code> is a
+subresource of <code>pods</code>. To represent this in an RBAC role, use a slash (<code>/</code>) to
+delimit the resource and subresource. To allow a subject to read <code>pods</code> and
+also access the <code>log</code> subresource for each of those Pods, you write:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Role<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>pod-and-pod-logs-reader<span style="color:#bbb">
+</span><span style="color:#bbb"></span>rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;pods&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;pods/log&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;list&#34;</span>]</code></pre></div>
+<p>You can also refer to resources by name for certain requests through the <code>resourceNames</code> list.
+When specified, requests can be restricted to individual instances of a resource.
+Here is an example that restricts its subject to only <code>get</code> or <code>update</code> a
+<a class='glossary-tooltip' href='/docs/tasks/configure-pod-container/configure-pod-configmap/' target='_blank'>ConfigMap<span class='tooltip-text'>An API object used to store non-confidential data in key-value pairs. Can be consumed as environment variables, command-line arguments, or config files in a volume.</span>
+</a> named <code>my-configmap</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Role<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>configmap-updater<span style="color:#bbb">
+</span><span style="color:#bbb"></span>rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic">#</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># at the HTTP level, the name of the resource for accessing ConfigMap</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># objects is &#34;configmaps&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;configmaps&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resourceNames:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;my-configmap&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;update&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;get&#34;</span>]</code></pre></div>
+<blockquote class="note">
+  <div><strong>Note:</strong> You cannot restrict <code>create</code> or <code>deletecollection</code> requests by resourceName. For <code>create</code>, this
+limitation is because the object name is not known at authorization time.</div>
+</blockquote>
+
+<h3 id="aggregated-clusterroles">Aggregated ClusterRoles</h3>
+
+<p>You can <em>aggregate</em> several ClusterRoles into one combined ClusterRole.
+A controller, running as part of the cluster control plane, watches for ClusterRole
+objects with an <code>aggregationRule</code> set. The <code>aggregationRule</code> defines a label
+<a class='glossary-tooltip' href='/docs/concepts/overview/working-with-objects/labels/' target='_blank'>selector<span class='tooltip-text'>Allows users to filter a list of resources based on labels.</span>
+</a> that the controller
+uses to match other ClusterRole objects that should be combined into the <code>rules</code>
+field of this one.</p>
+
+<p>Here is an example aggregated ClusterRole:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ClusterRole<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>monitoring<span style="color:#bbb">
+</span><span style="color:#bbb"></span>aggregationRule:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>clusterRoleSelectors:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>rbac.example.com/aggregate-to-monitoring:<span style="color:#bbb"> </span><span style="color:#b44">&#34;true&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>rules:<span style="color:#bbb"> </span>[]<span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># The control plane automatically fills in the rules</span></code></pre></div>
+<p>If you create a new ClusterRole that matches the label selector of an existing aggregated ClusterRole,
+that change triggers adding the new rules into the aggregated ClusterRole.
+Here is an example that adds rules to the &ldquo;monitoring&rdquo; ClusterRole, by creating another
+ClusterRole labeled <code>rbac.example.com/aggregate-to-monitoring: true</code>.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ClusterRole<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>monitoring-endpoints<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>rbac.example.com/aggregate-to-monitoring:<span style="color:#bbb"> </span><span style="color:#b44">&#34;true&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#080;font-style:italic"># When you create the &#34;monitoring-endpoints&#34; ClusterRole,</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#080;font-style:italic"># the rules below will be added to the &#34;monitoring&#34; ClusterRole.</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;services&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;endpoints&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;pods&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;list&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;watch&#34;</span>]</code></pre></div>
+<p>The <a href="#default-roles-and-rolebindings">default user-facing roles</a> use ClusterRole aggregation. This lets you,
+as a cluster administrator, include rules for custom resources, such as those served by
+<a class='glossary-tooltip' href='/docs/tasks/access-kubernetes-api/extend-api-custom-resource-definitions/' target='_blank'>CustomResourceDefinitions<span class='tooltip-text'>Custom code that defines a resource to add to your Kubernetes API server without building a complete custom server.</span>
+</a>
+or aggregated API servers, to extend the default roles.</p>
+
+<p>For example: the following ClusterRoles let the &ldquo;admin&rdquo; and &ldquo;edit&rdquo; default roles manage the custom resource
+named CronTab, whereas the &ldquo;view&rdquo; role can perform just read actions on CronTab resources.
+You can assume that CronTab objects are named <code>&quot;crontabs&quot;</code> in URLs as seen by the API server.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ClusterRole<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>aggregate-cron-tabs-edit<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#080;font-style:italic"># Add these permissions to the &#34;admin&#34; and &#34;edit&#34; default roles.</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>rbac.authorization.k8s.io/aggregate-to-admin:<span style="color:#bbb"> </span><span style="color:#b44">&#34;true&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>rbac.authorization.k8s.io/aggregate-to-edit:<span style="color:#bbb"> </span><span style="color:#b44">&#34;true&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;stable.example.com&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;crontabs&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;list&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;watch&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;create&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;update&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;patch&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;delete&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb"></span>---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ClusterRole<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>aggregate-cron-tabs-view<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span><span style="color:#080;font-style:italic"># Add these permissions to the &#34;view&#34; default role.</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>rbac.authorization.k8s.io/aggregate-to-view:<span style="color:#bbb"> </span><span style="color:#b44">&#34;true&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;stable.example.com&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;crontabs&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;list&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;watch&#34;</span>]</code></pre></div>
+<h4 id="role-examples">Role examples</h4>
+
+<p>The following examples are excerpts from Role or ClusterRole objects, showing only
+the <code>rules</code> section.</p>
+
+<p>Allow reading <code>&quot;pods&quot;</code> resources in the core
+<a class='glossary-tooltip' href='/docs/concepts/overview/kubernetes-api/#api-groups' target='_blank'>API Group<span class='tooltip-text'>A set of related paths in the Kubernetes API.</span>
+</a>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic">#</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># at the HTTP level, the name of the resource for accessing Pod</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># objects is &#34;pods&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;pods&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;list&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;watch&#34;</span>]</code></pre></div>
+<p>Allow reading/writing Deployments (at the HTTP level: objects with <code>&quot;deployments&quot;</code>
+in the resource part of their URL) in both the <code>&quot;extensions&quot;</code> and <code>&quot;apps&quot;</code> API groups:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;extensions&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;apps&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic">#</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># at the HTTP level, the name of the resource for accessing Deployment</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># objects is &#34;deployments&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;deployments&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;list&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;watch&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;create&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;update&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;patch&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;delete&#34;</span>]</code></pre></div>
+<p>Allow reading Pods in the core API group, as well as reading or writing Job
+resources in the <code>&quot;batch&quot;</code> or <code>&quot;extensions&quot;</code> API groups:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic">#</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># at the HTTP level, the name of the resource for accessing Pod</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># objects is &#34;pods&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;pods&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;list&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;watch&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;batch&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;extensions&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic">#</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># at the HTTP level, the name of the resource for accessing Job</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># objects is &#34;jobs&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;jobs&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;list&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;watch&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;create&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;update&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;patch&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;delete&#34;</span>]</code></pre></div>
+<p>Allow reading a ConfigMap named &ldquo;my-config&rdquo; (must be bound with a
+RoleBinding to limit to a single ConfigMap in a single namespace):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic">#</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># at the HTTP level, the name of the resource for accessing ConfigMap</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># objects is &#34;configmaps&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;configmaps&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resourceNames:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;my-config&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>]</code></pre></div>
+<p>Allow reading the resource <code>&quot;nodes&quot;</code> in the core group (because a
+Node is cluster-scoped, this must be in a ClusterRole bound with a
+ClusterRoleBinding to be effective):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic">#</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># at the HTTP level, the name of the resource for accessing Node</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#080;font-style:italic"># objects is &#34;nodes&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;nodes&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;list&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;watch&#34;</span>]</code></pre></div>
+<p>Allow GET and POST requests to the non-resource endpoint <code>/healthz</code> and
+all subpaths (must be in a ClusterRole bound with a ClusterRoleBinding
+to be effective):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>nonResourceURLs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;/healthz&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;/healthz/*&#34;</span>]<span style="color:#bbb"> </span><span style="color:#080;font-style:italic"># &#39;*&#39; in a nonResourceURL is a suffix glob match</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;get&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;post&#34;</span>]</code></pre></div>
+<h3 id="referring-to-subjects">Referring to subjects</h3>
+
+<p>A RoleBinding or ClusterRoleBinding binds a role to subjects.
+Subjects can be groups, users or
+<a class='glossary-tooltip' href='/docs/tasks/configure-pod-container/configure-service-account/' target='_blank'>ServiceAccounts<span class='tooltip-text'>Provides an identity for processes that run in a Pod.</span>
+</a>.</p>
+
+<p>Kubernetes represents usernames as strings.
+These can be: plain names, such as &ldquo;alice&rdquo;; email-style names, like &ldquo;bob@example.com&rdquo;;
+or numeric user IDs represented as a string.  It is up to you as a cluster administrator
+to configure the <a href="/docs/reference/access-authn-authz/authentication/">authentication modules</a>
+so that authentication produces usernames in the format you want.</p>
+
+<blockquote class="caution">
+  <div><strong>Caution:</strong> The prefix <code>system:</code> is reserved for Kubernetes system use, so you should ensure
+that you don&rsquo;t have users or groups with names that start with <code>system:</code> by
+accident.
+Other than this special prefix, the RBAC authorization system does not require any format
+for usernames.</div>
+</blockquote>
+
+<p>In Kubernetes, Authenticator modules provide group information.
+Groups, like users, are represented as strings, and that string has no format requirements,
+other than that the prefix <code>system:</code> is reserved.</p>
+
+<p><a href="/docs/tasks/configure-pod-container/configure-service-account/">ServiceAccounts</a> have names prefixed
+with <code>system:serviceaccount:</code>, and belong to groups that have names prefixed with <code>system:serviceaccounts:</code>.</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> <ul>
+<li><code>system:serviceaccount:</code> (singular) is the prefix for service account usernames.</li>
+<li><code>system:serviceaccounts:</code> (plural) is the prefix for service account groups.</li>
+</ul></div>
+</blockquote>
+
+<h4 id="role-binding-examples">RoleBinding examples</h4>
+
+<p>The following examples are <code>RoleBinding</code> excerpts that only
+show the <code>subjects</code> section.</p>
+
+<p>For a user named <code>alice@example.com</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>User<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span><span style="color:#b44">&#34;alice@example.com&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io</code></pre></div>
+<p>For a group named <code>frontend-admins</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>Group<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span><span style="color:#b44">&#34;frontend-admins&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io</code></pre></div>
+<p>For the default service account in the &ldquo;kube-system&rdquo; namespace:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>ServiceAccount<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>kube-system</code></pre></div>
+<p>For all service accounts in the &ldquo;qa&rdquo; namespace:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>Group<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>system:serviceaccounts:qa<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io</code></pre></div>
+<p>For all service accounts in any namespace:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>Group<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>system:serviceaccounts<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io</code></pre></div>
+<p>For all authenticated users:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>Group<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>system:authenticated<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io</code></pre></div>
+<p>For all unauthenticated users:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>Group<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>system:unauthenticated<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io</code></pre></div>
+<p>For all users:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>Group<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>system:authenticated<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>kind:<span style="color:#bbb"> </span>Group<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>system:unauthenticated<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io</code></pre></div>
+<h2 id="default-roles-and-role-bindings">Default roles and role bindings</h2>
+
+<p>API servers create a set of default ClusterRole and ClusterRoleBinding objects.
+Many of these are <code>system:</code> prefixed, which indicates that the resource is directly
+managed by the cluster control plane.
+All of the default ClusterRoles and ClusterRoleBindings are labeled with <code>kubernetes.io/bootstrapping=rbac-defaults</code>.</p>
+
+<blockquote class="caution">
+  <div><strong>Caution:</strong> Take care when modifying ClusterRoles and ClusterRoleBindings with names
+that have a <code>system:</code> prefix.
+Modifications to these resources can result in non-functional clusters.</div>
+</blockquote>
+
+<h3 id="auto-reconciliation">Auto-reconciliation</h3>
+
+<p>At each start-up, the API server updates default cluster roles with any missing permissions,
+and updates default cluster role bindings with any missing subjects.
+This allows the cluster to repair accidental modifications, and helps to keep roles and role bindings
+up-to-date as permissions and subjects change in new Kubernetes releases.</p>
+
+<p>To opt out of this reconciliation, set the <code>rbac.authorization.kubernetes.io/autoupdate</code>
+annotation on a default cluster role or rolebinding to <code>false</code>.
+Be aware that missing default permissions and subjects can result in non-functional clusters.</p>
+
+<p>Auto-reconciliation is enabled by default if the RBAC authorizer is active.</p>
+
+<h3 id="discovery-roles">API discovery roles</h3>
+
+<p>Default role bindings authorize unauthenticated and authenticated users to read API information that is deemed safe to be publicly accessible (including CustomResourceDefinitions). To disable anonymous unauthenticated access, add <code>--anonymous-auth=false</code> to the API server configuration.</p>
+
+<p>To view the configuration of these roles via <code>kubectl</code> run:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get clusterroles system:discovery -o yaml</code></pre></div>
+<blockquote class="note">
+  <div><strong>Note:</strong> If you edit that ClusterRole, your changes will be overwritten on API server restart
+via <a href="#auto-reconciliation">auto-reconciliation</a>. To avoid that overwriting,
+either do not manually edit the role, or disable auto-reconciliation.</div>
+</blockquote>
+
+<table>
+<caption>Kubernetes RBAC API discovery roles</caption>
+<colgroup><col width="25%" /><col width="25%" /><col /></colgroup>
+<tr>
+<th>Default ClusterRole</th>
+<th>Default ClusterRoleBinding</th>
+<th>Description</th>
+</tr>
+<tr>
+<td><b>system:basic-user</b></td>
+<td><b>system:authenticated</b> group</td>
+<td>Allows a user read-only access to basic information about themselves. Prior to v1.14, this role was also bound to <tt>system:unauthenticated</tt> by default.</td>
+</tr>
+<tr>
+<td><b>system:discovery</b></td>
+<td><b>system:authenticated</b> group</td>
+<td>Allows read-only access to API discovery endpoints needed to discover and negotiate an API level. Prior to v1.14, this role was also bound to <tt>system:unauthenticated</tt> by default.</td>
+</tr>
+<tr>
+<td><b>system:public-info-viewer</b></td>
+<td><b>system:authenticated</b> and <b>system:unauthenticated</b> groups</td>
+<td>Allows read-only access to non-sensitive information about the cluster. Introduced in Kubernetes v1.14.</td>
+</tr>
+</table>
+
+<h3 id="user-facing-roles">User-facing roles</h3>
+
+<p>Some of the default ClusterRoles are not <code>system:</code> prefixed. These are intended to be user-facing roles.
+They include super-user roles (<code>cluster-admin</code>), roles intended to be granted cluster-wide
+using ClusterRoleBindings, and roles intended to be granted within particular
+namespaces using RoleBindings (<code>admin</code>, <code>edit</code>, <code>view</code>).</p>
+
+<p>User-facing ClusterRoles use <a href="#aggregated-clusterroles">ClusterRole aggregation</a> to allow admins to include
+rules for custom resources on these ClusterRoles. To add rules to the <code>admin</code>, <code>edit</code>, or <code>view</code> roles, create
+a ClusterRole with one or more of the following labels:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>rbac.authorization.k8s.io/aggregate-to-admin:<span style="color:#bbb"> </span><span style="color:#b44">&#34;true&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>rbac.authorization.k8s.io/aggregate-to-edit:<span style="color:#bbb"> </span><span style="color:#b44">&#34;true&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>rbac.authorization.k8s.io/aggregate-to-view:<span style="color:#bbb"> </span><span style="color:#b44">&#34;true&#34;</span></code></pre></div>
+<table>
+<colgroup><col width="25%"><col width="25%"><col></colgroup>
+<tr>
+<th>Default ClusterRole</th>
+<th>Default ClusterRoleBinding</th>
+<th>Description</th>
+</tr>
+<tr>
+<td><b>cluster-admin</b></td>
+<td><b>system:masters</b> group</td>
+<td>Allows super-user access to perform any action on any resource.
+When used in a <b>ClusterRoleBinding</b>, it gives full control over every resource in the cluster and in all namespaces.
+When used in a <b>RoleBinding</b>, it gives full control over every resource in the role binding's namespace, including the namespace itself.</td>
+</tr>
+<tr>
+<td><b>admin</b></td>
+<td>None</td>
+<td>Allows admin access, intended to be granted within a namespace using a <b>RoleBinding</b>.
+If used in a <b>RoleBinding</b>, allows read/write access to most resources in a namespace,
+including the ability to create roles and role bindings within the namespace.
+This role does not allow write access to resource quota or to the namespace itself.</td>
+</tr>
+<tr>
+<td><b>edit</b></td>
+<td>None</td>
+<td>Allows read/write access to most objects in a namespace.
+
+This role does not allow viewing or modifying roles or role bindings.
+However, this role allows accessing Secrets and running Pods as any ServiceAccount in
+the namespace, so it can be used to gain the API access levels of any ServiceAccount in
+the namespace.</td>
+</tr>
+<tr>
+<td><b>view</b></td>
+<td>None</td>
+<td>Allows read-only access to see most objects in a namespace.
+It does not allow viewing roles or role bindings.
+
+This role does not allow viewing Secrets, since reading
+the contents of Secrets enables access to ServiceAccount credentials
+in the namespace, which would allow API access as any ServiceAccount
+in the namespace (a form of privilege escalation).</td>
+</tr>
+</table>
+
+<h3 id="core-component-roles">Core component roles</h3>
+
+<table>
+<colgroup><col width="25%"><col width="25%"><col></colgroup>
+<tr>
+<th>Default ClusterRole</th>
+<th>Default ClusterRoleBinding</th>
+<th>Description</th>
+</tr>
+<tr>
+<td><b>system:kube-scheduler</b></td>
+<td><b>system:kube-scheduler</b> user</td>
+<td>Allows access to the resources required by the <a class='glossary-tooltip' href='/docs/reference/generated/kube-scheduler/' target='_blank'>scheduler<span class='tooltip-text'>Control plane component that watches for newly created pods with no assigned node, and selects a node for them to run on.</span>
+</a> component.</td>
+</tr>
+<tr>
+<td><b>system:volume-scheduler</b></td>
+<td><b>system:kube-scheduler</b> user</td>
+<td>Allows access to the volume resources required by the kube-scheduler component.</td>
+</tr>
+<tr>
+<td><b>system:kube-controller-manager</b></td>
+<td><b>system:kube-controller-manager</b> user</td>
+<td>Allows access to the resources required by the <a class='glossary-tooltip' href='/docs/reference/command-line-tools-reference/kube-controller-manager/' target='_blank'>controller manager<span class='tooltip-text'>Control Plane component that runs controller processes.</span>
+</a> component.
+The permissions required by individual controllers are detailed in the <a href="#controller-roles">controller roles</a>.</td>
+</tr>
+<tr>
+<td><b>system:node</b></td>
+<td>None</td>
+<td>Allows access to resources required by the kubelet, <b>including read access to all secrets, and write access to all pod status objects</b>.
+
+You should use the <a href="/docs/reference/access-authn-authz/node/">Node authorizer</a> and <a href="/docs/reference/access-authn-authz/admission-controllers/#noderestriction">NodeRestriction admission plugin</a> instead of the <tt>system:node</tt> role, and allow granting API access to kubelets based on the Pods scheduled to run on them.
+
+The <tt>system:node</tt> role only exists for compatibility with Kubernetes clusters upgraded from versions prior to v1.8.
+</td>
+</tr>
+<tr>
+<td><b>system:node-proxier</b></td>
+<td><b>system:kube-proxy</b> user</td>
+<td>Allows access to the resources required by the <a class='glossary-tooltip' href='/docs/reference/command-line-tools-reference/kube-proxy/' target='_blank'>kube-proxy<span class='tooltip-text'>kube-proxy is a network proxy that runs on each node in the cluster.</span>
+</a> component.</td>
+</tr>
+</table>
+
+<h3 id="other-component-roles">Other component roles</h3>
+
+<table>
+<colgroup><col width="25%"><col width="25%"><col></colgroup>
+<tr>
+<th>Default ClusterRole</th>
+<th>Default ClusterRoleBinding</th>
+<th>Description</th>
+</tr>
+<tr>
+<td><b>system:auth-delegator</b></td>
+<td>None</td>
+<td>Allows delegated authentication and authorization checks.
+This is commonly used by add-on API servers for unified authentication and authorization.</td>
+</tr>
+<tr>
+<td><b>system:heapster</b></td>
+<td>None</td>
+<td>Role for the <a href="https://github.com/kubernetes/heapster">Heapster</a> component (deprecated).</td>
+</tr>
+<tr>
+<td><b>system:kube-aggregator</b></td>
+<td>None</td>
+<td>Role for the <a href="https://github.com/kubernetes/kube-aggregator">kube-aggregator</a> component.</td>
+</tr>
+<tr>
+<td><b>system:kube-dns</b></td>
+<td><b>kube-dns</b> service account in the <b>kube-system</b> namespace</td>
+<td>Role for the <a href="/docs/concepts/services-networking/dns-pod-service/">kube-dns</a> component.</td>
+</tr>
+<tr>
+<td><b>system:kubelet-api-admin</b></td>
+<td>None</td>
+<td>Allows full access to the kubelet API.</td>
+</tr>  
+<tr>
+<td><b>system:node-bootstrapper</b></td>
+<td>None</td>
+<td>Allows access to the resources required to perform
+<a href="/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/">kubelet TLS bootstrapping</a>.</td>
+</tr>
+<tr>
+<td><b>system:node-problem-detector</b></td>
+<td>None</td>
+<td>Role for the <a href="https://github.com/kubernetes/node-problem-detector">node-problem-detector</a> component.</td>
+</tr>
+<tr>
+<td><b>system:persistent-volume-provisioner</b></td>
+<td>None</td>
+<td>Allows access to the resources required by most <a href="/docs/concepts/storage/persistent-volumes/#provisioner">dynamic volume provisioners</a>.</td>
+</tr>
+</table>
+
+<h3 id="controller-roles">Roles for built-in controllers</h3>
+
+<p>The Kubernetes <a class='glossary-tooltip' href='/docs/reference/command-line-tools-reference/kube-controller-manager/' target='_blank'>controller manager<span class='tooltip-text'>Control Plane component that runs controller processes.</span>
+</a> runs
+<a class='glossary-tooltip' href='/docs/concepts/architecture/controller/' target='_blank'>controllers<span class='tooltip-text'>A control loop that watches the shared state of the cluster through the apiserver and makes changes attempting to move the current state towards the desired state.</span>
+</a> that are built in to the Kubernetes
+control plane.
+When invoked with <code>--use-service-account-credentials</code>, kube-controller-manager starts each controller
+using a separate service account.
+Corresponding roles exist for each built-in controller, prefixed with <code>system:controller:</code>.
+If the controller manager is not started with <code>--use-service-account-credentials</code>, it runs all control loops
+using its own credential, which must be granted all the relevant roles.
+These roles include:</p>
+
+<ul>
+<li><code>system:controller:attachdetach-controller</code></li>
+<li><code>system:controller:certificate-controller</code></li>
+<li><code>system:controller:clusterrole-aggregation-controller</code></li>
+<li><code>system:controller:cronjob-controller</code></li>
+<li><code>system:controller:daemon-set-controller</code></li>
+<li><code>system:controller:deployment-controller</code></li>
+<li><code>system:controller:disruption-controller</code></li>
+<li><code>system:controller:endpoint-controller</code></li>
+<li><code>system:controller:expand-controller</code></li>
+<li><code>system:controller:generic-garbage-collector</code></li>
+<li><code>system:controller:horizontal-pod-autoscaler</code></li>
+<li><code>system:controller:job-controller</code></li>
+<li><code>system:controller:namespace-controller</code></li>
+<li><code>system:controller:node-controller</code></li>
+<li><code>system:controller:persistent-volume-binder</code></li>
+<li><code>system:controller:pod-garbage-collector</code></li>
+<li><code>system:controller:pv-protection-controller</code></li>
+<li><code>system:controller:pvc-protection-controller</code></li>
+<li><code>system:controller:replicaset-controller</code></li>
+<li><code>system:controller:replication-controller</code></li>
+<li><code>system:controller:resourcequota-controller</code></li>
+<li><code>system:controller:root-ca-cert-publisher</code></li>
+<li><code>system:controller:route-controller</code></li>
+<li><code>system:controller:service-account-controller</code></li>
+<li><code>system:controller:service-controller</code></li>
+<li><code>system:controller:statefulset-controller</code></li>
+<li><code>system:controller:ttl-controller</code></li>
+</ul>
+
+<h2 id="privilege-escalation-prevention-and-bootstrapping">Privilege escalation prevention and bootstrapping</h2>
+
+<p>The RBAC API prevents users from escalating privileges by editing roles or role bindings.
+Because this is enforced at the API level, it applies even when the RBAC authorizer is not in use.</p>
+
+<h3 id="restrictions-on-role-creation-or-update">Restrictions on role creation or update</h3>
+
+<p>You can only create/update a role if at least one of the following things is true:</p>
+
+<ol>
+<li>You already have all the permissions contained in the role, at the same scope as the object being modified
+(cluster-wide for a ClusterRole, within the same namespace or cluster-wide for a Role).</li>
+<li>You are granted explicit permission to perform the <code>escalate</code> verb on the <code>roles</code> or <code>clusterroles</code> resource in the <code>rbac.authorization.k8s.io</code> API group.</li>
+</ol>
+
+<p>For example, if <code>user-1</code> does not have the ability to list Secrets cluster-wide, they cannot create a ClusterRole
+containing that permission. To allow a user to create/update roles:</p>
+
+<ol>
+<li>Grant them a role that allows them to create/update Role or ClusterRole objects, as desired.</li>
+<li>Grant them permission to include specific permissions in the roles they create/update:
+
+<ul>
+<li>implicitly, by giving them those permissions (if they attempt to create or modify a Role or ClusterRole with permissions they themselves have not been granted, the API request will be forbidden)</li>
+<li>or explicitly allow specifying any permission in a <code>Role</code> or <code>ClusterRole</code> by giving them permission to perform the <code>escalate</code> verb on <code>roles</code> or <code>clusterroles</code> resources in the <code>rbac.authorization.k8s.io</code> API group</li>
+</ul></li>
+</ol>
+
+<h3 id="restrictions-on-role-binding-creation-or-update">Restrictions on role binding creation or update</h3>
+
+<p>You can only create/update a role binding if you already have all the permissions contained in the referenced role
+(at the same scope as the role binding) <em>or</em> if you have been authorized to perform the <code>bind</code> verb on the referenced role.
+For example, if <code>user-1</code> does not have the ability to list Secrets cluster-wide, they cannot create a ClusterRoleBinding
+to a role that grants that permission. To allow a user to create/update role bindings:</p>
+
+<ol>
+<li>Grant them a role that allows them to create/update RoleBinding or ClusterRoleBinding objects, as desired.</li>
+<li>Grant them permissions needed to bind a particular role:
+
+<ul>
+<li>implicitly, by giving them the permissions contained in the role.</li>
+<li>explicitly, by giving them permission to perform the <code>bind</code> verb on the particular Role (or ClusterRole).</li>
+</ul></li>
+</ol>
+
+<p>For example, this ClusterRole and RoleBinding would allow <code>user-1</code> to grant other users the <code>admin</code>, <code>edit</code>, and <code>view</code> roles in the namespace <code>user-1-namespace</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ClusterRole<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>role-grantor<span style="color:#bbb">
+</span><span style="color:#bbb"></span>rules:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;rbac.authorization.k8s.io&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;rolebindings&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;create&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroups:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;rbac.authorization.k8s.io&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;clusterroles&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>verbs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;bind&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resourceNames:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;admin&#34;</span>,<span style="color:#b44">&#34;edit&#34;</span>,<span style="color:#b44">&#34;view&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb"></span>---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>apiVersion:<span style="color:#bbb"> </span>rbac.authorization.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>RoleBinding<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>role-grantor-binding<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>user<span style="color:#666">-1</span>-namespace<span style="color:#bbb">
+</span><span style="color:#bbb"></span>roleRef:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kind:<span style="color:#bbb"> </span>ClusterRole<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>role-grantor<span style="color:#bbb">
+</span><span style="color:#bbb"></span>subjects:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>apiGroup:<span style="color:#bbb"> </span>rbac.authorization.k8s.io<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>kind:<span style="color:#bbb"> </span>User<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>user<span style="color:#666">-1</span></code></pre></div>
+<p>When bootstrapping the first roles and role bindings, it is necessary for the initial user to grant permissions they do not yet have.
+To bootstrap initial roles and role bindings:</p>
+
+<ul>
+<li>Use a credential with the &ldquo;system:masters&rdquo; group, which is bound to the &ldquo;cluster-admin&rdquo; super-user role by the default bindings.</li>
+<li>If your API server runs with the insecure port enabled (<code>--insecure-port</code>), you can also make API calls via that port, which does not enforce authentication or authorization.</li>
+</ul>
+
+<h2 id="command-line-utilities">Command-line utilities</h2>
+
+<h3 id="kubectl-create-role"><code>kubectl create role</code></h3>
+
+<p>Creates a Role object defining permissions within a single namespace. Examples:</p>
+
+<ul>
+<li><p>Create a Role named &ldquo;pod-reader&rdquo; that allows users to perform <code>get</code>, <code>watch</code> and <code>list</code> on pods:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create role pod-reader --verb<span style="color:#666">=</span>get --verb<span style="color:#666">=</span>list --verb<span style="color:#666">=</span>watch --resource<span style="color:#666">=</span>pods</code></pre></div></li>
+
+<li><p>Create a Role named &ldquo;pod-reader&rdquo; with resourceNames specified:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create role pod-reader --verb<span style="color:#666">=</span>get --resource<span style="color:#666">=</span>pods --resource-name<span style="color:#666">=</span>readablepod --resource-name<span style="color:#666">=</span>anotherpod</code></pre></div></li>
+
+<li><p>Create a Role named &ldquo;foo&rdquo; with apiGroups specified:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create role foo --verb<span style="color:#666">=</span>get,list,watch --resource<span style="color:#666">=</span>replicasets.apps</code></pre></div></li>
+
+<li><p>Create a Role named &ldquo;foo&rdquo; with subresource permissions:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create role foo --verb<span style="color:#666">=</span>get,list,watch --resource<span style="color:#666">=</span>pods,pods/status</code></pre></div></li>
+
+<li><p>Create a Role named &ldquo;my-component-lease-holder&rdquo; with permissions to get/update a resource with a specific name:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create role my-component-lease-holder --verb<span style="color:#666">=</span>get,list,watch,update --resource<span style="color:#666">=</span>lease --resource-name<span style="color:#666">=</span>my-component</code></pre></div></li>
+</ul>
+
+<h3 id="kubectl-create-clusterrole"><code>kubectl create clusterrole</code></h3>
+
+<p>Creates a ClusterRole. Examples:</p>
+
+<ul>
+<li><p>Create a ClusterRole named &ldquo;pod-reader&rdquo; that allows user to perform <code>get</code>, <code>watch</code> and <code>list</code> on pods:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrole pod-reader --verb<span style="color:#666">=</span>get,list,watch --resource<span style="color:#666">=</span>pods</code></pre></div></li>
+
+<li><p>Create a ClusterRole named &ldquo;pod-reader&rdquo; with resourceNames specified:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrole pod-reader --verb<span style="color:#666">=</span>get --resource<span style="color:#666">=</span>pods --resource-name<span style="color:#666">=</span>readablepod --resource-name<span style="color:#666">=</span>anotherpod</code></pre></div></li>
+
+<li><p>Create a ClusterRole named &ldquo;foo&rdquo; with apiGroups specified:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrole foo --verb<span style="color:#666">=</span>get,list,watch --resource<span style="color:#666">=</span>replicasets.apps</code></pre></div></li>
+
+<li><p>Create a ClusterRole named &ldquo;foo&rdquo; with subresource permissions:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrole foo --verb<span style="color:#666">=</span>get,list,watch --resource<span style="color:#666">=</span>pods,pods/status</code></pre></div></li>
+
+<li><p>Create a ClusterRole named &ldquo;foo&rdquo; with nonResourceURL specified:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrole <span style="color:#b44">&#34;foo&#34;</span> --verb<span style="color:#666">=</span>get --non-resource-url<span style="color:#666">=</span>/logs/*</code></pre></div></li>
+
+<li><p>Create a ClusterRole named &ldquo;monitoring&rdquo; with an aggregationRule specified:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrole monitoring --aggregation-rule<span style="color:#666">=</span><span style="color:#b44">&#34;rbac.example.com/aggregate-to-monitoring=true&#34;</span></code></pre></div></li>
+</ul>
+
+<h3 id="kubectl-create-rolebinding"><code>kubectl create rolebinding</code></h3>
+
+<p>Grants a Role or ClusterRole within a specific namespace. Examples:</p>
+
+<ul>
+<li><p>Within the namespace &ldquo;acme&rdquo;, grant the permissions in the &ldquo;admin&rdquo; ClusterRole to a user named &ldquo;bob&rdquo;:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create rolebinding bob-admin-binding --clusterrole<span style="color:#666">=</span>admin --user<span style="color:#666">=</span>bob --namespace<span style="color:#666">=</span>acme</code></pre></div></li>
+
+<li><p>Within the namespace &ldquo;acme&rdquo;, grant the permissions in the &ldquo;view&rdquo; ClusterRole to the service account in the namespace &ldquo;acme&rdquo; named &ldquo;myapp&rdquo;:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create rolebinding myapp-view-binding --clusterrole<span style="color:#666">=</span>view --serviceaccount<span style="color:#666">=</span>acme:myapp --namespace<span style="color:#666">=</span>acme</code></pre></div></li>
+
+<li><p>Within the namespace &ldquo;acme&rdquo;, grant the permissions in the &ldquo;view&rdquo; ClusterRole to a service account in the namespace &ldquo;myappnamespace&rdquo; named &ldquo;myapp&rdquo;:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create rolebinding myappnamespace-myapp-view-binding --clusterrole<span style="color:#666">=</span>view --serviceaccount<span style="color:#666">=</span>myappnamespace:myapp --namespace<span style="color:#666">=</span>acme</code></pre></div></li>
+</ul>
+
+<h3 id="kubectl-create-clusterrolebinding"><code>kubectl create clusterrolebinding</code></h3>
+
+<p>Grants a ClusterRole across the entire cluster (all namespaces). Examples:</p>
+
+<ul>
+<li><p>Across the entire cluster, grant the permissions in the &ldquo;cluster-admin&rdquo; ClusterRole to a user named &ldquo;root&rdquo;:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrolebinding root-cluster-admin-binding --clusterrole<span style="color:#666">=</span>cluster-admin --user<span style="color:#666">=</span>root</code></pre></div></li>
+
+<li><p>Across the entire cluster, grant the permissions in the &ldquo;system:node-proxier&rdquo; ClusterRole to a user named &ldquo;system:kube-proxy&rdquo;:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrolebinding kube-proxy-binding --clusterrole<span style="color:#666">=</span>system:node-proxier --user<span style="color:#666">=</span>system:kube-proxy</code></pre></div></li>
+
+<li><p>Across the entire cluster, grant the permissions in the &ldquo;view&rdquo; ClusterRole to a service account named &ldquo;myapp&rdquo; in the namespace &ldquo;acme&rdquo;:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrolebinding myapp-view-binding --clusterrole<span style="color:#666">=</span>view --serviceaccount<span style="color:#666">=</span>acme:myapp</code></pre></div></li>
+</ul>
+
+<h3 id="kubectl-auth-reconcile"><code>kubectl auth reconcile</code></h3>
+
+<p>Creates or updates <code>rbac.authorization.k8s.io/v1</code> API objects from a manifest file.</p>
+
+<p>Missing objects are created, and the containing namespace is created for namespaced objects, if required.</p>
+
+<p>Existing roles are updated to include the permissions in the input objects,
+and remove extra permissions if <code>--remove-extra-permissions</code> is specified.</p>
+
+<p>Existing bindings are updated to include the subjects in the input objects,
+and remove extra subjects if <code>--remove-extra-subjects</code> is specified.</p>
+
+<p>Examples:</p>
+
+<ul>
+<li><p>Test applying a manifest file of RBAC objects, displaying changes that would be made:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl auth reconcile -f my-rbac-rules.yaml --dry-run</code></pre></div></li>
+
+<li><p>Apply a manifest file of RBAC objects, preserving any extra permissions (in roles) and any extra subjects (in bindings):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl auth reconcile -f my-rbac-rules.yaml</code></pre></div></li>
+
+<li><p>Apply a manifest file of RBAC objects, removing any extra permissions (in roles) and any extra subjects (in bindings):</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl auth reconcile -f my-rbac-rules.yaml --remove-extra-subjects --remove-extra-permissions</code></pre></div></li>
+</ul>
+
+<h2 id="service-account-permissions">ServiceAccount permissions</h2>
+
+<p>Default RBAC policies grant scoped permissions to control-plane components, nodes,
+and controllers, but grant <em>no permissions</em> to service accounts outside the <code>kube-system</code> namespace
+(beyond discovery permissions given to all authenticated users).</p>
+
+<p>This allows you to grant particular roles to particular ServiceAccounts as needed.
+Fine-grained role bindings provide greater security, but require more effort to administrate.
+Broader grants can give unnecessary (and potentially escalating) API access to
+ServiceAccounts, but are easier to administrate.</p>
+
+<p>In order from most secure to least secure, the approaches are:</p>
+
+<ol>
+<li><p>Grant a role to an application-specific service account (best practice)</p>
+
+<p>This requires the application to specify a <code>serviceAccountName</code> in its pod spec,
+and for the service account to be created (via the API, application manifest, <code>kubectl create serviceaccount</code>, etc.).</p>
+
+<p>For example, grant read-only permission within &ldquo;my-namespace&rdquo; to the &ldquo;my-sa&rdquo; service account:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create rolebinding my-sa-view <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --clusterrole<span style="color:#666">=</span>view <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --serviceaccount<span style="color:#666">=</span>my-namespace:my-sa <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --namespace<span style="color:#666">=</span>my-namespace</code></pre></div></li>
+
+<li><p>Grant a role to the &ldquo;default&rdquo; service account in a namespace</p>
+
+<p>If an application does not specify a <code>serviceAccountName</code>, it uses the &ldquo;default&rdquo; service account.</p>
+
+<blockquote class="note">
+<div><strong>Note:</strong> Permissions given to the &ldquo;default&rdquo; service account are available to any pod
+in the namespace that does not specify a <code>serviceAccountName</code>.</div>
+</blockquote>
+
+<p>For example, grant read-only permission within &ldquo;my-namespace&rdquo; to the &ldquo;default&rdquo; service account:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create rolebinding default-view <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --clusterrole<span style="color:#666">=</span>view <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --serviceaccount<span style="color:#666">=</span>my-namespace:default <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --namespace<span style="color:#666">=</span>my-namespace</code></pre></div>
+<p>Many <a href="/docs/concepts/cluster-administration/addons/">add-ons</a> run as the
+&ldquo;default&rdquo; service account in the <code>kube-system</code> namespace.
+To allow those add-ons to run with super-user access, grant cluster-admin
+permissions to the &ldquo;default&rdquo; service account in the <code>kube-system</code> namespace.</p>
+
+<blockquote class="caution">
+<div><strong>Caution:</strong> Enabling this means the <code>kube-system</code> namespace contains Secrets
+that grant super-user access to your cluster&rsquo;s API.</div>
+</blockquote>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrolebinding add-on-cluster-admin <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --clusterrole<span style="color:#666">=</span>cluster-admin <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --serviceaccount<span style="color:#666">=</span>kube-system:default</code></pre></div></li>
+
+<li><p>Grant a role to all service accounts in a namespace</p>
+
+<p>If you want all applications in a namespace to have a role, no matter what service account they use,
+you can grant a role to the service account group for that namespace.</p>
+
+<p>For example, grant read-only permission within &ldquo;my-namespace&rdquo; to all service accounts in that namespace:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create rolebinding serviceaccounts-view <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --clusterrole<span style="color:#666">=</span>view <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --group<span style="color:#666">=</span>system:serviceaccounts:my-namespace <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --namespace<span style="color:#666">=</span>my-namespace</code></pre></div></li>
+
+<li><p>Grant a limited role to all service accounts cluster-wide (discouraged)</p>
+
+<p>If you don&rsquo;t want to manage permissions per-namespace, you can grant a cluster-wide role to all service accounts.</p>
+
+<p>For example, grant read-only permission across all namespaces to all service accounts in the cluster:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrolebinding serviceaccounts-view <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --clusterrole<span style="color:#666">=</span>view <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span> --group<span style="color:#666">=</span>system:serviceaccounts</code></pre></div></li>
+
+<li><p>Grant super-user access to all service accounts cluster-wide (strongly discouraged)</p>
+
+<p>If you don&rsquo;t care about partitioning permissions at all, you can grant super-user access to all service accounts.</p>
+
+<blockquote class="warning">
+<div><strong>Warning:</strong> This allows any application full access to your cluster, and also grants
+any user with read access to Secrets (or the ability to create any pod)
+full access to your cluster.</div>
+</blockquote>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrolebinding serviceaccounts-cluster-admin <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --clusterrole<span style="color:#666">=</span>cluster-admin <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --group<span style="color:#666">=</span>system:serviceaccounts</code></pre></div></li>
+</ol>
+
+<h2 id="upgrading-from-abac">Upgrading from ABAC</h2>
+
+<p>Clusters that originally ran older Kubernetes versions often used
+permissive ABAC policies, including granting full API access to all
+service accounts.</p>
+
+<p>Default RBAC policies grant scoped permissions to control-plane components, nodes,
+and controllers, but grant <em>no permissions</em> to service accounts outside the <code>kube-system</code> namespace
+(beyond discovery permissions given to all authenticated users).</p>
+
+<p>While far more secure, this can be disruptive to existing workloads expecting to automatically receive API permissions.
+Here are two approaches for managing this transition:</p>
+
+<h3 id="parallel-authorizers">Parallel authorizers</h3>
+
+<p>Run both the RBAC and ABAC authorizers, and specify a policy file that contains
+the <a href="/docs/reference/access-authn-authz/abac/#policy-file-format">legacy ABAC policy</a>:</p>
+
+<pre><code>--authorization-mode=...,RBAC,ABAC --authorization-policy-file=mypolicy.json
+</code></pre>
+
+<p>To explain that first command line option in detail: if earlier authorizers, such as Node,
+deny a request, then the the RBAC authorizer attempts to authorize the API request. If RBAC
+also denies that API request, the ABAC authorizer is then run. This means that any request
+allowed by <em>either</em> the RBAC or ABAC policies is allowed.</p>
+
+<p>When the kube-apiserver is run with a log level of 5 or higher for the RBAC component
+(<code>--vmodule=rbac*=5</code> or <code>--v=5</code>), you can see RBAC denials in the API server log
+(prefixed with <code>RBAC DENY:</code>).
+You can use that information to determine which roles need to be granted to which users, groups, or service accounts.</p>
+
+<p>Once you have <a href="#service-account-permissions">granted roles to service accounts</a> and workloads
+are running with no RBAC denial messages in the server logs, you can remove the ABAC authorizer.</p>
+
+<h3 id="permissive-rbac-permissions">Permissive RBAC permissions</h3>
+
+<p>You can replicate a permissive ABAC policy using RBAC role bindings.</p>
+
+<blockquote class="warning">
+  <div><strong>Warning:</strong> <p>The following policy allows <strong>ALL</strong> service accounts to act as cluster administrators.
+Any application running in a container receives service account credentials automatically,
+and could perform any action against the API, including viewing secrets and modifying permissions.
+This is not a recommended policy.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrolebinding permissive-binding <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --clusterrole<span style="color:#666">=</span>cluster-admin <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --user<span style="color:#666">=</span>admin <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --user<span style="color:#666">=</span>kubelet <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>  --group<span style="color:#666">=</span>system:serviceaccounts</code></pre></div></div>
+</blockquote>
+
+<p>After you have transitioned to use RBAC, you should adjust the access controls
+for your cluster to ensure that these meet your information security needs.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Was this page helpful? </p>
+  <button class="button feedback--yes">Yes</button>
+  <button class="button feedback--no">No</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/reference/access-authn-authz/rbac.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/docs\/reference\/access-authn-authz\/rbac\/",
+    "title" : "Using RBAC Authorization",
+    "permalink" : "https:\/\/kubernetes.io\/docs\/reference\/access-authn-authz\/rbac\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Create an Issue</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/reference/access-authn-authz/rbac.md" class="button issue">Edit This Page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Page last modified on March 18, 2020 at 10:50 PM PST by
+    <a href="https://github.com/kubernetes/website/commit/e881e91b9a1799237d682b02e9b6881a77a7c14b/">Improve RBAC guide (#17538)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/reference/access-authn-authz/rbac.md">Page History</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/docs/home/">Home</a>
+            
+            <a href="/blog/">Blog</a>
+            
+            <a href="/training/">Training</a>
+            
+            <a href="/partners/">Partners</a>
+            
+            <a href="/community/">Community</a>
+            
+            <a href="/case-studies/">Case Studies</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribute</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

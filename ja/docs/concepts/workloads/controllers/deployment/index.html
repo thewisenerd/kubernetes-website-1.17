@@ -1,0 +1,2575 @@
+<!DOCTYPE html>
+<html id="docs" lang="ja" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Deployment - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/ja/docs/concepts/workloads/controllers/deployment/">
+<meta property="og:title" content="Deployment">
+<meta name="twitter:title" content="Deployment">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ja/" class="logo" title="プロダクショングレードのコンテナ管理基盤 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ja/docs/" class="active">ドキュメント</a></li>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <li><a href="/ja/case-studies/">ケーススタディ</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    日本語 Japanese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/workloads/controllers/deployment/">English</a></li>
+                
+                    <li><a href="/zh/docs/concepts/workloads/controllers/deployment/">中文 Chinese</a></li>
+                
+                    <li><a href="/ko/docs/concepts/workloads/controllers/deployment/">한국어 Korean</a></li>
+                
+                    <li><a href="/fr/docs/concepts/workloads/controllers/deployment/">Français</a></li>
+                
+                    <li><a href="/id/docs/concepts/workloads/controllers/deployment/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ja/docs/concepts/workloads/controllers/deployment/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ja/docs/concepts/workloads/controllers/deployment/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ja/docs/concepts/workloads/controllers/deployment/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ja/docs/concepts/workloads/controllers/deployment/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ja/docs/concepts/workloads/controllers/deployment/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ja/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Kubernetesの基本を学ぶ</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ja/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>手を動かす準備はできていますか？本チュートリアルでは、Node.jsを使った簡単な"Hello World"を実行するKubernetesクラスタをビルドします。</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ja/docs/home/">ドキュメント</a></h3>
+           <p>チュートリアル、サンプルやドキュメントのリファレンスを使って Kubernetes の利用方法を学んでください。あなたは<a href="/editdocs/" data-auto-burger-exclude>ドキュメントへコントリビュートをする</a>こともできます!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Kubernetesのコードを編集することに興味がありますか？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHubで参照する</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">コミュニティを探す</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>フォーラム</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>イベントカレンダー</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>コンセプト</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ja/docs/home/">ホーム</a></li>
+		
+		
+		<li><a href="/ja/docs/setup/">はじめに</a></li>
+		
+		
+		<li><a href="/ja/docs/concepts/" class="YAH">コンセプト</a></li>
+		
+		
+		<li><a href="/ja/docs/tasks/">タスク</a></li>
+		
+		
+		<li><a href="/ja/docs/tutorials/">チュートリアル</a></li>
+		
+		
+		<li><a href="/ja/docs/reference/">リファレンス</a></li>
+		
+		
+		<li><a href="/ja/docs/contribute/">貢献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="検索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  のドキュメントは積極的にメンテナンスされていません。現在表示されているバージョンはスナップショットです。最新のドキュメントはこちらです: 
+	 <a href="https://kubernetes.io/docs/home/">最新バージョン</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="コンセプト" href="/ja/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="概要">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesとは何か？" href="/ja/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetesのコンポーネント" href="/ja/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API" href="/ja/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetesのオブジェクトについて">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesオブジェクトを理解する" href="/ja/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetesオブジェクト管理" href="/ja/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="名前" href="/ja/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Namespace(名前空間)" href="/ja/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ラベル(Labels)とセレクター(Selectors)" href="/ja/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="アノテーション(Annotations)" href="/ja/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="フィールドセレクター(Field Selectors)" href="/ja/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="推奨ラベル(Recommended Labels)" href="/ja/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetesのアーキテクチャー">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ノード" href="/ja/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="マスターとノード間の通信" href="/ja/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Controllers <small>(EN)</small>" href="/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="クラウドコントローラーマネージャーとそのコンセプト" href="/ja/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="コンテナ">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Images <small>(EN)</small>" href="/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="コンテナ環境変数" href="/ja/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ランタイムクラス(Runtime Class)" href="/ja/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="コンテナライフサイクルフック" href="/ja/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="ワークロード">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pod">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Podについての概観(Pod Overview)" href="/ja/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod" href="/ja/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Podのライフサイクル" href="/ja/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Initコンテナ(Init Containers)" href="/ja/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Preset" href="/ja/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Topology Spread Constraints <small>(EN)</small>" href="/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Disruptions <small>(EN)</small>" href="/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ephemeral Containers <small>(EN)</small>" href="/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="コントローラー">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/ja/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="ReplicationController <small>(EN)</small>" href="/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Deployment" href="/ja/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StatefulSet" href="/ja/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DaemonSet" href="/ja/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ガベージコレクション" href="/ja/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="終了したリソースのためのTTLコントローラー(TTL Controller for Finished Resources)" href="/ja/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Jobs - Run to Completion <small>(EN)</small>" href="/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CronJob" href="/ja/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Service、負荷分散とネットワーキング">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="EndpointSlices <small>(EN)</small>" href="/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service" href="/ja/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Topology <small>(EN)</small>" href="/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ServiceとPodに対するDNS" href="/ja/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="サービスとアプリケーションの接続" href="/ja/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/ja/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ingress Controllers <small>(EN)</small>" href="/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Network Policies <small>(EN)</small>" href="/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Adding entries to Pod /etc/hosts with HostAliases <small>(EN)</small>" href="/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="IPv4/IPv6 dual-stack <small>(EN)</small>" href="/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="ストレージ">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Volumes <small>(EN)</small>" href="/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Persistent Volumes <small>(EN)</small>" href="/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Volume Snapshots <small>(EN)</small>" href="/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CSI Volume Cloning" href="/ja/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Storage Classes <small>(EN)</small>" href="/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="VolumeSnapshotClass" href="/ja/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ボリュームの動的プロビジョニング(Dynamic Volume Provisioning)" href="/ja/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Node-specific Volume Limits <small>(EN)</small>" href="/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="設定">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Bin Packing for Extended Resources <small>(EN)</small>" href="/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="設定のベストプラクティス" href="/ja/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Compute Resources for Containers <small>(EN)</small>" href="/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Overhead <small>(EN)</small>" href="/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Node上へのPodのスケジューリング" href="/ja/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Taints and Tolerations <small>(EN)</small>" href="/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Secrets <small>(EN)</small>" href="/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Organizing Cluster Access Using kubeconfig Files <small>(EN)</small>" href="/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduling Framework <small>(EN)</small>" href="/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Security">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Overview of Cloud Native Security <small>(EN)</small>" href="/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Policies">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Quotas <small>(EN)</small>" href="/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Security Policies <small>(EN)</small>" href="/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="スケジューリング">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesのスケジューラー" href="/ja/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="スケジューラーのパフォーマンスチューニング" href="/ja/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="クラスターの管理">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Administration Overview <small>(EN)</small>" href="/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Certificates <small>(EN)</small>" href="/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloud Providers <small>(EN)</small>" href="/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Resources <small>(EN)</small>" href="/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Logging Architecture <small>(EN)</small>" href="/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Metrics For The Kubernetes Control Plane <small>(EN)</small>" href="/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring kubelet Garbage Collection <small>(EN)</small>" href="/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Proxies in Kubernetes <small>(EN)</small>" href="/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="コントローラーマネージャーの指標" href="/ja/docs/concepts/cluster-administration/controller-metrics/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Addons <small>(EN)</small>" href="/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetesを拡張する">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetesクラスターの拡張" href="/ja/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes APIの拡張">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="アグリゲーションレイヤーを使ったKubernetes APIの拡張" href="/ja/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="カスタムリソース" href="/ja/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Compute, Storage, and Networking Extensions">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Network Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="オペレーターパターン" href="/ja/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Catalog <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ja/docs/concepts/workloads/controllers/deployment.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Deployment</h1>
+
+
+
+<p><em>Deployment</em> コントローラーは<a href="/docs/concepts/workloads/pods/pod/">Pod</a>と<a href="/docs/concepts/workloads/controllers/replicaset/">ReplicaSet</a>の宣言的なアップデート機能を提供します。</p>
+
+<p>ユーザーはDeploymentにおいて<em>理想的な状態</em> を定義し、Deploymentコントローラーは指定された頻度で現在の状態を理想的な状態に変更させます。ユーザーはDeploymentを定義して、新しいReplicaSetを作成したり、既存のDeploymentを削除して新しいDeploymentで全てのリソースを適用できます。</p>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> Deploymentによって作成されたReplicaSetを管理しないでください。ユーザーのユースケースが下記の項目をカバーできていない場合はメインのKubernetesリポジトリーにイシューを作成することを検討してください。</div>
+</blockquote>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e3%83%a6%e3%83%bc%e3%82%b9%e3%82%b1%e3%83%bc%e3%82%b9">ユースケース</a></li>
+
+
+
+
+<li><a href="#creating-a-deployment">Deploymentの作成</a></li>
+
+
+
+
+<li><a href="#deployment%e3%81%ae%e6%9b%b4%e6%96%b0">Deploymentの更新</a></li>
+
+
+
+
+<li><a href="#rolling-back-a-deployment">Deploymentのロールバック</a></li>
+
+
+
+
+<li><a href="#scaling-a-deployment">Deploymentのスケーリング</a></li>
+
+
+
+
+<li><a href="#pausing-and-resuming-a-deployment">Deployment更新の一時停止と再開</a></li>
+
+
+
+
+<li><a href="#deployment-status">Deploymentのステータス</a></li>
+
+
+
+
+<li><a href="#clean-up-policy">古いリビジョンのクリーンアップポリシー</a></li>
+
+
+
+
+<li><a href="#%e3%82%ab%e3%83%8a%e3%83%aa%e3%82%a2%e3%83%91%e3%82%bf%e3%83%bc%e3%83%b3%e3%81%ab%e3%82%88%e3%82%8b%e3%83%87%e3%83%97%e3%83%ad%e3%82%a4">カナリアパターンによるデプロイ</a></li>
+
+
+
+
+<li><a href="#deployment-spec%e3%81%ae%e8%a8%98%e8%bf%b0">Deployment Specの記述</a></li>
+
+
+
+
+<li><a href="#deployment%e3%81%ae%e4%bb%a3%e6%9b%bf%e6%a1%88">Deploymentの代替案</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<h2 id="ユースケース">ユースケース</h2>
+
+<p>下記の項目はDeploymentの典型的なユースケースです。</p>
+
+<ul>
+<li>ReplicaSetをロールアウトするために<a href="#creating-a-deployment">Deploymentの作成</a>を行う: ReplicaSetはバックグラウンドでPodを作成します。Podの作成が完了したかどうかは、ロールアウトのステータスを確認してください。<br /></li>
+<li>DeploymentのPodTemplateSpecを更新することにより<a href="#updating-a-deployment">Podの新しい状態を宣言する</a>: 新しいReplicaSetが作成され、Deploymentは指定された頻度で古いReplicaSetから新しいReplicaSetへのPodの移行を管理します。新しいReplicaSetはDeploymentのリビジョンを更新します。</li>
+<li>Deploymentの現在の状態が不安定な場合、<a href="#rolling-back-a-deployment">Deploymentのロールバック</a>をする: ロールバックによる各更新作業は、Deploymentのリビジョンを更新します。</li>
+<li>より多くの負荷をさばけるように、<a href="#scaling-a-deployment">Deploymentをスケールアップ</a>する</li>
+<li>PodTemplateSpecに対する複数の修正を適用するために<a href="#pausing-and-resuming-a-deployment">Deploymentを停止(Pause)し</a>、それを再開して新しいロールアウトを開始する。</li>
+<li>今後必要としない<a href="#clean-up-policy">古いReplicaSetのクリーンアップ</a></li>
+</ul>
+
+<h2 id="creating-a-deployment">Deploymentの作成</h2>
+
+<p>下記の内容はDeploymentの例です。これは<code>nginx</code>Podのレプリカを3つ持つReplicaSetを作成します。</p>
+
+<table class="includecode" id="controllers-nginx-deployment-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/ja/examples/controllers/nginx-deployment.yaml" download="controllers/nginx-deployment.yaml">
+                    <code>controllers/nginx-deployment.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('controllers-nginx-deployment-yaml')" title="Copy controllers/nginx-deployment.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>apps/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Deployment<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>nginx-deployment<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">3</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>app:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>nginx:<span style="color:#666">1.15.4</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>containerPort:<span style="color:#bbb"> </span><span style="color:#666">80</span><span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>この例において、</p>
+
+<ul>
+<li><code>nginx-deployment</code>という名前のDeploymentが作成され、<code>.metadata.name</code>フィールドで名前を指定します。</li>
+<li>Deploymentは3つのレプリカPodを作成し、<code>replicas</code>フィールドによってレプリカ数を指定します。</li>
+<li><code>selector</code>フィールドは、Deploymentが管理するPodのラベルを定義します。このケースにおいて、ユーザーはPodテンプレートにて定義されたラベル(<code>app: nginx</code>)を選択します。しかし、PodTemplate自体がそのルールを満たす限り、さらに洗練された方法でセレクターを指定することができます。
+<blockquote class="note">
+<div><strong>備考:</strong> <code>matchLabels</code>フィールドは、キーとバリューのペアのマップとなります。<code>matchLabels</code>マップにおいて、{key, value}というペアは、keyというフィールドの値が&rdquo;key&rdquo;で、その演算子が&rdquo;In&rdquo;で、値の配列が&rdquo;value&rdquo;のみ含むような<code>matchExpressions</code>の要素と等しいです。
+<code>matchLabels</code>と<code>matchExpressions</code>の両方が設定された場合、条件に一致するには両方とも満たす必要があります。</div>
+</blockquote></li>
+<li><code>template</code>フィールドは、下記のサブフィールドを持ちます。:
+
+<ul>
+<li>Podは<code>labels</code>フィールドによって指定された<code>app: nginx</code>というラベルがつけられる</li>
+<li>PodTemplateの仕様もしくは、<code>.template.spec</code>フィールドは、このPodは<code>nginx</code>という名前のコンテナーを1つ稼働させ、それは<code>nginx</code>というさせ、<a href="https://hub.docker.com/" target="_blank">Docker Hub</a>にある<code>nginx</code>のバージョン1.7.9を使うことを示します</li>
+<li>1つのコンテナを作成し、<code>name</code>フィールドを使って<code>nginx</code>という名前をつけます</li>
+</ul></li>
+</ul>
+
+<p>上記のDeploymentを作成するために、以下に示すステップにしたがってください。
+  作成を始める前に、ユーザーのKubernetesクラスターが稼働していることを確認してください。</p>
+
+<ol>
+<li><p>下記のコマンドを実行してDeploymentを作成してください。</p>
+
+<p><blockquote class="note">
+<div><strong>備考:</strong> 実行したコマンドを<code>kubernetes.io/change-cause</code>というアノテーションに記録するために<code>&ndash;record</code>フラグを指定できます。これは将来的な問題の調査のために有効です。例えば、各Deploymentのリビジョンにおいて実行されたコマンドを見るときに便利です。</div>
+</blockquote></p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f https://k8s.io/examples/controllers/nginx-deployment.yaml</code></pre></div></li>
+
+<li><p>Deploymentが作成されたことを確認するために、<code>kubectl get deployment</code>を実行してください。Deploymentがまだ作成中の場合、コマンドの実行結果は下記のとおりです。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   <span style="color:#666">3</span>         <span style="color:#666">0</span>         <span style="color:#666">0</span>            <span style="color:#666">0</span>           1s</code></pre></div>
+<p>ユーザーのクラスターにおいてDeploymentを調査するとき、下記のフィールドが出力されます。</p>
+
+<ul>
+<li><code>NAME</code> クラスター内のDeploymentの名前を表示する</li>
+<li><code>DESIRED</code> アプリケーションの理想的な<em>replicas</em> の値を表示する: これはDeploymentを作成したときに定義したもので、これが<em>理想的な状態</em> と呼ばれるものです。</li>
+<li><code>CURRENT</code> 現在稼働中のレプリカ数</li>
+<li><code>UP-TO-DATE</code> 理想的な状態にするために、アップデートが完了したレプリカ数</li>
+<li><code>AVAILABLE</code> ユーザーが利用可能なレプリカ数</li>
+<li><code>AGE</code> アプリケーションが稼働してからの時間</li>
+</ul>
+
+<p>上記のyamlの例だと、<code>.spec.replicas</code>フィールドの値によると、理想的なレプリカ数は3です。</p></li>
+
+<li><p>Deploymentのロールアウトステータスを確認するために、<code>kubectl rollout status deployment.v1.apps/nginx-deployment</code>を実行してください。コマンドの実行結果は下記のとおりです。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">Waiting <span style="color:#a2f;font-weight:bold">for</span> rollout to finish: <span style="color:#666">2</span> out of <span style="color:#666">3</span> new replicas have been updated...
+deployment.apps/nginx-deployment successfully rolled out</code></pre></div></li>
+
+<li><p>数秒後、再度<code>kubectl get deployments</code>を実行してください。コマンドの実行結果は下記のとおりです。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   <span style="color:#666">3</span>         <span style="color:#666">3</span>         <span style="color:#666">3</span>            <span style="color:#666">3</span>           18s</code></pre></div>
+<p>Deploymentが3つ全てのレプリカを作成して、全てのレプリカが最新(Podが最新のPodテンプレートを含んでいる)になり、利用可能となっていることを確認してください。</p></li>
+
+<li><p>Deploymentによって作成されたReplicaSet (<code>rs</code>)を確認するには<code>kubectl get rs</code>を実行してください。コマンドの実行結果は下記のとおりです。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME                          DESIRED   CURRENT   READY   AGE
+nginx-deployment-75675f5897   <span style="color:#666">3</span>         <span style="color:#666">3</span>         <span style="color:#666">3</span>       18s</code></pre></div>
+<p>ReplicaSetの名前は<code>[Deployment名]-[ランダム文字列]</code>という形式になることに注意してください。ランダム文字列はランダムに生成され、pod-template-hashをシードとして使用します。</p></li>
+
+<li><p>各Podにラベルが自動的に付けられるのを確認するには<code>kubectl get pods --show-labels</code>を実行してください。コマンドの実行結果は下記のとおりです。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME                                READY     STATUS    RESTARTS   AGE       LABELS
+nginx-deployment-75675f5897-7ci7o   <span style="color:#666">1</span>/1       Running   <span style="color:#666">0</span>          18s       <span style="color:#b8860b">app</span><span style="color:#666">=</span>nginx,pod-template-hash<span style="color:#666">=</span><span style="color:#666">3123191453</span>
+nginx-deployment-75675f5897-kzszj   <span style="color:#666">1</span>/1       Running   <span style="color:#666">0</span>          18s       <span style="color:#b8860b">app</span><span style="color:#666">=</span>nginx,pod-template-hash<span style="color:#666">=</span><span style="color:#666">3123191453</span>
+nginx-deployment-75675f5897-qqcnn   <span style="color:#666">1</span>/1       Running   <span style="color:#666">0</span>          18s       <span style="color:#b8860b">app</span><span style="color:#666">=</span>nginx,pod-template-hash<span style="color:#666">=</span><span style="color:#666">3123191453</span></code></pre></div>
+<p>作成されたReplicaSetは<code>nginx</code>Podを3つ作成することを保証します。</p></li>
+</ol>
+
+<p><blockquote class="note">
+  <div><strong>備考:</strong> Deploymentに対して適切なセレクターとPodテンプレートのラベルを設定する必要があります(このケースでは<code>app: nginx</code>)。ラベルやセレクターを他のコントローラーと重複させないでください(他のDeploymentやStatefulSetを含む)。Kubernetesはユーザがラベルを重複させることを止めないため、複数のコントローラーでセレクターの重複が発生すると、コントローラー間で衝突し予期せぬふるまいをすることになります。</div>
+</blockquote></p>
+
+<h3 id="pod-template-hashラベル">pod-template-hashラベル</h3>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> このラベルを変更しないでください。</div>
+</blockquote>
+
+<p><code>pod-template-hash</code>ラベルはDeploymentコントローラーによってDeploymentが作成し適用した各ReplicaSetに対して追加されます。</p>
+
+<p>このラベルはDeploymentが管理するReplicaSetが重複しないことを保証します。このラベルはReplicaSetの<code>PodTemplate</code>をハッシュ化することにより生成され、生成されたハッシュ値はラベル値としてReplicaSetセレクター、Podテンプレートラベル、ReplicaSetが作成した全てのPodに対して追加されます。</p>
+
+<h2 id="deploymentの更新">Deploymentの更新</h2>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> Deploymentのロールアウトは、DeploymentのPodテンプレート(この場合<code>.spec.template</code>)が変更された場合にのみトリガーされます。例えばテンプレートのラベルもしくはコンテナーイメージが更新された場合です。Deploymentのスケールのような更新では、ロールアウトはトリガーされません。</div>
+</blockquote>
+
+<p>Deploymentを更新するには下記のステップに従ってください。</p>
+
+<ol>
+<li><p>nginxのPodで、<code>nginx:1.7.9</code>イメージの代わりに<code>nginx:1.9.1</code>を使うように更新します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl --record deployment.apps/nginx-deployment <span style="color:#a2f">set</span> image deployment.v1.apps/nginx-deployment <span style="color:#b8860b">nginx</span><span style="color:#666">=</span>nginx:1.9.1</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment image updated
+</code></pre>
+
+<p>また、Deploymentを<code>編集</code>して、<code>.spec.template.spec.containers[0].image</code>を<code>nginx:1.7.9</code>から<code>nginx:1.9.1</code>に変更することができます。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl edit deployment.v1.apps/nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment edited
+</code></pre></li>
+
+<li><p>ロールアウトのステータスを確認するには、下記のコマンドを実行してください。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl rollout status deployment.v1.apps/nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>Waiting for rollout to finish: 2 out of 3 new replicas have been updated...
+</code></pre>
+
+<p>もしくは</p>
+
+<pre><code>deployment.apps/nginx-deployment successfully rolled out
+</code></pre></li>
+</ol>
+
+<p>更新されたDeploymentのさらなる情報を取得するには、下記を確認してください。</p>
+
+<ul>
+<li><p>ロールアウトが成功したあと、<code>kubectl get deployments</code>を実行してDeploymentを確認できます。
+実行結果は下記のとおりです。</p>
+
+<pre><code>NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   3         3         3            3           36s
+</code></pre></li>
+
+<li><p>Deploymentが新しいReplicaSetを作成してPodを更新させたり、新しいReplicaSetのレプリカを3にスケールアップさせたり、古いReplicaSetのレプリカを0にスケールダウンさせるのを確認するには<code>kubectl get rs</code>を実行してください。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get rs</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME                          DESIRED   CURRENT   READY   AGE
+nginx-deployment-1564180365   3         3         3       6s
+nginx-deployment-2035384211   0         0         0       36s
+</code></pre></li>
+
+<li><p><code>get pods</code>を実行させると、新しいPodのみ確認できます。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME                                READY     STATUS    RESTARTS   AGE
+nginx-deployment-1564180365-khku8   1/1       Running   0          14s
+nginx-deployment-1564180365-nacti   1/1       Running   0          14s
+nginx-deployment-1564180365-z9gth   1/1       Running   0          14s
+</code></pre>
+
+<p>次にPodを更新させたいときは、DeploymentのPodテンプレートを再度更新するだけです。</p>
+
+<p>Deploymentは、Podが更新されている間に特定の数のPodのみ停止状態になることを保証します。デフォルトでは、目標とするPod数の少なくとも25%が停止状態になることを保証します(25% max unavailable)。</p>
+
+<p>また、DeploymentはPodが更新されている間に、目標とするPod数を特定の数まで超えてPodを稼働させることを保証します。デフォルトでは、目標とするPod数に対して最大でも25%を超えてPodを稼働させることを保証します(25% max surge)。</p>
+
+<p>例えば、上記で説明したDeploymentの状態を注意深く見ると、最初に新しいPodが作成され、次に古いPodが削除されるのを確認できます。十分な数の新しいPodが稼働するまでは、Deploymentは古いPodを削除しません。また十分な数の古いPodが削除しない限り新しいPodは作成されません。少なくとも2つのPodが利用可能で、最大でもトータルで4つのPodが利用可能になっていることを保証します。</p></li>
+
+<li><p>Deploymentの詳細情報を取得します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe deployments</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>Name:                   nginx-deployment
+Namespace:              default
+CreationTimestamp:      Thu, 30 Nov 2017 10:56:25 +0000
+Labels:                 app=nginx
+Annotations:            deployment.kubernetes.io/revision=2
+Selector:               app=nginx
+Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+Labels:  app=nginx
+ Containers:
+  nginx:
+    Image:        nginx:1.9.1
+    Port:         80/TCP
+    Environment:  &lt;none&gt;
+    Mounts:       &lt;none&gt;
+  Volumes:        &lt;none&gt;
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  &lt;none&gt;
+NewReplicaSet:   nginx-deployment-1564180365 (3/3 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  2m    deployment-controller  Scaled up replica set nginx-deployment-2035384211 to 3
+  Normal  ScalingReplicaSet  24s   deployment-controller  Scaled up replica set nginx-deployment-1564180365 to 1
+  Normal  ScalingReplicaSet  22s   deployment-controller  Scaled down replica set nginx-deployment-2035384211 to 2
+  Normal  ScalingReplicaSet  22s   deployment-controller  Scaled up replica set nginx-deployment-1564180365 to 2
+  Normal  ScalingReplicaSet  19s   deployment-controller  Scaled down replica set nginx-deployment-2035384211 to 1
+  Normal  ScalingReplicaSet  19s   deployment-controller  Scaled up replica set nginx-deployment-1564180365 to 3
+  Normal  ScalingReplicaSet  14s   deployment-controller  Scaled down replica set nginx-deployment-2035384211 to 0
+</code></pre>
+
+<p>最初にDeploymentを作成した時、ReplicaSet(nginx-deployment-2035384211)を作成してすぐにレプリカ数を3にスケールするのを確認できます。Deploymentを更新すると新しいReplicaSet(nginx-deployment-1564180365)を作成してレプリカ数を1にスケールアップし、古いReplicaSeetを2にスケールダウンさせます。これは常に最低でも2つのPodが利用可能で、かつ最大4つのPodが作成されている状態にするためです。Deploymentは同じローリングアップ戦略に従って新しいReplicaSetのスケールアップと古いReplicaSetのスケールダウンを続けます。最終的に新しいReplicaSetを3にスケールアップさせ、古いReplicaSetを0にスケールダウンさせます。</p></li>
+</ul>
+
+<h3 id="ロールオーバー-リアルタイムでの複数のpodの更新">ロールオーバー (リアルタイムでの複数のPodの更新)</h3>
+
+<p>Deploymentコントローラーにより、新しいDeploymentが観測される度にReplicaSetが作成され、理想とするレプリカ数のPodを作成します。Deploymentが更新されると、既存のReplicaSetが管理するPodのラベルが<code>.spec.selector</code>にマッチするが、テンプレートが<code>.spec.template</code>にマッチしない場合はスケールダウンされます。最終的に、新しいReplicaSetは<code>.spec.replicas</code>の値にスケールアップされ、古いReplicaSetは0にスケールダウンされます。</p>
+
+<p>Deploymentのロールアウトが進行中にDeploymentを更新すると、Deploymentは更新する毎に新しいReplicaSetを作成してスケールアップさせ、以前にスケールアップしたReplicaSetのロールオーバーを行います。Deploymentは更新前のReplicaSetを古いReplicaSetのリストに追加し、スケールダウンを開始します。</p>
+
+<p>例えば、5つのレプリカを持つ<code>nginx:1.7.9</code>のDeploymentを作成し、<code>nginx:1.7.9</code>の3つのレプリカが作成されているときに5つのレプリカを持つ<code>nginx:1.9.1</code>に更新します。このケースではDeploymentは作成済みの<code>nginx:1.7.9</code>の3つのPodをすぐに削除し、<code>nginx:1.9.1</code>のPodの作成を開始します。<code>nginx:1.7.9</code>の5つのレプリカを全て作成するのを待つことはありません。</p>
+
+<h3 id="ラベルセレクターの更新">ラベルセレクターの更新</h3>
+
+<p>通常、ラベルセレクターを更新することは推奨されません。事前にラベルセレクターの使い方を計画しておきましょう。いかなる場合であっても更新が必要なときは十分に注意を払い、変更時の影響範囲を把握しておきましょう。</p>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> <code>apps/v1</code>API バージョンにおいて、Deploymentのラベルセレクターは作成後に不変となります。</div>
+</blockquote>
+
+<ul>
+<li>セレクターの追加は、Deployment Specのテンプレートラベルも新しいラベルで更新する必要があります。そうでない場合はバリデーションエラーが返されます。この変更は重複がない更新となります。これは新しいセレクターは古いセレクターを持つReplicaSetとPodを選択せず、結果として古い全てのReplicaSetがみなし子状態になり、新しいReplicaSetを作成することを意味します。</li>
+<li>セレクターの更新により、セレクターキー内の既存の値が変更されます。これにより、セレクターの追加と同じふるまいをします。</li>
+<li>セレクターの削除により、Deploymentのセレクターから存在している値を削除します。これはPodテンプレートのラベルに関する変更を要求しません。既存のReplicaSetはみなし子状態にならず、新しいReplicaSetは作成されませんが、削除されたラベルは既存のPodとReplicaSetでは残り続けます。</li>
+</ul>
+
+<h2 id="rolling-back-a-deployment">Deploymentのロールバック</h2>
+
+<p>Deploymentのロールバックを行いたい場合があります。例えば、Deploymentがクラッシュ状態になりそれがループしたりする不安定なときです。デフォルトではユーザーがいつでもロールバックできるようにDeploymentの全てのロールアウト履歴がシステムに保持されます(リビジョン履歴の上限は設定することで変更可能です)。</p>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> Deploymentのリビジョンは、Deploymentのロールアウトがトリガーされた時に作成されます。これはDeploymentのPodテンプレート(<code>.spec.template</code>)が変更されたときのみ新しいリビジョンが作成されることを意味します。Deploymentのスケーリングなど、他の種類の更新においてはDeploymentのリビジョンは作成されません。これは手動もしくはオートスケーリングを同時に行うことができるようにするためです。これは過去のリビジョンにロールバックするとき、DeploymentのPodテンプレートの箇所のみロールバックされることを意味します。</div>
+</blockquote>
+
+<ul>
+<li><p><code>nginx:1.9.1</code>の代わりに<code>nginx:1.91</code>というイメージに更新して、Deploymentの更新中にタイプミスをしたと仮定します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl <span style="color:#a2f">set</span> image deployment.v1.apps/nginx-deployment <span style="color:#b8860b">nginx</span><span style="color:#666">=</span>nginx:1.91 --record<span style="color:#666">=</span>true</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment image updated
+</code></pre></li>
+
+<li><p>このロールアウトはうまくいきません。ユーザーロールアウトのステータスを見ることでロールアウトがうまくいくか確認できます。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl rollout status deployment.v1.apps/nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>Waiting for rollout to finish: 1 out of 3 new replicas have been updated...
+</code></pre></li>
+
+<li><p>ロールアウトのステータスの確認は、Ctrl-Cを押すことで停止できます。ロールアウトがうまく行かないときは、<a href="#deployment-status">Deploymentのステータス</a>を読んでさらなる情報を得てください。</p></li>
+
+<li><p>古いレプリカ数(<code>nginx-deployment-1564180365</code> and <code>nginx-deployment-2035384211</code>)が2になっていることを確認でき、新しいレプリカ数(nginx-deployment-3066724191)は1になっています。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get rs</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME                          DESIRED   CURRENT   READY   AGE
+nginx-deployment-1564180365   3         3         3       25s
+nginx-deployment-2035384211   0         0         0       36s
+nginx-deployment-3066724191   1         1         0       6s
+</code></pre></li>
+
+<li><p>作成されたPodを確認していると、新しいReplicaSetによって作成された1つのPodはコンテナイメージのpullに失敗し続けているのがわかります。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME                                READY     STATUS             RESTARTS   AGE
+nginx-deployment-1564180365-70iae   1/1       Running            0          25s
+nginx-deployment-1564180365-jbqqo   1/1       Running            0          25s
+nginx-deployment-1564180365-hysrc   1/1       Running            0          25s
+nginx-deployment-3066724191-08mng   0/1       ImagePullBackOff   0          6s
+</code></pre>
+
+<blockquote class="note">
+<div><strong>備考:</strong> Deploymentコントローラーは、この悪い状態のロールアウトを自動的に停止し、新しいReplicaSetのスケールアップを止めます。これはユーザーが指定したローリングアップデートに関するパラメータ(特に<code>maxUnavailable</code>)に依存します。デフォルトではKubernetesがこの値を25%に設定します。</div>
+</blockquote></li>
+
+<li><p>Deploymentの詳細情報を取得します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>Name:           nginx-deployment
+Namespace:      default
+CreationTimestamp:  Tue, 15 Mar 2016 14:48:04 -0700
+Labels:         app=nginx
+Selector:       app=nginx
+Replicas:       3 desired | 1 updated | 4 total | 3 available | 1 unavailable
+StrategyType:       RollingUpdate
+MinReadySeconds:    0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=nginx
+  Containers:
+   nginx:
+    Image:        nginx:1.91
+    Port:         80/TCP
+    Host Port:    0/TCP
+    Environment:  &lt;none&gt;
+    Mounts:       &lt;none&gt;
+  Volumes:        &lt;none&gt;
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    ReplicaSetUpdated
+OldReplicaSets:     nginx-deployment-1564180365 (3/3 replicas created)
+NewReplicaSet:      nginx-deployment-3066724191 (1/1 replicas created)
+Events:
+  FirstSeen LastSeen    Count   From                    SubobjectPath   Type        Reason              Message
+  --------- --------    -----   ----                    -------------   --------    ------              -------
+  1m        1m          1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-2035384211 to 3
+  22s       22s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-1564180365 to 1
+  22s       22s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled down replica set nginx-deployment-2035384211 to 2
+  22s       22s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-1564180365 to 2
+  21s       21s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled down replica set nginx-deployment-2035384211 to 1
+  21s       21s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-1564180365 to 3
+  13s       13s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled down replica set nginx-deployment-2035384211 to 0
+  13s       13s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-3066724191 to 1
+</code></pre></li>
+</ul>
+
+<p>これを修正するために、Deploymentを安定した状態の過去のリビジョンに更新する必要があります。</p>
+
+<h3 id="deploymentのロールアウト履歴の確認">Deploymentのロールアウト履歴の確認</h3>
+
+<p>ロールアウトの履歴を確認するには、下記の手順に従って下さい。</p>
+
+<ol>
+<li><p>最初に、Deploymentのリビジョンを確認します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl rollout <span style="color:#a2f">history</span> deployment.v1.apps/nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployments &quot;nginx-deployment&quot;
+REVISION    CHANGE-CAUSE
+1           kubectl apply --filename=https://k8s.io/examples/controllers/nginx-deployment.yaml --record=true
+2           kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.9.1 --record=true
+3           kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.91 --record=true
+</code></pre>
+
+<p><code>CHANGE-CAUSE</code>はリビジョンの作成時にDeploymentの<code>kubernetes.io/change-cause</code>アノテーションからリビジョンにコピーされます。下記の手段により<code>CHANGE-CAUSE</code>メッセージを指定できます。</p>
+
+<ul>
+<li><code>kubectl annotate deployment.v1.apps/nginx-deployment kubernetes.io/change-cause=&quot;image updated to 1.9.1&quot;</code>の実行によりアノテーションを追加する。</li>
+<li>リソースの変更時に<code>kubectl</code>コマンドの内容を記録するために<code>--record</code>フラグを追加する。</li>
+<li>リソースのマニフェストを手動で編集する。</li>
+</ul></li>
+
+<li><p>各リビジョンの詳細を確認するためには下記のコマンドを実行してください。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl rollout <span style="color:#a2f">history</span> deployment.v1.apps/nginx-deployment --revision<span style="color:#666">=</span><span style="color:#666">2</span></code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployments &quot;nginx-deployment&quot; revision 2
+  Labels:       app=nginx
+          pod-template-hash=1159050644
+  Annotations:  kubernetes.io/change-cause=kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.9.1 --record=true
+  Containers:
+   nginx:
+    Image:      nginx:1.9.1
+    Port:       80/TCP
+     QoS Tier:
+        cpu:      BestEffort
+        memory:   BestEffort
+    Environment Variables:      &lt;none&gt;
+  No volumes.
+</code></pre></li>
+</ol>
+
+<h3 id="rolling-back-to-a-previous-revision">過去のリビジョンにロールバックする</h3>
+
+<p>現在のリビジョンから過去のリビジョン(リビジョン番号2)にロールバックさせるには、下記の手順に従ってください。</p>
+
+<ol>
+<li><p>現在のリビジョンから過去のリビジョンにロールバックします。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl rollout undo deployment.v1.apps/nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment
+</code></pre>
+
+<p>その他に、<code>--to-revision</code>を指定することにより特定のリビジョンにロールバックできます。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl rollout undo deployment.v1.apps/nginx-deployment --to-revision<span style="color:#666">=</span><span style="color:#666">2</span></code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment
+</code></pre>
+
+<p>ロールアウトに関連したコマンドのさらなる情報は<a href="/docs/reference/generated/kubectl/kubectl-commands#rollout"><code>kubectl rollout</code></a>を参照してください。</p>
+
+<p>Deploymentが過去の安定したリビジョンにロールバックされました。Deploymentコントローラーによって、リビジョン番号2にロールバックする<code>DeploymentRollback</code>イベントが作成されたのを確認できます。</p></li>
+
+<li><p>ロールバックが成功し、Deploymentが正常に稼働していることを確認するために、下記のコマンドを実行してください。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get deployment nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   3         3         3            3           30m
+</code></pre></li>
+
+<li><p>Deploymentの詳細情報を取得します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe deployment nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>Name:                   nginx-deployment
+Namespace:              default
+CreationTimestamp:      Sun, 02 Sep 2018 18:17:55 -0500
+Labels:                 app=nginx
+Annotations:            deployment.kubernetes.io/revision=4
+                        kubernetes.io/change-cause=kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.9.1 --record=true
+Selector:               app=nginx
+Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=nginx
+  Containers:
+   nginx:
+    Image:        nginx:1.9.1
+    Port:         80/TCP
+    Host Port:    0/TCP
+    Environment:  &lt;none&gt;
+    Mounts:       &lt;none&gt;
+  Volumes:        &lt;none&gt;
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  &lt;none&gt;
+NewReplicaSet:   nginx-deployment-c4747d96c (3/3 replicas created)
+Events:
+  Type    Reason              Age   From                   Message
+  ----    ------              ----  ----                   -------
+  Normal  ScalingReplicaSet   12m   deployment-controller  Scaled up replica set nginx-deployment-75675f5897 to 3
+  Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-c4747d96c to 1
+  Normal  ScalingReplicaSet   11m   deployment-controller  Scaled down replica set nginx-deployment-75675f5897 to 2
+  Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-c4747d96c to 2
+  Normal  ScalingReplicaSet   11m   deployment-controller  Scaled down replica set nginx-deployment-75675f5897 to 1
+  Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-c4747d96c to 3
+  Normal  ScalingReplicaSet   11m   deployment-controller  Scaled down replica set nginx-deployment-75675f5897 to 0
+  Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-595696685f to 1
+  Normal  DeploymentRollback  15s   deployment-controller  Rolled back deployment &quot;nginx-deployment&quot; to revision 2
+  Normal  ScalingReplicaSet   15s   deployment-controller  Scaled down replica set nginx-deployment-595696685f to 0
+</code></pre></li>
+</ol>
+
+<h2 id="scaling-a-deployment">Deploymentのスケーリング</h2>
+
+<p>下記のコマンドを実行させてDeploymentをスケールできます。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl scale deployment.v1.apps/nginx-deployment --replicas<span style="color:#666">=</span><span style="color:#666">10</span></code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment scaled
+</code></pre>
+
+<p>クラスター内で<a href="/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/">水平Podオートスケーラー</a>が有効になっていると仮定します。ここでDeploymentのオートスケーラーを設定し、稼働しているPodのCPU使用量に基づいて、ユーザーが稼働させたいPodのレプリカ数の最小値と最大値を設定できます。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl autoscale deployment.v1.apps/nginx-deployment --min<span style="color:#666">=</span><span style="color:#666">10</span> --max<span style="color:#666">=</span><span style="color:#666">15</span> --cpu-percent<span style="color:#666">=</span><span style="color:#666">80</span></code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment scaled
+</code></pre>
+
+<h3 id="比例スケーリング">比例スケーリング</h3>
+
+<p>Deploymentのローリングアップデートは、同時に複数のバージョンのアプリケーションの稼働をサポートします。ユーザーやオートスケーラーがロールアウト中(更新中もしくは一時停止中)のDeploymentのローリングアップデートを行うとき、Deploymentコントローラーはリスクを削減するために既存のアクティブなReplicaSetのレプリカのバランシングを行います。これを<em>比例スケーリング</em> と呼びます。</p>
+
+<p>レプリカ数が10、<a href="#max-surge">maxSurge</a>=3、<a href="#max-unavailable">maxUnavailable</a>=2であるDeploymentが稼働している例です。</p>
+
+<ul>
+<li><p>Deployment内で10のレプリカが稼働していることを確認します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get deploy</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME                 DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment     10        10        10           10          50s
+</code></pre></li>
+
+<li><p>クラスター内で、解決できない新しいイメージに更新します。</p></li>
+
+<li><p>You update to a new image which happens to be unresolvable from inside the cluster.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl <span style="color:#a2f">set</span> image deployment.v1.apps/nginx-deployment <span style="color:#b8860b">nginx</span><span style="color:#666">=</span>nginx:sometag</code></pre></div>
+<p>実行結果は下記のとおりです。
+The output is similar to this:</p>
+
+<pre><code>deployment.apps/nginx-deployment image updated
+</code></pre></li>
+
+<li><p>イメージの更新は新しいReplicaSet nginx-deployment-1989198191へのロールアウトを開始させます。しかしロールアウトは、上述した<code>maxUnavailable</code>の要求によりブロックされます。ここでロールアウトのステータスを確認します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get rs</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME                          DESIRED   CURRENT   READY     AGE
+nginx-deployment-1989198191   5         5         0         9s
+nginx-deployment-618515232    8         8         8         1m
+</code></pre></li>
+
+<li><p>次にDeploymentのスケーリングをするための新しい要求が発生します。オートスケーラーはDeploymentのレプリカ数を15に増やします。Deploymentコントローラーは新しい5つのレプリカをどこに追加するか決める必要がでてきます。比例スケーリングを使用していない場合、5つのレプリカは全て新しいReplicaSetに追加されます。比例スケーリングでは、追加されるレプリカは全てのReplicaSetに分散されます。比例割合が大きいものはレプリカ数の大きいReplicaSetとなり、比例割合が低いときはレプリカ数の小さいReplicaSetとなります。残っているレプリカはもっとも大きいレプリカ数を持つReplicaSetに追加されます。レプリカ数が0のReplicaSetはスケールアップされません。</p></li>
+</ul>
+
+<p>上記の例では、3つのレプリカが古いReplicaSetに追加され、2つのレプリカが新しいReplicaSetに追加されました。ロールアウトの処理では、新しいレプリカ数のPodが正常になったと仮定すると、最終的に新しいReplicaSetに全てのレプリカを移動させます。これを確認するためには下記のコマンドを実行して下さい。</p>
+
+<pre><code>```shell
+kubectl get deploy
+```
+実行結果は下記のとおりです。
+```
+NAME                 DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment     15        18        7            8           7m
+```
+</code></pre>
+
+<p>　ロールアウトのステータスでレプリカがどのように各ReplicaSetに追加されるか確認できます。
+    <code>shell
+    kubectl get rs
+</code>
+    実行結果は下記のとおりです。
+    <code>
+    NAME                          DESIRED   CURRENT   READY     AGE
+    nginx-deployment-1989198191   7         7         0         7m
+    nginx-deployment-618515232    11        11        11        7m
+</code></p>
+
+<h2 id="pausing-and-resuming-a-deployment">Deployment更新の一時停止と再開</h2>
+
+<p>ユーザーは1つ以上の更新処理をトリガーする前に更新の一時停止と再開ができます。これにより、不必要なロールアウトを実行することなく一時停止と再開を行う間に複数の修正を反映できます。</p>
+
+<ul>
+<li><p>例えば、作成直後のDeploymentを考えます。<br />
+Deploymentの詳細情報を確認します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get deploy</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME      DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+nginx     3         3         3            3           1m
+</code></pre>
+
+<p>ロールアウトのステータスを確認します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get rs</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME               DESIRED   CURRENT   READY     AGE
+nginx-2142116321   3         3         3         1m
+</code></pre></li>
+
+<li><p>下記のコマンドを実行して更新処理の一時停止を行います。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl rollout pause deployment.v1.apps/nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment paused
+</code></pre></li>
+
+<li><p>次にDeploymentのイメージを更新します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl <span style="color:#a2f">set</span> image deployment.v1.apps/nginx-deployment <span style="color:#b8860b">nginx</span><span style="color:#666">=</span>nginx:1.9.1</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment image updated
+</code></pre></li>
+
+<li><p>新しいロールアウトが開始されていないことを確認します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl rollout <span style="color:#a2f">history</span> deployment.v1.apps/nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployments &quot;nginx&quot;
+REVISION  CHANGE-CAUSE
+1   &lt;none&gt;
+</code></pre></li>
+
+<li><p>Deploymentの更新に成功したことを確認するためにロールアウトのステータスを確認します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get rs</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME               DESIRED   CURRENT   READY     AGE
+nginx-2142116321   3         3         3         2m
+</code></pre></li>
+
+<li><p>ユーザーは何度も更新を行えます。例えばDeploymentが使用するリソースを更新します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl <span style="color:#a2f">set</span> resources deployment.v1.apps/nginx-deployment -c<span style="color:#666">=</span>nginx --limits<span style="color:#666">=</span><span style="color:#b8860b">cpu</span><span style="color:#666">=</span>200m,memory<span style="color:#666">=</span>512Mi</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment resource requirements updated
+</code></pre>
+
+<p>一時停止する前の初期状態では更新処理は機能しますが、Deploymentが一時停止されている間は新しい更新処理は反映されません。</p></li>
+
+<li><p>最後に、Deploymentの稼働を再開させ、新しいReplicaSetが更新内容を全て反映させているのを確認します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl rollout resume deployment.v1.apps/nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment resumed
+</code></pre></li>
+
+<li><p>更新処理が完了するまでロールアウトのステータスを確認します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get rs -w</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME               DESIRED   CURRENT   READY     AGE
+nginx-2142116321   2         2         2         2m
+nginx-3926361531   2         2         0         6s
+nginx-3926361531   2         2         1         18s
+nginx-2142116321   1         2         2         2m
+nginx-2142116321   1         2         2         2m
+nginx-3926361531   3         2         1         18s
+nginx-3926361531   3         2         1         18s
+nginx-2142116321   1         1         1         2m
+nginx-3926361531   3         3         1         18s
+nginx-3926361531   3         3         2         19s
+nginx-2142116321   0         1         1         2m
+nginx-2142116321   0         1         1         2m
+nginx-2142116321   0         0         0         2m
+nginx-3926361531   3         3         3         20s
+</code></pre></li>
+
+<li><p>最新のロールアウトのステータスを確認します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get rs</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>NAME               DESIRED   CURRENT   READY     AGE
+nginx-2142116321   0         0         0         2m
+nginx-3926361531   3         3         3         28s
+</code></pre>
+
+<blockquote class="note">
+<div><strong>備考:</strong> 一時停止したDeploymentの稼働を再開させない限り、ユーザーはDeploymentのロールバックはできません。</div>
+</blockquote></li>
+</ul>
+
+<h2 id="deployment-status">Deploymentのステータス</h2>
+
+<p>Deploymentは、そのライフサイクルの間に様々な状態に遷移します。新しいReplicaSetへのロールアウト中は<a href="#progressing-deployment">進行中</a>になり、その後は<a href="#complete-deployment">完了</a>し、また<a href="#failed-deployment">失敗</a>にもなります。</p>
+
+<h3 id="progressing-deployment">Deploymentの更新処理</h3>
+
+<p>下記のタスクが実行中のとき、KubernetesはDeploymentの状態を<em>progressing</em> にします。</p>
+
+<ul>
+<li>Deploymentが新しいReplicaSetを作成する。</li>
+<li>Deploymentが新しいReplicaSetをスケールアップさせている。</li>
+<li>Deploymentが古いReplicaSetをスケールダウンさせている。</li>
+<li>新しいPodが準備中もしくは利用可能な状態になる(少なくとも<a href="#min-ready-seconds">MinReadySeconds</a>の間は準備中になります)。</li>
+</ul>
+
+<p>ユーザーは<code>kubectl rollout status</code>を実行してDeploymentの進行状態を確認できます。</p>
+
+<h3 id="complete-deployment">Deploymentの更新処理の完了</h3>
+
+<p>Deploymentが下記の状態になったとき、KubernetesはDeploymentのステータスを<em>complete</em> にします。</p>
+
+<ul>
+<li>Deploymentの全てのレプリカが、指定された最新のバージョンに更新される。これはユーザーが指定した更新処理が完了したことを意味します。</li>
+<li>Deploymentの全てのレプリカが利用可能になる。</li>
+<li>Deploymentの古いレプリカが1つも稼働していない。</li>
+</ul>
+
+<p><code>kubectl rollout status</code>を実行して、Deploymentの更新が完了したことを確認できます。ロールアウトが正常に完了すると<code>kubectl rollout status</code>の終了コードが0で返されます。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl rollout status deployment.v1.apps/nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>Waiting for rollout to finish: 2 of 3 updated replicas are available...
+deployment.apps/nginx-deployment successfully rolled out
+$ echo $?
+0
+</code></pre>
+
+<h3 id="failed-deployment">Deploymentの更新処理の失敗</h3>
+
+<p>新しいReplicaSetのデプロイが完了せず、更新処理が止まる場合があります。これは主に下記の要因によるものです。</p>
+
+<ul>
+<li>不十分なリソースの割り当て</li>
+<li>ReadinessProbeの失敗</li>
+<li>コンテナイメージの取得ができない</li>
+<li>不十分なパーミッション</li>
+<li>リソースリミットのレンジ</li>
+<li>アプリケーションランタイムの設定の不備</li>
+</ul>
+
+<p>このような状況を検知する1つの方法として、Deploymentのリソース定義でデッドラインのパラメータを指定します(<a href="#progress-deadline-seconds"><code>.spec.progressDeadlineSeconds</code></a>)。<code>.spec.progressDeadlineSeconds</code>はDeploymentの更新が停止したことを示す前にDeploymentコントローラーが待つ秒数を示します。</p>
+
+<p>下記の<code>kubectl</code>コマンドでリソース定義に<code>progressDeadlineSeconds</code>を設定します。これはDeploymentの更新が止まってから10分後に、コントローラーが失敗を通知させるためです。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl patch deployment.v1.apps/nginx-deployment -p <span style="color:#b44">&#39;{&#34;spec&#34;:{&#34;progressDeadlineSeconds&#34;:600}}&#39;</span></code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>deployment.apps/nginx-deployment patched
+</code></pre>
+
+<p>一度デッドラインを超過すると、DeploymentコントローラーはDeploymentの<code>.status.conditions</code>に下記のDeploymentConditionを追加します。</p>
+
+<ul>
+<li>Type=Progressing</li>
+<li>Status=False</li>
+<li>Reason=ProgressDeadlineExceeded</li>
+</ul>
+
+<p>ステータスの状態に関するさらなる情報は<a href="https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties" target="_blank">Kubernetes APIの規則</a>を参照してください。</p>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> Kubernetesは停止状態のDeploymentに対して、ステータス状態を報告する以外のアクションを実行しません。高レベルのオーケストレーターはこれを利用して、状態に応じて行動できます。例えば、前のバージョンへのDeploymentのロールバックが挙げられます。</div>
+</blockquote>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> Deploymentを停止すると、Kubernetesはユーザーが指定したデッドラインを超えたかどうかチェックしません。ユーザーはロールアウトのとゆうでもDeploymentを安全に一時停止でき、デッドラインを超えたイベントをトリガーすることなく再開できます。</div>
+</blockquote>
+
+<p>設定したタイムアウトの秒数が小さかったり、一時的なエラーとして扱える他の種類のエラーが原因となり、Deploymentで一時的なエラーが出る場合があります。例えば、リソースの割り当てが不十分な場合を考えます。Deploymentの詳細情報を確認すると、下記のセクションが表示されます。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe deployment nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>&lt;...&gt;
+Conditions:
+  Type            Status  Reason
+  ----            ------  ------
+  Available       True    MinimumReplicasAvailable
+  Progressing     True    ReplicaSetUpdated
+  ReplicaFailure  True    FailedCreate
+&lt;...&gt;
+</code></pre>
+
+<p><code>kubectl get deployment nginx-deployment -o yaml</code>を実行すると、Deploymentのステータスは下記のようになります。</p>
+
+<pre><code>status:
+  availableReplicas: 2
+  conditions:
+  - lastTransitionTime: 2016-10-04T12:25:39Z
+    lastUpdateTime: 2016-10-04T12:25:39Z
+    message: Replica set &quot;nginx-deployment-4262182780&quot; is progressing.
+    reason: ReplicaSetUpdated
+    status: &quot;True&quot;
+    type: Progressing
+  - lastTransitionTime: 2016-10-04T12:25:42Z
+    lastUpdateTime: 2016-10-04T12:25:42Z
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: &quot;True&quot;
+    type: Available
+  - lastTransitionTime: 2016-10-04T12:25:39Z
+    lastUpdateTime: 2016-10-04T12:25:39Z
+    message: 'Error creating: pods &quot;nginx-deployment-4262182780-&quot; is forbidden: exceeded quota:
+      object-counts, requested: pods=1, used: pods=3, limited: pods=2'
+    reason: FailedCreate
+    status: &quot;True&quot;
+    type: ReplicaFailure
+  observedGeneration: 3
+  replicas: 2
+  unavailableReplicas: 2
+</code></pre>
+
+<p>最後に、一度Deploymentの更新処理のデッドラインを越えると、KubernetesはDeploymentのステータスと進行中の状態を更新します。</p>
+
+<pre><code>Conditions:
+  Type            Status  Reason
+  ----            ------  ------
+  Available       True    MinimumReplicasAvailable
+  Progressing     False   ProgressDeadlineExceeded
+  ReplicaFailure  True    FailedCreate
+</code></pre>
+
+<p>Deploymentか他のリソースコントローラーのスケールダウンを行うか、使用している名前空間内でリソースの割り当てを増やすことで、リソースの割り当て不足の問題に対処できます。割り当て条件を満たすと、DeploymentコントローラーはDeploymentのロールアウトを完了させ、Deploymentのステータスが成功状態になるのを確認できます(<code>Status=True</code>と<code>Reason=NewReplicaSetAvailable</code>)。</p>
+
+<pre><code>Conditions:
+  Type          Status  Reason
+  ----          ------  ------
+  Available     True    MinimumReplicasAvailable
+  Progressing   True    NewReplicaSetAvailable
+</code></pre>
+
+<p><code>Status=True</code>の<code>Type=Available</code>は、Deploymentが最小可用性の状態であることを意味します。最小可用性は、Deploymentの更新戦略において指定されているパラメータにより決定されます。<code>Status=True</code>の<code>Type=Progressing</code>は、Deploymentのロールアウトの途中で、更新処理が進行中であるか、更新処理が完了し、必要な最小数のレプリカが利用可能であることを意味します(各TypeのReason項目を確認してください。このケースでは、<code>Reason=NewReplicaSetAvailable</code>はDeploymentの更新が完了したことを意味します)。</p>
+
+<p><code>kubectl rollout status</code>を実行してDeploymentが更新に失敗したかどうかを確認できます。<code>kubectl rollout status</code>はDeploymentが更新処理のデッドラインを超えたときに0以外の終了コードを返します。</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl rollout status deployment.v1.apps/nginx-deployment</code></pre></div>
+<p>実行結果は下記のとおりです。</p>
+
+<pre><code>Waiting for rollout to finish: 2 out of 3 new replicas have been updated...
+error: deployment &quot;nginx&quot; exceeded its progress deadline
+$ echo $?
+1
+</code></pre>
+
+<h3 id="失敗したdeploymentの操作">失敗したDeploymentの操作</h3>
+
+<p>更新完了したDeploymentに適用した全てのアクションは、更新失敗したDeploymentに対しても適用されます。スケールアップ、スケールダウンができ、前のリビジョンへのロールバックや、Deploymentのテンプレートに複数の更新を適用させる必要があるときは一時停止もできます。</p>
+
+<h2 id="clean-up-policy">古いリビジョンのクリーンアップポリシー</h2>
+
+<p>Deploymentが管理する古いReplicaSetをいくつ保持するかを指定するために、<code>.spec.revisionHistoryLimit</code>フィールドを設定できます。この値を超えた古いReplicaSetはバックグラウンドでガーベージコレクションの対象となって削除されます。デフォルトではこの値は10です。</p>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> このフィールドを明示的に0に設定すると、Deploymentの全ての履歴を削除します。従って、Deploymentはロールバックできません。</div>
+</blockquote>
+
+<h2 id="カナリアパターンによるデプロイ">カナリアパターンによるデプロイ</h2>
+
+<p>Deploymentを使って一部のユーザーやサーバーに対してリリースのロールアウトをしたいとき、<a href="/docs/concepts/cluster-administration/manage-deployment/#canary-deployments">リソースの管理</a>に記載されているカナリアパターンに従って、リリース毎に1つずつ、複数のDeploymentを作成できます。</p>
+
+<h2 id="deployment-specの記述">Deployment Specの記述</h2>
+
+<p>他の全てのKubernetesの設定と同様に、Deploymentは<code>apiVersion</code>、<code>kind</code>や<code>metadata</code>フィールドを必要とします。設定ファイルの利用に関する情報は<a href="/docs/tutorials/stateless-application/run-stateless-application-deployment/">アプリケーションのデプロイ</a>を参照してください。コンテナーの設定に関しては<a href="/docs/concepts/overview/working-with-objects/object-management/">リソースを管理するためのkubectlの使用</a>を参照してください。</p>
+
+<p>Deploymentは<a href="https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status" target="_blank"><code>.spec</code>セクション</a>も必要とします。</p>
+
+<h3 id="podテンプレート">Podテンプレート</h3>
+
+<p><code>.spec.template</code>と<code>.spec.selector</code>は<code>.spec</code>における必須のフィールドです。</p>
+
+<p><code>.spec.template</code>は<a href="/docs/concepts/workloads/pods/pod-overview/#pod-templates">Podテンプレート</a>です。これは.spec内でネストされていないことと、<code>apiVersion</code>や<code>kind</code>を持たないことを除いては<a href="/docs/concepts/workloads/pods/pod/">Pod</a>と同じスキーマとなります。</p>
+
+<p>Podの必須フィールドに加えて、Deployment内のPodテンプレートでは適切なラベルと再起動ポリシーを設定しなくてはなりません。ラベルは他のコントローラーと重複しないようにしてください。ラベルについては、<a href="#selector">セレクター</a>を参照してください。</p>
+
+<p><a href="/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy"><code>.spec.template.spec.restartPolicy</code></a>が<code>Always</code>に等しいときのみ許可されます。これはテンプレートで指定されていない場合のデフォルト値です。</p>
+
+<h3 id="レプリカ数">レプリカ数</h3>
+
+<p><code>.spec.replias</code>は理想的なPodの数を指定するオプションのフィールドです。デフォルトは1です。</p>
+
+<h3 id="selector">セレクター</h3>
+
+<p><code>.spec.selector</code>は必須フィールドで、Deploymentによって対象とされるPodの<a href="/docs/concepts/overview/working-with-objects/labels/">ラベルセレクター</a>を指定します。</p>
+
+<p><code>.spec.selector</code>は<code>.spec.template.metadata.labels</code>と一致している必要があり、一致しない場合はAPIによって拒否されます。</p>
+
+<p><code>apps/v1</code>バージョンにおいて、<code>.spec.selector</code>と<code>.metadata.labels</code>が指定されていない場合、<code>.spec.template.metadata.labels</code>の値に初期化されません。そのため<code>.spec.selector</code>と<code>.metadata.labels</code>を明示的に指定する必要があります。また<code>apps/v1</code>のDeploymentにおいて<code>.spec.selector</code>は作成後に不変になります。</p>
+
+<p>Deploymentのテンプレートが<code>.spec.template</code>と異なる場合や、<code>.spec.replicas</code>の値を超えてPodが稼働している場合、Deploymentはセレクターに一致するラベルを持つPodを削除します。Podの数が理想状態より少ない場合Deploymentは<code>.spec.template</code>をもとに新しいPodを作成します。</p>
+
+<blockquote class="note">
+  <div><strong>備考:</strong> ユーザーは、Deploymentのセレクターに一致するラベルを持つPodを、直接作成したり他のDeploymentやReplicaSetやReplicationControllerによって作成するべきではありません。作成した場合は最初のDeploymentが、ラベルに一致する新しいPodを作成したとみなしてしまいます。Kubernetesはユーザーがこれを行ってもエラーなどを出さず、処理を止めません。</div>
+</blockquote>
+
+<p>セレクターが重複する複数のコントローラーを持つとき、そのコントローラーは互いに競合状態となり、正しくふるまいません。</p>
+
+<h3 id="更新戦略">更新戦略</h3>
+
+<p><code>.spec.strategy</code>は古いPodから新しいPodに置き換える際の更新戦略を指定します。<code>.spec.strategy.type</code>は&rdquo;Recreate&rdquo;もしくは&rdquo;RollingUpdate&rdquo;を指定できます。デフォルトは&rdquo;RollingUpdate&rdquo;です。</p>
+
+<h4 id="deploymentの再作成">Deploymentの再作成</h4>
+
+<p><code>.spec.strategy.type==Recreate</code>と指定されているとき、既存の全てのPodは新しいPodが作成される前に削除されます。</p>
+
+<h4 id="deploymentのローリングアップデート">Deploymentのローリングアップデート</h4>
+
+<p><code>.spec.strategy.type==RollingUpdate</code>と指定されているとき、Deploymentは<a href="/docs/tasks/run-application/rolling-update-replication-controller/">ローリングアップデート</a>によりPodを更新します。ローリングアップデートの処理をコントロールするために<code>maxUnavailable</code>と<code>maxSurge</code>を指定できます。</p>
+
+<h5 id="maxunavailable">maxUnavailable</h5>
+
+<p><code>.spec.strategy.rollingUpdate.maxUnavailable</code>はオプションのフィールドで、更新処理において利用不可となる最大のPod数を指定します。値は絶対値(例: 5)を指定するか、理想状態のPodのパーセンテージを指定します(例: 10%)。パーセンテージを指定した場合、絶対値は小数切り捨てされて計算されます。<code>.spec.strategy.rollingUpdate.maxSurge</code>が0に指定されている場合、この値を0にできません。デフォルトでは25%です。</p>
+
+<p>例えば、この値が30%と指定されているとき、ローリングアップデートが開始すると古いReplicaSetはすぐに理想状態の70%にスケールダウンされます。一度新しいPodが稼働できる状態になると、古いReplicaSetはさらにスケールダウンされ、続いて新しいReplicaSetがスケールアップされます。この間、利用可能なPodの総数は理想状態のPodの少なくとも70%以上になるように保証されます。</p>
+
+<h5 id="maxsurge">maxSurge</h5>
+
+<p><code>.spec.strategy.rollingUpdate.maxSurge</code>はオプションのフィールドで、理想状態のPod数を超えて作成できる最大のPod数を指定します。値は絶対値(例: 5)を指定するか、理想状態のPodのパーセンテージを指定します(例: 10%)。パーセンテージを指定した場合、絶対値は小数切り上げで計算されます。<code>MaxUnavailable</code>が0に指定されている場合、この値を0にできません。デフォルトでは25%です。</p>
+
+<p>例えば、この値が30%と指定されているとき、ローリングアップデートが開始すると新しいReplicaSetはすぐに更新されます。このとき古いPodと新しいPodの総数は理想状態の130%を超えないように更新されます。一度古いPodが削除されると、新しいReplicaSetはさらにスケールアップされます。この間、利用可能なPodの総数は理想状態のPodに対して最大130%になるように保証されます。</p>
+
+<h3 id="progressdeadlineseconds">progressDeadlineSeconds</h3>
+
+<p><code>.spec.progressDeadlineSeconds</code>はオプションのフィールドで、システムがDeploymentの<a href="#failed-deployment">更新に失敗</a>したと判断するまでに待つ秒数を指定します。更新に失敗したと判断されたとき、リソースのステータスは<code>Type=Progressing</code>、<code>Status=False</code>かつ<code>Reason=ProgressDeadlineExceeded</code>となるのを確認できます。DeploymentコントローラーはDeploymentの更新のリトライし続けます。今後、自動的なロールバックが実装されたとき、更新失敗状態になるとすぐにDeploymentコントローラーがロールバックを行うようになります。</p>
+
+<p>この値が指定されているとき、<code>.spec.minReadySeconds</code>より大きい値を指定する必要があります。</p>
+
+<h3 id="min-ready-seconds">minReadySeconds</h3>
+
+<p><code>.spec.minReadySeconds</code>はオプションのフィールドで、新しく作成されたPodが利用可能となるために、最低どれくらいの秒数コンテナーがクラッシュすることなく稼働し続ければよいかを指定するものです。デフォルトでは0です(Podは作成されるとすぐに利用可能と判断されます)。Podが利用可能と判断された場合についてさらに学ぶために<a href="/docs/concepts/workloads/pods/pod-lifecycle/#container-probes">Container Probes</a>を参照してください。</p>
+
+<h3 id="rollbackto">rollbackTo</h3>
+
+<p><code>.spec.rollbackTo</code>は、<code>extensions/v1beta1</code>と<code>apps/v1beta1</code>のAPIバージョンにおいて非推奨で、<code>apps/v1beta2</code>以降のAPIバージョンではサポートされません。かわりに、<a href="#rolling-back-to-a-previous-revision">前のリビジョンへのロールバック</a>で説明されているように<code>kubectl rollout undo</code>を使用するべきです。</p>
+
+<h3 id="リビジョン履歴の保持上限">リビジョン履歴の保持上限</h3>
+
+<p>Deploymentのリビジョン履歴は、Deploymentが管理するReplicaSetに保持されています。</p>
+
+<p><code>.spec.revisionHistoryLimit</code>はオプションのフィールドで、ロールバック可能な古いReplicaSetの数を指定します。この古いReplicaSetは<code>etcd</code>内のリソースを消費し、<code>kubectl get rs</code>の出力結果を見にくくします。Deploymentの各リビジョンの設定はReplicaSetに保持されます。このため一度古いReplicaSetが削除されると、そのリビジョンのDeploymentにロールバックすることができなくなります。デフォルトでは10もの古いReplicaSetが保持されます。しかし、この値の最適値は新しいDeploymnetの更新頻度と安定性に依存します。</p>
+
+<p>さらに詳しく言うと、この値を0にすると、0のレプリカを持つ古い全てのReplicaSetが削除されます。このケースでは、リビジョン履歴が完全に削除されているため新しいDeploymentのロールアウトを完了することができません。</p>
+
+<h3 id="paused">paused</h3>
+
+<p><code>.spec.paused</code>はオプションのboolean値で、Deploymentの一時停止と再開のための値です。一時停止されているものと、そうでないものとの違いは、一時停止されているDeploymentはPodTemplateSpecのいかなる変更があってもロールアウトがトリガーされないことです。デフォルトではDeploymentは一時停止していない状態で作成されます。</p>
+
+<h2 id="deploymentの代替案">Deploymentの代替案</h2>
+
+<h3 id="kubectl-rolling-update">kubectl rolling update</h3>
+
+<p><a href="/docs/reference/generated/kubectl/kubectl-commands#rolling-update"><code>kubectl rolling update</code></a>によって、同様の形式でPodとReplicationControllerを更新できます。しかしDeploymentの使用が推奨されます。なぜならDeploymentの作成は宣言的であり、ローリングアップデートが更新された後に過去のリビジョンにロールバックできるなど、いくつかの追加機能があります。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>フィードバック</h2>
+  <p class="feedback--prompt">このページは役に立ちましたか？ </p>
+  <button class="button feedback--yes">はい</button>
+  <button class="button feedback--no">いいえ</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      問題を報告する</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      改善を提案</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/workloads/controllers/deployment.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ja\/docs\/concepts\/workloads\/controllers\/deployment\/",
+    "title" : "Deployment",
+    "permalink" : "https:\/\/kubernetes.io\/ja\/docs\/concepts\/workloads\/controllers\/deployment\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Issue作成</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ja/docs/concepts/workloads/controllers/deployment.md" class="button issue">ページ編集</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    ページの最終更新 January 21, 2020 at 1:39 PM PST by
+    <a href="https://github.com/kubernetes/website/commit/0c86e6515a888dd1fefddec23f95ff1ee8425205/">First Japanese l10n work for release-1.16 (#18790)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/workloads/controllers/deployment.md">ページ履歴</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ja/docs/home/">ホーム</a>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <a href="/ja/case-studies/">ケーススタディ</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>フォーラム</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>イベントカレンダー</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">コントリビュート</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

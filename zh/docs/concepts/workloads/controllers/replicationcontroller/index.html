@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>ReplicationController - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="Restarts containers that fail, replaces and reschedules containers when nodes die, kills containers that don&#39;t respond to your user-defined health check, and doesn&#39;t advertise them to clients until they are ready to serve. content_template: templates/concept weight: 20 -- ">
+<meta property="og:description" content="Restarts containers that fail, replaces and reschedules containers when nodes die, kills containers that don&#39;t respond to your user-defined health check, and doesn&#39;t advertise them to clients until they are ready to serve. content_template: templates/concept weight: 20 -- ">
+<meta name="twitter:description" content="Restarts containers that fail, replaces and reschedules containers when nodes die, kills containers that don&#39;t respond to your user-defined health check, and doesn&#39;t advertise them to clients until they are ready to serve. content_template: templates/concept weight: 20 -- ">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/concepts/workloads/controllers/replicationcontroller/">
+<meta property="og:title" content="ReplicationController">
+<meta name="twitter:title" content="ReplicationController">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/workloads/controllers/replicationcontroller/">English</a></li>
+                
+                    <li><a href="/ko/docs/concepts/workloads/controllers/replicationcontroller/">한국어 Korean</a></li>
+                
+                    <li><a href="/es/docs/concepts/workloads/controllers/replicationcontroller/">Español</a></li>
+                
+                    <li><a href="/id/docs/concepts/workloads/controllers/replicationcontroller/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/concepts/workloads/controllers/replicationcontroller/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/concepts/workloads/controllers/replicationcontroller/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/concepts/workloads/controllers/replicationcontroller/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/concepts/workloads/controllers/replicationcontroller/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/concepts/workloads/controllers/replicationcontroller/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>概念</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/" class="YAH">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="概念" href="/zh/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="概述">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="概述" href="/zh/docs/concepts/overview/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 是什么？" href="/zh/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 组件" href="/zh/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes API" href="/zh/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="使用 Kubernetes 对象">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="理解 Kubernetes 对象" href="/zh/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 对象管理" href="/zh/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="名称" href="/zh/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="命名空间" href="/zh/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="标签和选择器" href="/zh/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="注解" href="/zh/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="字段选择器" href="/zh/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="推荐使用的标签" href="/zh/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Kubernetes 架构">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 架构" href="/zh/docs/concepts/architecture/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="节点" href="/zh/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云控制器管理器的基础概念" href="/zh/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器" href="/zh/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Master 节点通信" href="/zh/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/cluster-administration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="集群管理概述" href="/zh/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="证书" href="/zh/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="云驱动" href="/zh/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="管理资源" href="/zh/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 控制面板的指标" href="/zh/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="日志架构" href="/zh/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置 kubelet 垃圾回收策略" href="/zh/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="控制器管理器指标" href="/zh/docs/concepts/cluster-administration/controller-metrics/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 中的代理" href="/zh/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="安装扩展（Addons）" href="/zh/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="联邦" href="/zh/docs/concepts/cluster-administration/federation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes" href="/zh/docs/concepts/extend-kubernetes/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展 Kubernetes 集群" href="/zh/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="扩展 Kubernetes API">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Custom Resources <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="通过聚合层扩展 Kubernetes API" href="/zh/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Operator 模式" href="/zh/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="计算、存储和网络扩展">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="计算、存储和网络扩展" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="网络插件" href="/zh/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="服务目录" href="/zh/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="容器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="容器" href="/zh/docs/concepts/containers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="镜像" href="/zh/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器运行时类(Runtime Class)" href="/zh/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器生命周期钩子" href="/zh/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="容器环境变量" href="/zh/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="工作负载">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="工作负载" href="/zh/docs/concepts/workloads/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pods">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Pod 概览" href="/zh/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pods" href="/zh/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod Preset" href="/zh/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 拓扑扩展约束" href="/zh/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="干扰" href="/zh/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="临时容器" href="/zh/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Init 容器" href="/zh/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 的生命周期" href="/zh/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="控制器">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="控制器" href="/zh/docs/concepts/workloads/controllers/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/zh/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="ReplicationController" href="/zh/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Deployments" href="/zh/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="StatefulSets" href="/zh/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DaemonSet" href="/zh/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="垃圾收集" href="/zh/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="已完成资源的 TTL 控制器" href="/zh/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Jobs - Run to Completion <small>(EN)</small>" href="/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CronJob" href="/zh/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="存储">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="存储" href="/zh/docs/concepts/storage/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Volumes" href="/zh/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Persistent Volumes <small>(EN)</small>" href="/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照" href="/zh/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CSI 卷克隆" href="/zh/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Storage Classes" href="/zh/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="卷快照类" href="/zh/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="动态卷供应" href="/zh/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="特定于节点的卷数限制" href="/zh/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="配置">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="配置" href="/zh/docs/concepts/configuration/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="扩展资源的资源箱打包" href="/zh/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置最佳实践" href="/zh/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 开销" href="/zh/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="为容器管理计算资源" href="/zh/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="将 Pod 分配给节点" href="/zh/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Taint 和 Toleration" href="/zh/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Secret" href="/zh/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeconfig 文件组织集群访问" href="/zh/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度框架" href="/zh/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="服务、负载均衡和联网">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="服务、负载均衡和联网" href="/zh/docs/concepts/services-networking/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Endpoint Slices" href="/zh/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service 拓扑" href="/zh/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Services" href="/zh/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 与 Service 的 DNS" href="/zh/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="应用连接到 Service" href="/zh/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/zh/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress 控制器" href="/zh/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="网络策略" href="/zh/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 HostAliases 向 Pod /etc/hosts 文件添加条目" href="/zh/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IPv4/IPv6 双协议栈" href="/zh/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="安全">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="安全" href="/zh/docs/concepts/security/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Overview of Cloud Native Security <small>(EN)</small>" href="/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="调度">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="调度" href="/zh/docs/concepts/scheduling/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 调度器" href="/zh/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="调度器性能调优" href="/zh/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="策略">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="策略" href="/zh/docs/concepts/policy/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pod 安全策略" href="/zh/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="资源配额" href="/zh/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/workloads/controllers/replicationcontroller.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>ReplicationController</h1>
+
+
+
+<!--
+A [`Deployment`](/docs/concepts/workloads/controllers/deployment/) that configures a [`ReplicaSet`](/docs/concepts/workloads/controllers/replicaset/) is now the recommended way to set up replication.
+-->
+
+<blockquote class="note">
+  <div><strong>注意：</strong> 现在推荐使用配置 <a href="/docs/concepts/workloads/controllers/replicaset/"><code>ReplicaSet</code></a> 的 <a href="/docs/concepts/workloads/controllers/deployment/"><code>Deployment</code></a> 来建立副本管理机制。</div>
+</blockquote>
+
+<!--
+A _ReplicationController_ ensures that a specified number of pod replicas are running at any one
+time. In other words, a ReplicationController makes sure that a pod or a homogeneous set of pods is
+always up and available.
+-->
+
+<p><em>ReplicationController</em> 确保在任何时候都有特定数量的 pod 副本处于运行状态。
+换句话说，ReplicationController 确保一个 pod 或一组同类的 pod 总是可用的。</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#replicationcontroller-%e5%a6%82%e4%bd%95%e5%b7%a5%e4%bd%9c">ReplicationController 如何工作</a></li>
+
+
+
+
+<li><a href="#%e8%bf%90%e8%a1%8c%e4%b8%80%e4%b8%aa%e7%a4%ba%e4%be%8b-replicationcontroller">运行一个示例 ReplicationController</a></li>
+
+
+
+
+<li><a href="#%e7%bc%96%e5%86%99%e4%b8%80%e4%b8%aa-replicationcontroller-spec">编写一个 ReplicationController Spec</a></li>
+
+
+
+
+<li><a href="#working-with-replicationcontrollers">使用 ReplicationController</a></li>
+
+
+
+
+<li><a href="#%e5%b8%b8%e8%a7%81%e7%9a%84%e4%bd%bf%e7%94%a8%e6%a8%a1%e5%bc%8f">常见的使用模式</a></li>
+
+
+
+
+<li><a href="#%e7%bc%96%e5%86%99%e5%a4%9a%e5%89%af%e6%9c%ac%e7%9a%84%e5%ba%94%e7%94%a8">编写多副本的应用</a></li>
+
+
+
+
+<li><a href="#replicationcontroller-%e7%9a%84%e8%81%8c%e8%b4%a3">ReplicationController 的职责</a></li>
+
+
+
+
+<li><a href="#api-%e5%af%b9%e8%b1%a1">API 对象</a></li>
+
+
+
+
+<li><a href="#replicationcontroller-%e7%9a%84%e6%9b%bf%e4%bb%a3%e6%96%b9%e6%a1%88">ReplicationController 的替代方案</a></li>
+
+
+
+
+<li><a href="#%e6%9b%b4%e5%a4%9a%e4%bf%a1%e6%81%af">更多信息</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<!--
+## How a ReplicationController Works
+-->
+
+<h2 id="replicationcontroller-如何工作">ReplicationController 如何工作</h2>
+
+<!--
+If there are too many pods, the ReplicationController terminates the extra pods. If there are too few, the
+ReplicationController starts more pods. Unlike manually created pods, the pods maintained by a
+ReplicationController are automatically replaced if they fail, are deleted, or are terminated.
+For example, your pods are re-created on a node after disruptive maintenance such as a kernel upgrade.
+For this reason, you should use a ReplicationController even if your application requires
+only a single pod. A ReplicationController is similar to a process supervisor,
+but instead of supervising individual processes on a single node, the ReplicationController supervises multiple pods
+across multiple nodes.
+-->
+
+<p>当 pod 数量过多时，ReplicationController 会终止多余的 pod。当 pod 数量太少时，ReplicationController 将会启动新的 pod。
+与手动创建的 pod 不同，由 ReplicationController 创建的 pod 在失败、被删除或被终止时会被自动替换。
+例如，在中断性维护（如内核升级）之后，您的 pod 会在节点上重新创建。
+因此，即使您的应用程序只需要一个 pod，您也应该使用 ReplicationController 创建 Pod。
+ReplicationController 类似于进程管理器，但是 ReplicationController 不是监控单个节点上的单个进程，而是监控跨多个节点的多个 pod。</p>
+
+<!--
+ReplicationController is often abbreviated to "rc" in discussion, and as a shortcut in
+kubectl commands.
+
+A simple case is to create one ReplicationController object to reliably run one instance of
+a Pod indefinitely.  A more complex use case is to run several identical replicas of a replicated
+service, such as web servers.
+-->
+
+<p>在讨论中，ReplicationController 通常缩写为 &ldquo;rc&rdquo;，并作为 kubectl 命令的快捷方式。</p>
+
+<p>一个简单的示例是创建一个 ReplicationController 对象来可靠地无限期地运行 Pod 的一个实例。
+更复杂的用例是运行一个多副本服务（如 web 服务器）的若干相同副本。</p>
+
+<!--
+## Running an example ReplicationController
+
+This example ReplicationController config runs three copies of the nginx web server.
+-->
+
+<h2 id="运行一个示例-replicationcontroller">运行一个示例 ReplicationController</h2>
+
+<p>这个示例 ReplicationController 配置运行 nginx web 服务器的三个副本。</p>
+
+<table class="includecode" id="controllers-replication-yaml">
+    <thead>
+        <tr>
+            <th>
+                <a href="https://raw.githubusercontent.com/kubernetes/website/master/content/zh/examples/controllers/replication.yaml" download="controllers/replication.yaml">
+                    <code>controllers/replication.yaml</code>
+                </a>
+                <img src="/images/copycode.svg" style="max-height:24px; cursor: pointer" onclick="copyCode('controllers-replication-yaml')" title="Copy controllers/replication.yaml to clipboard">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>ReplicationController<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>replicas:<span style="color:#bbb"> </span><span style="color:#666">3</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>app:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>template:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>labels:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>app:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>image:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>ports:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>containerPort:<span style="color:#bbb"> </span><span style="color:#666">80</span><span style="color:#bbb">
+</span></code></pre></div>  </td>
+        </tr>
+    </tbody>
+</table>
+
+<!--
+Run the example job by downloading the example file and then running this command:
+-->
+
+<p>通过下载示例文件并运行以下命令来运行示例任务:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl apply -f https://k8s.io/examples/controllers/replication.yaml</code></pre></div>
+<pre><code>replicationcontroller/nginx created
+</code></pre>
+
+<!--
+Check on the status of the ReplicationController using this command:
+-->
+
+<p>使用以下命令检查 ReplicationController 的状态:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl describe replicationcontrollers/nginx</code></pre></div>
+<pre><code>Name:        nginx
+Namespace:   default
+Selector:    app=nginx
+Labels:      app=nginx
+Annotations:    &lt;none&gt;
+Replicas:    3 current / 3 desired
+Pods Status: 0 Running / 3 Waiting / 0 Succeeded / 0 Failed
+Pod Template:
+  Labels:       app=nginx
+  Containers:
+   nginx:
+    Image:              nginx
+    Port:               80/TCP
+    Environment:        &lt;none&gt;
+    Mounts:             &lt;none&gt;
+  Volumes:              &lt;none&gt;
+Events:
+  FirstSeen       LastSeen     Count    From                        SubobjectPath    Type      Reason              Message
+  ---------       --------     -----    ----                        -------------    ----      ------              -------
+  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-qrm3m
+  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-3ntk0
+  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-4ok8v
+</code></pre>
+
+<!--
+Here, three pods are created, but none is running yet, perhaps because the image is being pulled.
+A little later, the same command may show:
+-->
+
+<p>在这里，创建了三个 Pod，但没有一个 Pod 正在运行，这可能是因为正在拉取镜像。
+稍后，相同的命令可能会显示：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">Pods Status:    <span style="color:#666">3</span> Running / <span style="color:#666">0</span> Waiting / <span style="color:#666">0</span> Succeeded / <span style="color:#666">0</span> Failed</code></pre></div>
+<!--
+To list all the pods that belong to the ReplicationController in a machine readable form, you can use a command like this:
+-->
+
+<p>要以机器可读的形式列出属于 ReplicationController 的所有 pod，可以使用如下命令：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b8860b">pods</span><span style="color:#666">=</span><span style="color:#a2f;font-weight:bold">$(</span>kubectl get pods --selector<span style="color:#666">=</span><span style="color:#b8860b">app</span><span style="color:#666">=</span>nginx --output<span style="color:#666">=</span><span style="color:#b8860b">jsonpath</span><span style="color:#666">={</span>.items..metadata.name<span style="color:#666">}</span><span style="color:#a2f;font-weight:bold">)</span>
+<span style="color:#a2f">echo</span> <span style="color:#b8860b">$pods</span></code></pre></div>
+<pre><code>nginx-3ntk0 nginx-4ok8v nginx-qrm3m
+</code></pre>
+
+<!--
+Here, the selector is the same as the selector for the ReplicationController (seen in the
+`kubectl describe` output), and in a different form in `replication.yaml`.  The `--output=jsonpath` option
+specifies an expression that just gets the name from each pod in the returned list.
+-->
+
+<p>这里，选择器与 ReplicationController 的选择器相同（参见 <code>kubectl describe</code> 输出），并以不同的形式出现在 <code>replication.yaml</code> 中。
+<code>--output=jsonpath</code> 选项指定了一个表达式，只从返回列表中的每个 pod 中获取名称。</p>
+
+<!--
+## Writing a ReplicationController Spec
+
+As with all other Kubernetes config, a ReplicationController needs `apiVersion`, `kind`, and `metadata` fields.
+For general information about working with config files, see [object management ](/docs/concepts/overview/working-with-objects/object-management/).
+
+A ReplicationController also needs a [`.spec` section](https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status).
+-->
+
+<h2 id="编写一个-replicationcontroller-spec">编写一个 ReplicationController Spec</h2>
+
+<p>与所有其它 Kubernetes 配置一样，ReplicationController 需要 <code>apiVersion</code>、<code>kind</code> 和 <code>metadata</code> 字段。
+有关使用配置文件的常规信息，参考<a href="/docs/concepts/overview/working-with-objects/object-management/">对象管理</a>。</p>
+
+<p>ReplicationController 也需要一个 <a href="https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status" target="_blank"><code>.spec</code> 部分</a>。</p>
+
+<!--
+### Pod Template
+-->
+
+<h3 id="pod-模板">Pod 模板</h3>
+
+<!--
+The `.spec.template` is the only required field of the `.spec`.
+
+The `.spec.template` is a [pod template](/docs/concepts/workloads/pods/pod-overview/#pod-templates). It has exactly the same schema as a [pod](/docs/concepts/workloads/pods/pod/), except it is nested and does not have an `apiVersion` or `kind`.
+-->
+
+<p><code>.spec.template</code> 是 <code>.spec</code> 的唯一必需字段。</p>
+
+<p><code>.spec.template</code> 是一个 <a href="/docs/concepts/workloads/pods/pod-overview/#pod-templates">pod 模板</a>。它的模式与 <a href="/docs/concepts/workloads/pods/pod/">pod</a> 完全相同，只是它是嵌套的，没有 <code>apiVersion</code> 或 <code>kind</code> 属性。</p>
+
+<!--
+In addition to required fields for a Pod, a pod template in a ReplicationController must specify appropriate
+labels and an appropriate restart policy. For labels, make sure not to overlap with other controllers. See [pod selector](#pod-selector).
+
+Only a [`.spec.template.spec.restartPolicy`](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy) equal to `Always` is allowed, which is the default if not specified.
+
+For local container restarts, ReplicationControllers delegate to an agent on the node,
+for example the [Kubelet](/docs/admin/kubelet/) or Docker.
+-->
+
+<p>除了 Pod 所需的字段外，ReplicationController 中的 pod 模板必须指定适当的标签和适当的重新启动策略。
+对于标签，请确保不与其他控制器重叠。参考 <a href="#pod-selector">pod 选择器</a>。</p>
+
+<p>只允许 <a href="/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy"><code>.spec.template.spec.restartPolicy</code></a> 等于 <code>Always</code>，如果没有指定，这是默认值。</p>
+
+<p>对于本地容器重启，ReplicationController 委托给节点上的代理，
+例如 <a href="/docs/admin/kubelet/">Kubelet</a> 或 Docker。</p>
+
+<!--
+### Labels on the ReplicationController
+
+The ReplicationController can itself have labels (`.metadata.labels`).  Typically, you
+would set these the same as the `.spec.template.metadata.labels`; if `.metadata.labels` is not specified
+then it defaults to  `.spec.template.metadata.labels`.  However, they are allowed to be
+different, and the `.metadata.labels` do not affect the behavior of the ReplicationController.
+-->
+
+<h3 id="replicationcontroller-上的标签">ReplicationController 上的标签</h3>
+
+<p>ReplicationController 本身可以有标签 （<code>.metadata.labels</code>）。
+通常，您可以将这些设置为 <code>.spec.template.metadata.labels</code>；
+如果没有指定 <code>.metadata.labels</code> 那么它默认为 <code>.spec.template.metadata.labels</code>。<br />
+但是，Kubernetes 允许它们是不同的，<code>.metadata.labels</code> 不会影响 ReplicationController 的行为。</p>
+
+<!--
+### Pod Selector
+-->
+
+<h3 id="pod-selector">Pod 选择器</h3>
+
+<!--
+The `.spec.selector` field is a [label selector](/docs/concepts/overview/working-with-objects/labels/#label-selectors). A ReplicationController
+manages all the pods with labels that match the selector. It does not distinguish
+between pods that it created or deleted and pods that another person or process created or
+deleted. This allows the ReplicationController to be replaced without affecting the running pods.
+-->
+
+<p><code>.spec.selector</code> 字段是一个<a href="/docs/concepts/overview/working-with-objects/labels/#label-selectors">标签选择器</a>。
+ReplicationController 管理标签与选择器匹配的所有 Pod。
+它不区分它创建或删除的 Pod 和其他人或进程创建或删除的 Pod。
+这允许在不影响正在运行的 Pod 的情况下替换 ReplicationController。</p>
+
+<!--
+If specified, the `.spec.template.metadata.labels` must be equal to the `.spec.selector`, or it will
+be rejected by the API.  If `.spec.selector` is unspecified, it will be defaulted to
+`.spec.template.metadata.labels`.
+-->
+
+<p>如果指定了 <code>.spec.template.metadata.labels</code>，它必须和 <code>.spec.selector</code> 相同，否则它将被 API 拒绝。
+如果没有指定 <code>.spec.selector</code>，它将默认为 <code>.spec.template.metadata.labels</code>。</p>
+
+<!--
+Also you should not normally create any pods whose labels match this selector, either directly, with
+another ReplicationController, or with another controller such as Job. If you do so, the
+ReplicationController thinks that it created the other pods.  Kubernetes does not stop you
+from doing this.
+
+If you do end up with multiple controllers that have overlapping selectors, you
+will have to manage the deletion yourself (see [below](#working-with-replicationcontrollers)).
+-->
+
+<p>另外，通常不应直接使用另一个 ReplicationController 或另一个控制器（例如 Job）来创建其标签与该选择器匹配的任何 Pod。如果这样做，ReplicationController 会认为它创建了这些 Pod。
+Kubernetes 并没有阻止你这样做。</p>
+
+<p>如果您的确创建了多个控制器并且其选择器之间存在重叠，那么您将不得不自己管理删除操作（参考<a href="#working-with-replicationcontrollers">后文</a>）。</p>
+
+<!--
+### Multiple Replicas
+
+You can specify how many pods should run concurrently by setting `.spec.replicas` to the number
+of pods you would like to have running concurrently.  The number running at any time may be higher
+or lower, such as if the replicas were just increased or decreased, or if a pod is gracefully
+shutdown, and a replacement starts early.
+
+If you do not specify `.spec.replicas`, then it defaults to 1.
+-->
+
+<h3 id="多个副本">多个副本</h3>
+
+<p>你可以通过设置 <code>.spec.replicas</code> 来指定应该同时运行多少个 Pod。
+在任何时候，处于运行状态的 Pod 个数都可能高于或者低于设定值。例如，副本个数刚刚被增加或减少时，或者一个 pod 处于优雅终止过程中而其替代副本已经提前开始创建时。</p>
+
+<p>如果你没有指定 <code>.spec.replicas</code> ，那么它默认是 1。</p>
+
+<!--
+## Working with ReplicationControllers
+-->
+
+<h2 id="working-with-replicationcontrollers">使用 ReplicationController</h2>
+
+<!--
+### Deleting a ReplicationController and its Pods
+
+To delete a ReplicationController and all its pods, use [`kubectl
+delete`](/docs/reference/generated/kubectl/kubectl-commands#delete).  Kubectl will scale the ReplicationController to zero and wait
+for it to delete each pod before deleting the ReplicationController itself.  If this kubectl
+command is interrupted, it can be restarted.
+
+When using the REST API or go client library, you need to do the steps explicitly (scale replicas to
+0, wait for pod deletions, then delete the ReplicationController).
+-->
+
+<h3 id="删除一个-replicationcontroller-以及它的-pod">删除一个 ReplicationController 以及它的 Pod</h3>
+
+<p>要删除一个 ReplicationController 以及它的 Pod，使用 <a href="/docs/reference/generated/kubectl/kubectl-commands#delete"><code>kubectl delete</code></a>。
+kubectl 将 ReplicationController 缩放为 0 并等待以便在删除 ReplicationController 本身之前删除每个 Pod。
+如果这个 kubectl 命令被中断，可以重新启动它。</p>
+
+<p>当使用 REST API 或 go 客户端库时，您需要明确地执行这些步骤（缩放副本为 0、 等待 Pod 删除，之后删除 ReplicationController 资源）。</p>
+
+<!--
+### Deleting just a ReplicationController
+-->
+
+<h3 id="只删除-replicationcontroller">只删除 ReplicationController</h3>
+
+<!--
+You can delete a ReplicationController without affecting any of its pods.
+
+Using kubectl, specify the `--cascade=false` option to [`kubectl delete`](/docs/reference/generated/kubectl/kubectl-commands#delete).
+
+When using the REST API or go client library, simply delete the ReplicationController object.
+-->
+
+<p>你可以删除一个 ReplicationController 而不影响它的任何 pod。</p>
+
+<p>使用 kubectl ，为 <a href="/docs/reference/generated/kubectl/kubectl-commands#delete"><code>kubectl delete</code></a> 指定 <code>--cascade=false</code> 选项。</p>
+
+<p>当使用 REST API 或 go 客户端库时， 只需删除 ReplicationController 对象。</p>
+
+<!--
+Once the original is deleted, you can create a new ReplicationController to replace it.  As long
+as the old and new `.spec.selector` are the same, then the new one will adopt the old pods.
+However, it will not make any effort to make existing pods match a new, different pod template.
+To update pods to a new spec in a controlled way, use a [rolling update](#rolling-updates).
+-->
+
+<p>一旦原始对象被删除，你可以创建一个新的 ReplicationController 来替换它。
+只要新的和旧的 <code>.spec.selector</code> 相同，那么新的控制器将领养旧的 Pod。
+但是，它不会做出任何努力使现有的 Pod 匹配新的、不同的 Pod 模板。
+如果希望以受控方式更新 Pod 以使用新的 spec，请执行<a href="#rolling-updates">滚动更新</a>操作。</p>
+
+<!--
+### Isolating pods from a ReplicationController
+
+Pods may be removed from a ReplicationController's target set by changing their labels. This technique may be used to remove pods from service for debugging, data recovery, etc. Pods that are removed in this way will be replaced automatically (assuming that the number of replicas is not also changed).
+-->
+
+<h3 id="从-replicationcontroller-中隔离-pod">从 ReplicationController 中隔离 pod</h3>
+
+<p>通过更改 Pod 的标签，可以从 ReplicationController 的目标中删除 pod。
+此技术可用于从服务中删除 pod 以进行调试、数据恢复等。以这种方式删除的 pod 将自动替换（假设复制副本的数量也没有更改）。</p>
+
+<!--
+## Common usage patterns
+-->
+
+<h2 id="常见的使用模式">常见的使用模式</h2>
+
+<!--
+### Rescheduling
+
+As mentioned above, whether you have 1 pod you want to keep running, or 1000, a ReplicationController will ensure that the specified number of pods exists, even in the event of node failure or pod termination (for example, due to an action by another control agent).
+-->
+
+<h3 id="重新调度">重新调度</h3>
+
+<p>如上所述，无论您想要继续运行 1 个 pod 还是 1000 个 Pod，一个 ReplicationController 都将确保存在指定数量的 pod，即使在节点故障或 pod 终止(例如，由于另一个控制代理的操作)的情况下也是如此。
+&lt;!&ndash;</p>
+
+<h3 id="scaling">Scaling</h3>
+
+<p>The ReplicationController makes it easy to scale the number of replicas up or down, either manually or by an auto-scaling control agent, by simply updating the <code>replicas</code> field.
+&ndash;&gt;</p>
+
+<h3 id="扩缩容">扩缩容</h3>
+
+<p>通过简单地更新 <code>replicas</code> 字段，ReplicationController 可以方便地横向扩容或缩容副本的数量，或手动或通过自动缩放控制代理。</p>
+
+<!--
+### Rolling updates
+-->
+
+<h3 id="rolling-updates">滚动更新</h3>
+
+<!--
+The ReplicationController is designed to facilitate rolling updates to a service by replacing pods one-by-one.
+
+As explained in [#1353](http://issue.k8s.io/1353), the recommended approach is to create a new ReplicationController with 1 replica, scale the new (+1) and old (-1) controllers one by one, and then delete the old controller after it reaches 0 replicas. This predictably updates the set of pods regardless of unexpected failures.
+-->
+
+<p>ReplicationController 的设计目的是通过逐个替换 pod 以方便滚动更新服务。</p>
+
+<p>如 <a href="http://issue.k8s.io/1353" target="_blank">#1353</a> PR 中所述，建议的方法是使用 1 个副本创建一个新的 ReplicationController，逐个缩放新的（+1）和旧的（-1）控制器，然后在旧的控制器达到 0 个副本后将其删除。这一方法能够实现可控的 Pod 集合更新，即使存在意外失效的状况。</p>
+
+<!--
+Ideally, the rolling update controller would take application readiness into account, and would ensure that a sufficient number of pods were productively serving at any given time.
+
+The two ReplicationControllers would need to create pods with at least one differentiating label, such as the image tag of the primary container of the pod, since it is typically image updates that motivate rolling updates.
+
+Rolling update is implemented in the client tool
+[`kubectl rolling-update`](/docs/reference/generated/kubectl/kubectl-commands#rolling-update). Visit [`kubectl rolling-update` task](/docs/tasks/run-application/rolling-update-replication-controller/) for more concrete examples.
+-->
+
+<p>理想情况下，滚动更新控制器将考虑应用程序的就绪情况，并确保在任何给定时间都有足够数量的 Pod 有效地提供服务。</p>
+
+<p>这两个 ReplicationController 将需要创建至少具有一个不同标签的 pod，比如 pod 主要容器的镜像标签，因为通常是镜像更新触发滚动更新。</p>
+
+<p>滚动更新是在客户端工具 <a href="/docs/reference/generated/kubectl/kubectl-commands#rolling-update"><code>kubectl rolling-update</code></a> 中实现的。 访问 <a href="/docs/tasks/run-application/rolling-update-replication-controller/"><code>kubectl rolling-update</code> 任务</a>以获得更多的具体示例。</p>
+
+<!--
+### Multiple release tracks
+-->
+
+<h3 id="多个版本跟踪">多个版本跟踪</h3>
+
+<!--
+In addition to running multiple releases of an application while a rolling update is in progress, it's common to run multiple releases for an extended period of time, or even continuously, using multiple release tracks. The tracks would be differentiated by labels.
+
+For instance, a service might target all pods with `tier in (frontend), environment in (prod)`.  Now say you have 10 replicated pods that make up this tier.  But you want to be able to 'canary' a new version of this component.  You could set up a ReplicationController with `replicas` set to 9 for the bulk of the replicas, with labels `tier=frontend, environment=prod, track=stable`, and another ReplicationController with `replicas` set to 1 for the canary, with labels `tier=frontend, environment=prod, track=canary`.  Now the service is covering both the canary and non-canary pods.  But you can mess with the ReplicationControllers separately to test things out, monitor the results, etc.
+-->
+
+<p>除了在滚动更新过程中运行应用程序的多个版本之外，通常还会使用多个版本跟踪来长时间，甚至持续运行多个版本。这些跟踪将根据标签加以区分。</p>
+
+<p>例如，一个服务可能把具有 <code>tier in (frontend), environment in (prod)</code> 的所有 pod 作为目标。
+现在假设您有 10 个副本的 pod 组成了这个层。但是你希望能够 <code>canary</code> （<code>金丝雀</code>）发布这个组件的新版本。
+您可以为大部分副本设置一个 ReplicationController，其中 <code>replicas</code> 设置为 9，标签为 <code>tier=frontend, environment=prod, track=stable</code> 而为 <code>canary</code> 设置另一个 ReplicationController，其中 <code>replicas</code> 设置为 1，标签为 <code>tier=frontend, environment=prod, track=canary</code>。
+现在这个服务覆盖了 <code>canary</code> 和非 <code>canary</code> Pod。但您可以单独处理 ReplicationController，以测试、监控结果等。</p>
+
+<!--
+### Using ReplicationControllers with Services
+
+Multiple ReplicationControllers can sit behind a single service, so that, for example, some traffic
+goes to the old version, and some goes to the new version.
+
+A ReplicationController will never terminate on its own, but it isn't expected to be as long-lived as services. Services may be composed of pods controlled by multiple ReplicationControllers, and it is expected that many ReplicationControllers may be created and destroyed over the lifetime of a service (for instance, to perform an update of pods that run the service). Both services themselves and their clients should remain oblivious to the ReplicationControllers that maintain the pods of the services.
+-->
+
+<h3 id="和服务一起使用-replicationcontroller">和服务一起使用 ReplicationController</h3>
+
+<p>多个 ReplicationController 可以位于一个服务的后面，例如，一部分流量流向旧版本，一部分流量流向新版本。</p>
+
+<p>一个 ReplicationController 永远不会自行终止，但它不会像服务那样长时间存活。
+服务可以由多个 ReplicationController 控制的 Pod 组成，并且在服务的生命周期内（例如，为了执行 pod 更新而运行服务），可以创建和销毁许多 ReplicationController。
+服务本身和它们的客户端都应该忽略负责维护服务 Pod 的 ReplicationController 的存在。</p>
+
+<!--
+## Writing programs for Replication
+
+Pods created by a ReplicationController are intended to be fungible and semantically identical, though their configurations may become heterogeneous over time. This is an obvious fit for replicated stateless servers, but ReplicationControllers can also be used to maintain availability of master-elected, sharded, and worker-pool applications. Such applications should use dynamic work assignment mechanisms, such as the [RabbitMQ work queues](https://www.rabbitmq.com/tutorials/tutorial-two-python.html), as opposed to static/one-time customization of the configuration of each pod, which is considered an anti-pattern. Any pod customization performed, such as vertical auto-sizing of resources (for example, cpu or memory), should be performed by another online controller process, not unlike the ReplicationController itself.
+-->
+
+<h2 id="编写多副本的应用">编写多副本的应用</h2>
+
+<p>由 ReplicationController 创建的 Pod 是可替换的，语义上是相同的，尽管随着时间的推移，它们的配置可能会变得异构。
+这显然适合于多副本的无状态服务器，但是 ReplicationController 也可以用于维护主选、分片和工作池应用程序的可用性。
+这样的应用程序应该使用动态的工作分配机制，例如 <a href="https://www.rabbitmq.com/tutorials/tutorial-two-python.html" target="_blank">RabbitMQ 工作队列</a>，而不是静态的或者一次性定制每个 pod 的配置，这被认为是一种反模式。
+执行的任何 pod 定制，例如资源的垂直自动调整大小(例如，cpu 或内存)，都应该由另一个在线控制器进程执行，这与 ReplicationController 本身没什么不同。</p>
+
+<!--
+## Responsibilities of the ReplicationController
+-->
+
+<h2 id="replicationcontroller-的职责">ReplicationController 的职责</h2>
+
+<!--
+The ReplicationController simply ensures that the desired number of pods matches its label selector and are operational. Currently, only terminated pods are excluded from its count. In the future, [readiness](http://issue.k8s.io/620) and other information available from the system may be taken into account, we may add more controls over the replacement policy, and we plan to emit events that could be used by external clients to implement arbitrarily sophisticated replacement and/or scale-down policies.
+-->
+
+<p>ReplicationController 只需确保所需的 pod 数量与其标签选择器匹配，并且是可操作的。
+目前，它的计数中只排除终止的 pod。
+未来，可能会考虑系统提供的<a href="http://issue.k8s.io/620" target="_blank">就绪状态</a>和其他信息，我们可能会对替换策略添加更多控制，我们计划发出事件，这些事件可以被外部客户端用来实现任意复杂的替换和/或缩减策略。</p>
+
+<!--
+The ReplicationController is forever constrained to this narrow responsibility. It itself will not perform readiness nor liveness probes. Rather than performing auto-scaling, it is intended to be controlled by an external auto-scaler (as discussed in [#492](http://issue.k8s.io/492)), which would change its `replicas` field. We will not add scheduling policies (for example, [spreading](http://issue.k8s.io/367#issuecomment-48428019)) to the ReplicationController. Nor should it verify that the pods controlled match the currently specified template, as that would obstruct auto-sizing and other automated processes. Similarly, completion deadlines, ordering dependencies, configuration expansion, and other features belong elsewhere. We even plan to factor out the mechanism for bulk pod creation ([#170](http://issue.k8s.io/170)).
+-->
+
+<p>ReplicationController 永远被限制在这个狭隘的职责范围内。
+它本身既不执行就绪态探测，也不执行活跃性探测。
+它不负责执行自动缩放，而是由外部自动缩放器控制（如 <a href="http://issue.k8s.io/492" target="_blank">#492</a> 中所述），后者负责更改其 <code>replicas</code> 字段值。
+我们不会向 ReplicationController 添加调度策略(例如，<a href="http://issue.k8s.io/367#issuecomment-48428019" target="_blank">spreading</a>)。
+它也不应该验证所控制的 pod 是否与当前指定的模板匹配，因为这会阻碍自动调整大小和其他自动化过程。
+类似地，完成期限、整理依赖关系、配置扩展和其他特性也属于其他地方。
+我们甚至计划考虑批量创建 pod 的机制（查阅 <a href="http://issue.k8s.io/170" target="_blank">#170</a>）。</p>
+
+<!--
+The ReplicationController is intended to be a composable building-block primitive. We expect higher-level APIs and/or tools to be built on top of it and other complementary primitives for user convenience in the future. The "macro" operations currently supported by kubectl (run, scale, rolling-update) are proof-of-concept examples of this. For instance, we could imagine something like [Asgard](http://techblog.netflix.com/2012/06/asgard-web-based-cloud-management-and.html) managing ReplicationControllers, auto-scalers, services, scheduling policies, canaries, etc.
+-->
+
+<p>ReplicationController 旨在成为可组合的构建基元。
+我们希望在它和其他补充原语的基础上构建更高级别的 API 或者工具，以便于将来的用户使用。
+kubectl 目前支持的 &ldquo;macro&rdquo; 操作（运行、缩放、滚动更新）就是这方面的概念示例。
+例如，我们可以想象类似于 <a href="http://techblog.netflix.com/2012/06/asgaard-web-based-cloud-management-and.html" target="_blank">Asgard</a> 的东西管理 ReplicationController、自动定标器、服务、调度策略、 canary 等。</p>
+
+<!--
+## API Object
+
+Replication controller is a top-level resource in the Kubernetes REST API. More details about the
+API object can be found at:
+[ReplicationController API object](/docs/reference/generated/kubernetes-api/v1.17/#replicationcontroller-v1-core).
+-->
+
+<h2 id="api-对象">API 对象</h2>
+
+<p>在 Kubernetes REST API 中 Replication controller 是顶级资源。
+更多关于 API 对象的详细信息可以在
+<a href="/docs/reference/generated/kubernetes-api/v1.17/#replicationcontroller-v1-core">ReplicationController API 对象</a>找到。</p>
+
+<!--
+## Alternatives to ReplicationController
+-->
+
+<h2 id="replicationcontroller-的替代方案">ReplicationController 的替代方案</h2>
+
+<!--
+### ReplicaSet
+
+[`ReplicaSet`](/docs/concepts/workloads/controllers/replicaset/) is the next-generation ReplicationController that supports the new [set-based label selector](/docs/concepts/overview/working-with-objects/labels/#set-based-requirement).
+It’s mainly used by [`Deployment`](/docs/concepts/workloads/controllers/deployment/) as a mechanism to orchestrate pod creation, deletion and updates.
+Note that we recommend using Deployments instead of directly using Replica Sets, unless you require custom update orchestration or don’t require updates at all.
+-->
+
+<h3 id="replicaset">ReplicaSet</h3>
+
+<p><a href="/docs/concepts/workloads/controllers/replicaset/"><code>ReplicaSet</code></a> 是下一代 ReplicationController ，支持新的<a href="/docs/concepts/overview/working-with-objects/labels/#set-based-requirement">基于集合的标签选择器</a>。
+它主要被 <a href="/docs/concepts/workloads/controllers/deployment/"><code>Deployment</code></a> 用来作为一种编排 pod 创建、删除及更新的机制。
+请注意，我们推荐使用 Deployment 而不是直接使用 ReplicaSet，除非您需要自定义更新编排或根本不需要更新。</p>
+
+<!--
+### Deployment (Recommended)
+
+[`Deployment`](/docs/concepts/workloads/controllers/deployment/) is a higher-level API object that updates its underlying Replica Sets and their Pods
+in a similar fashion as `kubectl rolling-update`. Deployments are recommended if you want this rolling update functionality,
+because unlike `kubectl rolling-update`, they are declarative, server-side, and have additional features.
+-->
+
+<h3 id="deployment-推荐">Deployment （推荐）</h3>
+
+<p><a href="/docs/concepts/workloads/controllers/deployment/"><code>Deployment</code></a> 是一种更高级别的 API 对象，它以类似于 <code>kubectl rolling-update</code> 的方式更新其底层 ReplicaSet 及其 Pod。
+如果您想要这种滚动更新功能，那么推荐使用 Deployment，因为与 <code>kubectl rolling-update</code> 不同，它们是声明式的、服务端的，并且具有其它特性。</p>
+
+<!--
+### Bare Pods
+
+Unlike in the case where a user directly created pods, a ReplicationController replaces pods that are deleted or terminated for any reason, such as in the case of node failure or disruptive node maintenance, such as a kernel upgrade. For this reason, we recommend that you use a ReplicationController even if your application requires only a single pod. Think of it similarly to a process supervisor, only it supervises multiple pods across multiple nodes instead of individual processes on a single node.  A ReplicationController delegates local container restarts to some agent on the node (for example, Kubelet or Docker).
+-->
+
+<h3 id="裸-pod">裸 Pod</h3>
+
+<p>与用户直接创建 pod 的情况不同，ReplicationController 能够替换因某些原因被删除或被终止的 pod ，例如在节点故障或中断节点维护的情况下，例如内核升级。
+因此，我们建议您使用 ReplicationController，即使您的应用程序只需要一个 pod。
+可以将其看作类似于进程管理器，它只管理跨多个节点的多个 pod ，而不是单个节点上的单个进程。
+ReplicationController 将本地容器重启委托给节点上的某个代理(例如，Kubelet 或 Docker)。</p>
+
+<!--
+### Job
+
+Use a [`Job`](/docs/concepts/jobs/run-to-completion-finite-workloads/) instead of a ReplicationController for pods that are expected to terminate on their own
+(that is, batch jobs).
+-->
+
+<h3 id="job">Job</h3>
+
+<p>对于预期会自行终止的 pod (即批处理任务)，使用 <a href="/docs/concepts/jobs/run-to-completion-finite-workloads/"><code>Job</code></a> 而不是 ReplicationController。</p>
+
+<!--
+### DaemonSet
+
+Use a [`DaemonSet`](/docs/concepts/workloads/controllers/daemonset/) instead of a ReplicationController for pods that provide a
+machine-level function, such as machine monitoring or machine logging.  These pods have a lifetime that is tied
+to a machine lifetime: the pod needs to be running on the machine before other pods start, and are
+safe to terminate when the machine is otherwise ready to be rebooted/shutdown.
+-->
+
+<h3 id="daemonset">DaemonSet</h3>
+
+<p>对于提供机器级功能（例如机器监控或机器日志记录）的 pod ，使用 <a href="/docs/concepts/workloads/controllers/daemonset/"><code>DaemonSet</code></a> 而不是 ReplicationController。
+这些 pod 的生命期与机器的生命期绑定：它们需要在其他 pod 启动之前在机器上运行，并且在机器准备重新启动或者关闭时安全地终止。</p>
+
+<!--
+## For more information
+
+Read [Run Stateless AP Replication Controller](/docs/tutorials/stateless-application/run-stateless-ap-replication-controller/).
+-->
+
+<h2 id="更多信息">更多信息</h2>
+
+<p>请阅读<a href="/docs/tutorials/stateless-application/run-stateless-ap-replication-controller/">运行无状态的 Replication Controller</a>。</p>
+
+
+
+<!--
+reviewers:
+- bprashanth
+- janetkuo
+title: ReplicationController
+feature:
+  title: Self-healing
+  anchor: How a ReplicationController Works
+  description: >
+    Restarts containers that fail, replaces and reschedules containers when nodes die, kills containers that don't respond to your user-defined health check, and doesn't advertise them to clients until they are ready to serve.
+
+content_template: templates/concept
+weight: 20
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/workloads/controllers/replicationcontroller.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/concepts\/workloads\/controllers\/replicationcontroller\/",
+    "title" : "ReplicationController",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/concepts\/workloads\/controllers\/replicationcontroller\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/concepts/workloads/controllers/replicationcontroller.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 February 02, 2020 at 7:45 PM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/faaef01df452b0fa31a1e857983958b660f4b148/">sync zh-trans content/zh/docs/concepts/workloads/controllers/ttlafterfinished.md (#18867)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/workloads/controllers/replicationcontroller.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

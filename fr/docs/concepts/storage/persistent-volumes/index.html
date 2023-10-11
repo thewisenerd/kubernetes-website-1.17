@@ -1,0 +1,2723 @@
+<!DOCTYPE html>
+<html id="docs" lang="fr" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Volumes persistants - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/fr/docs/concepts/storage/persistent-volumes/">
+<meta property="og:title" content="Volumes persistants">
+<meta name="twitter:title" content="Volumes persistants">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/fr/" class="logo" title="Solution professionnelle d’orchestration de conteneurs - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/fr/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/fr/blog/">Blog</a></li>
+            
+            
+            
+            <li><a href="/fr/partners/">Partenaires</a></li>
+            
+            <li><a href="/fr/community/">Communauté</a></li>
+            
+            <li><a href="/fr/case-studies/">Études de cas</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    Français <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/storage/persistent-volumes/">English</a></li>
+                
+                    <li><a href="/id/docs/concepts/storage/persistent-volumes/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/fr/docs/concepts/storage/persistent-volumes/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/fr/docs/concepts/storage/persistent-volumes/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/fr/docs/concepts/storage/persistent-volumes/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/fr/docs/concepts/storage/persistent-volumes/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/fr/docs/concepts/storage/persistent-volumes/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/fr/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Apprendre les bases de Kubernetes</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/fr/docs/tutorials/hello-minikube/">Démarrer</a></h3>
+           <p>Prêt à mettre les mains dans le cambouis ? Créez un cluster Kubernetes simple qui exécute "Hello World" avec Node.js.</p>>.
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/fr/docs/home/">Documentation</a></h3>
+           <p>Apprenez à utiliser Kubernetes à l'aide d'une documentation conceptuelle, didactique et de référence. Vous pouvez même <a href="/editdocs/" data-auto-burger-exclude>aider en contribuant à la documentation</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/fr/blog/">Blog</a></h3>
+           <p>Lisez les dernières nouvelles à propos de Kubernetes et des conteneurs en général. Obtenez les derniers tutoriels techniques.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Souhaitez vous contribuer au code de Kubernetes ?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>Voir sur GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explorez la communauté</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendrier</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>Concepts</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/fr/docs/home/">ACCUEIL</a></li>
+		
+		
+		<li><a href="/fr/docs/setup/">INSTALLATION</a></li>
+		
+		
+		<li><a href="/fr/docs/concepts/" class="YAH">CONCEPTS</a></li>
+		
+		
+		<li><a href="/fr/docs/tasks/">TÂCHES</a></li>
+		
+		
+		<li><a href="/fr/docs/tutorials/">TUTORIELS</a></li>
+		
+		
+		<li><a href="/fr/docs/reference/">RÉFÉRENCE</a></li>
+		
+		
+		<li><a href="/fr/docs/contribute/">CONTRIBUER</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Recherche" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation non maintenue. Vous consultez une version statique. Pour une documentation à jour, veuillez consulter: 
+	 <a href="https://kubernetes.io/docs/home/">dernière version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Concepts" href="/fr/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Vue d&#39;ensemble">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Qu&#39;est-ce-que Kubernetes ?" href="/fr/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Composants de Kubernetes" href="/fr/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="The Kubernetes API <small>(EN)</small>" href="/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Utilisation des objets Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Understanding Kubernetes Objects <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes Object Management <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Object Names and IDs <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Namespaces <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Labels and Selectors <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Annotations <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Field Selectors <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Recommended Labels <small>(EN)</small>" href="/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Architecture de Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Noeuds" href="/fr/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Communication Master-Node" href="/fr/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Concepts sous-jacents au Cloud Controller Manager" href="/fr/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Controllers <small>(EN)</small>" href="/docs/concepts/architecture/controller/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Les conteneurs">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Images" href="/fr/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Classe d&#39;exécution (Runtime Class)" href="/fr/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Container Environment <small>(EN)</small>" href="/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Les variables d’environnement du conteneur" href="/fr/docs/concepts/containers/container-environment-variables/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Hooks de cycle de vie de conteneurs" href="/fr/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Workloads">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Pods">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Aperçu du Pod" href="/fr/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Pods" href="/fr/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Cycle de vie d&#39;un Pod" href="/fr/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Init Containers" href="/fr/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Preset <small>(EN)</small>" href="/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Topology Spread Constraints <small>(EN)</small>" href="/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Disruptions <small>(EN)</small>" href="/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ephemeral Containers <small>(EN)</small>" href="/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Contrôleurs">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="ReplicaSet" href="/fr/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="ReplicationController <small>(EN)</small>" href="/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Déploiements" href="/fr/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="StatefulSets <small>(EN)</small>" href="/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="DaemonSet <small>(EN)</small>" href="/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Garbage Collection <small>(EN)</small>" href="/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="TTL Controller for Finished Resources <small>(EN)</small>" href="/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Jobs - Run to Completion <small>(EN)</small>" href="/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="CronJob <small>(EN)</small>" href="/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Services, Equilibreur de charge, et Réseau">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="EndpointSlices <small>(EN)</small>" href="/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Service" href="/fr/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Topology <small>(EN)</small>" href="/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DNS pour les services et les pods" href="/fr/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Connecting Applications with Services <small>(EN)</small>" href="/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Ingress" href="/fr/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Ingress Controllers <small>(EN)</small>" href="/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Network Policies <small>(EN)</small>" href="/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Adding entries to Pod /etc/hosts with HostAliases <small>(EN)</small>" href="/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="IPv4/IPv6 dual-stack <small>(EN)</small>" href="/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Stockage">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Volumes" href="/fr/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Volume Snapshots <small>(EN)</small>" href="/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Volumes persistants" href="/fr/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="CSI Volume Cloning <small>(EN)</small>" href="/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Storage Classes <small>(EN)</small>" href="/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Volume Snapshot Classes <small>(EN)</small>" href="/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Dynamic Volume Provisioning <small>(EN)</small>" href="/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Node-specific Volume Limits <small>(EN)</small>" href="/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Configuration">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuration Best Practices <small>(EN)</small>" href="/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Bin Packing for Extended Resources <small>(EN)</small>" href="/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Compute Resources for Containers <small>(EN)</small>" href="/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Overhead <small>(EN)</small>" href="/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Assigning Pods to Nodes <small>(EN)</small>" href="/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Taints and Tolerations <small>(EN)</small>" href="/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Secrets" href="/fr/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Organizing Cluster Access Using kubeconfig Files <small>(EN)</small>" href="/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduling Framework <small>(EN)</small>" href="/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Sécurité">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Overview of Cloud Native Security <small>(EN)</small>" href="/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Politiques">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Quotas <small>(EN)</small>" href="/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Security Policies <small>(EN)</small>" href="/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Scheduling">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes Scheduler <small>(EN)</small>" href="/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduler Performance Tuning <small>(EN)</small>" href="/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Administration d&#39;un cluster">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Vue d&#39;ensemble de l&#39;administration d&#39;un cluster" href="/fr/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Certificats" href="/fr/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloud Providers <small>(EN)</small>" href="/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Resources <small>(EN)</small>" href="/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Architecture de Journalisation d&#39;évènements (logging)" href="/fr/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Metrics For The Kubernetes Control Plane <small>(EN)</small>" href="/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring kubelet Garbage Collection <small>(EN)</small>" href="/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Proxies in Kubernetes <small>(EN)</small>" href="/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Addons <small>(EN)</small>" href="/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Extensions Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Extending your Kubernetes Cluster <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Extensions de l&#39;API Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Custom Resources <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Extending the Kubernetes API with the aggregation layer <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Extensions compute, stockage et réseau">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Network Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Operator pattern <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Catalog <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/fr/docs/concepts/storage/persistent-volumes.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Volumes persistants</h1>
+
+
+
+<p>Ce document décrit l&rsquo;état actuel de <code>PersistentVolumes</code> dans Kubernetes.
+Une connaissance des <a href="/fr/docs/concepts/storage/volumes/">volumes</a> est suggérée.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#introduction">Introduction</a></li>
+
+
+
+
+<li><a href="#cycle-de-vie-d-un-pv-et-d-un-pvc">Cycle de vie d’un PV et d’un PVC</a></li>
+
+
+
+
+<li><a href="#types-de-volumes-persistants">Types de volumes persistants</a></li>
+
+
+
+
+<li><a href="#volumes-persistants">Volumes persistants</a></li>
+
+
+
+
+<li><a href="#persistentvolumeclaims">PersistentVolumeClaims</a></li>
+
+
+
+
+<li><a href="#pvc-sous-forme-de-volumes">PVC sous forme de volumes</a></li>
+
+
+
+
+<li><a href="#prise-en-charge-du-volume-de-bloc-brut">Prise en charge du volume de bloc brut</a></li>
+
+
+
+
+<li><a href="#snapshot-et-restauration-de-volumes">Snapshot et restauration de volumes</a></li>
+
+
+
+
+<li><a href="#clonage-de-volume">Clonage de volume</a></li>
+
+
+
+
+<li><a href="#%c3%a9criture-d-une-configuration-portable">Écriture d’une configuration portable</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+<h2 id="introduction">Introduction</h2>
+
+<p>La gestion du stockage est un problème distinct de la gestion des instances de calcul.
+Le sous-système <code>PersistentVolume</code> fournit une API pour les utilisateurs et les administrateurs qui abstrait les détails de la façon dont le stockage est fourni et de la façon dont il est utilisé.
+Pour ce faire, nous introduisons deux nouvelles ressources API: <code>PersistentVolume</code> et <code>PersistentVolumeClaim</code>.</p>
+
+<p>Un <code>PersistentVolume</code> (PV) est un élément de stockage dans le cluster qui a été provisionné par un administrateur ou provisionné dynamiquement à l&rsquo;aide de <a href="/docs/concepts/storage/storage-classes/">Storage Classes</a>.
+Il s&rsquo;agit d&rsquo;une ressource dans le cluster, tout comme un nœud est une ressource de cluster.
+Les PV sont des plugins de volume comme Volumes, mais ont un cycle de vie indépendant de tout pod individuel qui utilise le PV.
+Cet objet API capture les détails de l&rsquo;implémentation du stockage, que ce soit NFS, iSCSI ou un système de stockage spécifique au fournisseur de cloud.</p>
+
+<p>Un <code>PersistentVolumeClaim</code> (PVC) est une demande de stockage par un utilisateur.
+Il est similaire à un Pod.
+Les pods consomment des ressources de noeud et les PVC consomment des ressources PV.
+Les pods peuvent demander des niveaux spécifiques de ressources (CPU et mémoire).
+Les PVC peuvent demander une taille et des modes d&rsquo;accès spécifiques (par exemple, ils peuvent être montés une fois en lecture/écriture ou plusieurs fois en lecture seule).</p>
+
+<p>Alors que les <code>PersistentVolumeClaims</code> permettent à un utilisateur de consommer des ressources de stockage abstraites, il est courant que les utilisateurs aient besoin de <code>PersistentVolumes</code> avec des propriétés et des performances variables pour différents problèmes.
+Les administrateurs de cluster doivent être en mesure d&rsquo;offrir une variété de <code>PersistentVolumes</code> qui diffèrent de bien des façons plus que la taille et les modes d&rsquo;accès, sans exposer les utilisateurs aux détails de la façon dont ces volumes sont mis en œuvre.
+Pour ces besoins, il existe la ressource <code>StorageClass</code>.</p>
+
+<p>Voir la <a href="/docs/tasks/configure-pod-container/configure-persistent-volume-storage/">procédure détaillée avec des exemples</a>.</p>
+
+<h2 id="cycle-de-vie-d-un-pv-et-d-un-pvc">Cycle de vie d&rsquo;un PV et d&rsquo;un PVC</h2>
+
+<p>Les PV sont des ressources du cluster.
+Les PVC sont des demandes pour ces ressources et agissent également comme des contrôles de réclamation pour la ressource.
+L&rsquo;interaction entre les PV et les PVC suit ce cycle de vie:</p>
+
+<h3 id="provisionnement">Provisionnement</h3>
+
+<p>Les PV peuvent être provisionnés de deux manières: statiquement ou dynamiquement.</p>
+
+<h4 id="provisionnement-statique">Provisionnement statique</h4>
+
+<p>Un administrateur de cluster crée un certain nombre de PV.
+Ils contiennent les détails du stockage réel, qui est disponible pour une utilisation par les utilisateurs du cluster.
+Ils existent dans l&rsquo;API Kubernetes et sont disponibles pour la consommation.</p>
+
+<h4 id="provisionnement-dynamique">Provisionnement dynamique</h4>
+
+<p>Lorsqu&rsquo;aucun des PV statiques créés par l&rsquo;administrateur ne correspond au <code>PersistentVolumeClaim</code> d&rsquo;un utilisateur, le cluster peut essayer de provisionner dynamiquement un volume spécialement pour le PVC.
+Ce provisionnement est basé sur les <code>StorageClasses</code>: le PVC doit demander une <a href="/docs/concepts/storage/storage-classes/">storage class</a> et l&rsquo;administrateur doit avoir créé et configuré cette classe pour que l&rsquo;approvisionnement dynamique se produise.
+Les PVC qui demandent la classe <code>&quot;&quot;</code> désactive le provisionnement dynamique pour eux-mêmes.</p>
+
+<p>Pour activer le provisionnement de stockage dynamique basé sur la classe de stockage, l&rsquo;administrateur de cluster doit activer le <code>DefaultStorageClass</code> dans l&rsquo;<a href="/docs/reference/access-authn-authz/admission-controllers/#defaultstorageclass">contrôleur d&rsquo;admission</a> sur le serveur API.
+Cela peut être fait, par exemple, en veillant à ce que <code>DefaultStorageClass</code> figure parmi la liste de valeurs séparées par des virgules pour l&rsquo;option <code>--enable-admission-plugins</code> du composant serveur API.
+Pour plus d&rsquo;informations sur les options de ligne de commande du serveur API, consultez la documentation <a href="/docs/admin/kube-apiserver/">kube-apiserver</a>.</p>
+
+<h3 id="liaison">Liaison</h3>
+
+<p>Un utilisateur crée, ou dans le cas d&rsquo;un provisionnement dynamique, a déjà créé, un <code>PersistentVolumeClaim</code> avec une quantité spécifique de stockage demandée et avec certains modes d&rsquo;accès.
+Une boucle de contrôle dans le maître surveille les nouveaux PVC, trouve un PV correspondant (si possible) et les lie ensemble.
+Si un PV a été dynamiquement provisionné pour un nouveau PVC, la boucle liera toujours ce PV au PVC.
+Sinon, l&rsquo;utilisateur obtiendra toujours au moins ce qu&rsquo;il a demandé, mais le volume peut être supérieur à ce qui a été demandé.
+Une fois liées, les liaisons <code>PersistentVolumeClaim</code> sont exclusives, quelle que soit la façon dont elles ont été liées.
+Une liaison PVC-PV est une relation 1-à-1.</p>
+
+<p>Les PVC resteront non liés indéfiniment s&rsquo;il n&rsquo;existe pas de volume correspondant.
+Le PVC sera lié à mesure que les volumes correspondants deviendront disponibles.
+Par exemple, un cluster provisionné avec de nombreux PV 50Gi ne correspondrait pas à un PVC demandant 100Gi.
+Le PVC peut être lié lorsqu&rsquo;un PV 100Gi est ajouté au cluster.</p>
+
+<h3 id="utilisation">Utilisation</h3>
+
+<p>Les Pods utilisent les PVC comme des volumes.
+Le cluster inspecte le PVC pour trouver le volume lié et monte ce volume pour un Pod.
+Pour les volumes qui prennent en charge plusieurs modes d&rsquo;accès, l&rsquo;utilisateur spécifie le mode souhaité lors de l&rsquo;utilisation de leur PVC comme volume dans un Pod.</p>
+
+<p>Une fois qu&rsquo;un utilisateur a un PVC et que ce PVC est lié, le PV lié appartient à l&rsquo;utilisateur aussi longtemps qu&rsquo;il en a besoin.
+Les utilisateurs planifient des pods et accèdent à leurs PV revendiqués en incluant un <code>persistentVolumeClaim</code> dans le bloc de volumes de leur Pod <a href="#claims-as-volumes">Voir ci-dessous pour les détails de la syntaxe</a>.</p>
+
+<h3 id="protection-de-l-objet-de-stockage-en-cours-d-utilisation">Protection de l&rsquo;objet de stockage en cours d&rsquo;utilisation</h3>
+
+<p>Le but de la fonction de protection des objets de stockage utilisés est de garantir que les revendications de volume persistantes (PVC) en cours d&rsquo;utilisation par un Pod et les volumes persistants (PV) liés aux PVC ne sont pas supprimées du système, car cela peut entraîner des pertes de données.</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Le PVC est utilisé activement par un pod lorsqu&rsquo;il existe un objet Pod qui utilise le PVC.</div>
+</blockquote>
+
+<p>Si un utilisateur supprime un PVC en cours d&rsquo;utilisation par un pod, le PVC n&rsquo;est pas supprimé immédiatement.
+L&rsquo;élimination du PVC est différée jusqu&rsquo;à ce que le PVC ne soit plus activement utilisé par les pods.
+De plus, si un administrateur supprime un PV lié à un PVC, le PV n&rsquo;est pas supprimé immédiatement.
+L&rsquo;élimination du PV est différée jusqu&rsquo;à ce que le PV ne soit plus lié à un PVC.</p>
+
+<p>Vous pouvez voir qu&rsquo;un PVC est protégé lorsque son état est <code>Terminating</code> et la liste <code>Finalizers</code> inclus <code>kubernetes.io/pvc-protection</code>:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">kubectl describe pvc hostpath
+Name:          hostpath
+Namespace:     default
+StorageClass:  example-hostpath
+Status:        Terminating
+Volume:
+Labels:        &lt;none&gt;
+Annotations:   volume.beta.kubernetes.io/storage-class=example-hostpath
+               volume.beta.kubernetes.io/storage-provisioner=example.com/hostpath
+Finalizers:    [kubernetes.io/pvc-protection]
+...</code></pre></div>
+<p>Vous pouvez voir qu&rsquo;un PV est protégé lorsque son état est <code>Terminating</code> et la liste <code>Finalizers</code> inclus <code>kubernetes.io/pv-protection</code> aussi:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">kubectl describe pv task-pv-volume
+Name:            task-pv-volume
+Labels:          type=local
+Annotations:     &lt;none&gt;
+Finalizers:      [kubernetes.io/pv-protection]
+StorageClass:    standard
+Status:          Available
+Claim:
+Reclaim Policy:  Delete
+Access Modes:    RWO
+Capacity:        1Gi
+Message:
+Source:
+    Type:          HostPath (bare host directory volume)
+    Path:          /tmp/data
+    HostPathType:
+Events:            &lt;none&gt;</code></pre></div>
+<h3 id="récupération-des-volumes">Récupération des volumes</h3>
+
+<p>Lorsqu&rsquo;un utilisateur a terminé avec son volume, il peut supprimer les objets PVC de l&rsquo;API qui permet la récupération de la ressource.
+La politique de récupération pour un <code>PersistentVolume</code> indique au cluster ce qu&rsquo;il doit faire du volume une fois qu&rsquo;il a été libéré de son PVC.
+Actuellement, les volumes peuvent être conservés, recyclés ou supprimés.</p>
+
+<h4 id="volumes-conservés">Volumes conservés</h4>
+
+<p>La politique de récupération <code>Retain</code> permet la récupération manuelle de la ressource.
+Lorsque le <code>PersistentVolumeClaim</code> est supprimé, le <code>PersistentVolume</code> existe toujours et le volume est considéré comme «libéré».
+Mais il n&rsquo;est pas encore disponible pour une autre demande car les données du demandeur précédent restent sur le volume.
+Un administrateur peut récupérer manuellement le volume en procédant comme suit.</p>
+
+<ol>
+<li>Supprimer le <code>PersistentVolume</code>.
+L&rsquo;actif de stockage associé dans une infrastructure externe (comme un volume AWS EBS, GCE PD, Azure Disk ou Cinder) existe toujours après la suppression du PV.</li>
+<li>Nettoyez manuellement les données sur l&rsquo;actif de stockage associé en conséquence.</li>
+<li>Supprimez manuellement l&rsquo;actif de stockage associé ou, si vous souhaitez réutiliser le même actif de stockage, créez un nouveau <code>PersistentVolume</code> avec la définition de l&rsquo;actif de stockage.</li>
+</ol>
+
+<h4 id="volumes-supprimés">Volumes supprimés</h4>
+
+<p>Pour les plug-ins de volume qui prennent en charge la stratégie de récupération <code>Delete</code>, la suppression supprime à la fois l&rsquo;objet <code>PersistentVolume</code> de Kubernetes, ainsi que l&rsquo;actif de stockage associé dans l&rsquo;infrastructure externe, tel qu&rsquo;un volume AWS EBS, GCE PD, Azure Disk ou Cinder.
+Les volumes qui ont été dynamiquement provisionnés héritent de la <a href="#politique-de-récupération">politique de récupération de leur <code>StorageClass</code></a>, qui par défaut est <code>Delete</code>.
+L&rsquo;administrateur doit configurer la <code>StorageClass</code> selon les attentes des utilisateurs; sinon, le PV doit être édité ou corrigé après sa création.
+Voir <a href="/docs/tasks/administer-cluster/change-pv-reclaim-policy/">Modifier la politique de récupération d&rsquo;un PersistentVolume</a>.</p>
+
+<h4 id="volumes-recyclés">Volumes recyclés</h4>
+
+<blockquote class="warning">
+  <div><strong>Attention:</strong> La politique de récupération <code>Recycle</code> est obsolète.
+Au lieu de cela, l&rsquo;approche recommandée consiste à utiliser l&rsquo;approvisionnement dynamique.</div>
+</blockquote>
+
+<p>Si elle est prise en charge par le plug-in de volume sous-jacent, la stratégie de récupération <code>Recycle</code> effectue un nettoyage de base (<code>rm -rf /thevolume/*</code>) sur le volume et le rend à nouveau disponible pour une nouvelle demande.</p>
+
+<p>Cependant, un administrateur peut configurer un modèle de module de recyclage personnalisé à l&rsquo;aide des arguments de ligne de commande du gestionnaire de contrôleur Kubernetes, comme décrit <a href="/docs/admin/kube-controller-manager/">ici</a>.
+Le modèle de pod de recycleur personnalisé doit contenir une définition de <code>volumes</code>, comme le montre l&rsquo;exemple ci-dessous:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>pv-recycler<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>namespace:<span style="color:#bbb"> </span>default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restartPolicy:<span style="color:#bbb"> </span>Never<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>vol<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>hostPath:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>path:<span style="color:#bbb"> </span>/any/path/it/will/be/replaced<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>pv-recycler<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>image:<span style="color:#bbb"> </span><span style="color:#b44">&#34;k8s.gcr.io/busybox&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>command:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;/bin/sh&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;-c&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;test -e /scrub &amp;&amp; rm -rf /scrub/..?* /scrub/.[!.]* /scrub/*  &amp;&amp; test -z \&#34;$(ls -A /scrub)\&#34; || exit 1&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>vol<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>mountPath:<span style="color:#bbb"> </span>/scrub</code></pre></div>
+<p>Cependant, le chemin particulier spécifié dans la partie <code>volumes</code> du template personnalisé de Pod est remplacée par le chemin particulier du volume qui est recyclé.</p>
+
+<h3 id="redimensionnement-des-pvc">Redimensionnement des PVC</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.11</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+Cette fonctionnalité est actuellement dans un état <em>beta</em>, c&rsquo;est-à-dire :</p>
+
+<ul>
+<li>Les noms de version contiennent: beta (par ex. v2beta3).</li>
+<li>Le code est bien testé. L&rsquo;activation de cette fonctionnalité est considérée comme sûre. Elle est activée par défaut.</li>
+<li>La prise en charge de l&rsquo;ensemble de la fonctionnalité ne sera pas supprimée, bien que des détails puissent changer.</li>
+<li>Le schéma et/ou la sémantique des objets peuvent changer de manière incompatible dans une version bêta ou stable ultérieure. Lorsque cela se produira, nous vous fournirons des instructions pour migrer vers la prochaine version. Cela peut nécessiter la suppression, l&rsquo;édition et la recréation d&rsquo;objets API. Le processus de changement de version peut nécessiter une certaine réflexion. Cela peut aussi nécessiter une interruption de service pour les applications qui s&rsquo;appuient sur cette fonctionnalité.</li>
+<li>Recommandé uniquement pour les utilisations non critiques en raison du risque de changements incompatibles dans les versions ultérieures. Si vous avez plusieurs clusters qui peuvent être mis à niveau indépendamment, vous pouvez assouplir cette restriction.</li>
+<li>Donnez votre avis sur cette fonctionnalité bêta ! Une fois qu&rsquo;elle aura quitté la version bêta, ce sera probablement moins évident pour nous d&rsquo;apporter d&rsquo;autres changements.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>La prise en charge du redimensionnement des PersistentVolumeClaims (PVCs) est désormais activée par défaut.
+Vous pouvez redimensionner les types de volumes suivants:</p>
+
+<ul>
+<li>gcePersistentDisk</li>
+<li>awsElasticBlockStore</li>
+<li>Cinder</li>
+<li>glusterfs</li>
+<li>rbd</li>
+<li>Azure File</li>
+<li>Azure Disk</li>
+<li>Portworx</li>
+<li>FlexVolumes</li>
+<li>CSI</li>
+</ul>
+
+<p>Vous ne pouvez redimensionner un PVC que si le champ <code>allowVolumeExpansion</code> de sa classe de stockage est défini sur true.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>storage.k8s.io/v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>StorageClass<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>gluster-vol-default<span style="color:#bbb">
+</span><span style="color:#bbb"></span>provisioner:<span style="color:#bbb"> </span>kubernetes.io/glusterfs<span style="color:#bbb">
+</span><span style="color:#bbb"></span>parameters:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resturl:<span style="color:#bbb"> </span><span style="color:#b44">&#34;http://192.168.10.100:8080&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>restuser:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>secretNamespace:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>secretName:<span style="color:#bbb"> </span><span style="color:#b44">&#34;&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>allowVolumeExpansion:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span></code></pre></div>
+<p>Pour demander un volume plus important pour un PVC, modifiez l&rsquo;objet PVC et spécifiez une taille plus grande.
+Cela déclenche l&rsquo;expansion du volume qui soutient le <code>PersistentVolume</code> sous-jacent.
+Un nouveau <code>PersistentVolume</code> n&rsquo;est jamais créé pour satisfaire la demande.
+Au lieu de cela, un volume existant est redimensionné.</p>
+
+<h4 id="redimensionnement-de-volume-csi">Redimensionnement de volume CSI</h4>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.16</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+Cette fonctionnalité est actuellement dans un état <em>beta</em>, c&rsquo;est-à-dire :</p>
+
+<ul>
+<li>Les noms de version contiennent: beta (par ex. v2beta3).</li>
+<li>Le code est bien testé. L&rsquo;activation de cette fonctionnalité est considérée comme sûre. Elle est activée par défaut.</li>
+<li>La prise en charge de l&rsquo;ensemble de la fonctionnalité ne sera pas supprimée, bien que des détails puissent changer.</li>
+<li>Le schéma et/ou la sémantique des objets peuvent changer de manière incompatible dans une version bêta ou stable ultérieure. Lorsque cela se produira, nous vous fournirons des instructions pour migrer vers la prochaine version. Cela peut nécessiter la suppression, l&rsquo;édition et la recréation d&rsquo;objets API. Le processus de changement de version peut nécessiter une certaine réflexion. Cela peut aussi nécessiter une interruption de service pour les applications qui s&rsquo;appuient sur cette fonctionnalité.</li>
+<li>Recommandé uniquement pour les utilisations non critiques en raison du risque de changements incompatibles dans les versions ultérieures. Si vous avez plusieurs clusters qui peuvent être mis à niveau indépendamment, vous pouvez assouplir cette restriction.</li>
+<li>Donnez votre avis sur cette fonctionnalité bêta ! Une fois qu&rsquo;elle aura quitté la version bêta, ce sera probablement moins évident pour nous d&rsquo;apporter d&rsquo;autres changements.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>La prise en charge du redimensionnement des volumes CSI est activée par défaut, mais elle nécessite également un pilote CSI spécifique pour prendre en charge le redimensionnement des volumes.
+Reportez-vous à la documentation du pilote CSI spécifique pour plus d&rsquo;informations.</p>
+
+<h4 id="redimensionner-un-volume-contenant-un-système-de-fichiers">Redimensionner un volume contenant un système de fichiers</h4>
+
+<p>Vous ne pouvez redimensionner des volumes contenant un système de fichiers que si le système de fichiers est XFS, Ext3 ou Ext4.</p>
+
+<p>Lorsqu&rsquo;un volume contient un système de fichiers, le système de fichiers n&rsquo;est redimensionné que lorsqu&rsquo;un nouveau pod utilise le <code>PersistentVolumeClaim</code> en mode ReadWrite.
+L&rsquo;extension du système de fichiers est effectuée au démarrage d&rsquo;un pod ou lorsqu&rsquo;un pod est en cours d&rsquo;exécution et que le système de fichiers sous-jacent prend en charge le redimensionnement en ligne.</p>
+
+<p>FlexVolumes autorise le redimensionnement si le pilote est défini avec la capacité <code>requiresFSResize</code> sur <code>true</code>.
+Le FlexVolume peut être redimensionné au redémarrage du pod.</p>
+
+<h4 id="redimensionnement-d-un-persistentvolumeclaim-en-cours-d-utilisation">Redimensionnement d&rsquo;un PersistentVolumeClaim en cours d&rsquo;utilisation</h4>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.15</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+Cette fonctionnalité est actuellement dans un état <em>beta</em>, c&rsquo;est-à-dire :</p>
+
+<ul>
+<li>Les noms de version contiennent: beta (par ex. v2beta3).</li>
+<li>Le code est bien testé. L&rsquo;activation de cette fonctionnalité est considérée comme sûre. Elle est activée par défaut.</li>
+<li>La prise en charge de l&rsquo;ensemble de la fonctionnalité ne sera pas supprimée, bien que des détails puissent changer.</li>
+<li>Le schéma et/ou la sémantique des objets peuvent changer de manière incompatible dans une version bêta ou stable ultérieure. Lorsque cela se produira, nous vous fournirons des instructions pour migrer vers la prochaine version. Cela peut nécessiter la suppression, l&rsquo;édition et la recréation d&rsquo;objets API. Le processus de changement de version peut nécessiter une certaine réflexion. Cela peut aussi nécessiter une interruption de service pour les applications qui s&rsquo;appuient sur cette fonctionnalité.</li>
+<li>Recommandé uniquement pour les utilisations non critiques en raison du risque de changements incompatibles dans les versions ultérieures. Si vous avez plusieurs clusters qui peuvent être mis à niveau indépendamment, vous pouvez assouplir cette restriction.</li>
+<li>Donnez votre avis sur cette fonctionnalité bêta ! Une fois qu&rsquo;elle aura quitté la version bêta, ce sera probablement moins évident pour nous d&rsquo;apporter d&rsquo;autres changements.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Redimensionner un PVCs à chaud est disponible en version bêta depuis Kubernetes 1.15 et en version alpha depuis 1.11.
+La fonctionnalité <code>ExpandInUsePersistentVolumes</code> doit être activée, ce qui est le cas automatiquement pour de nombreux clusters de fonctionnalités bêta.
+Se référer à la documentation de la <a href="/docs/reference/command-line-tools-reference/feature-gates/">feature gate</a> pour plus d&rsquo;informations.</div>
+</blockquote>
+
+<p>Dans ce cas, vous n&rsquo;avez pas besoin de supprimer et de recréer un pod ou un déploiement qui utilise un PVC existant.
+Tout PVC en cours d&rsquo;utilisation devient automatiquement disponible pour son pod dès que son système de fichiers a été étendu.
+Cette fonctionnalité n&rsquo;a aucun effet sur les PVC qui ne sont pas utilisés par un pod ou un déploiement.
+Vous devez créer un pod qui utilise le PVC avant que l&rsquo;extension puisse se terminer.</p>
+
+<p>Semblable à d&rsquo;autres types de volume - les volumes FlexVolume peuvent également être étendus lorsqu&rsquo;ils sont utilisés par un pod.</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Le redimensionnement de FlexVolume n&rsquo;est possible que lorsque le pilote sous-jacent prend en charge le redimensionnement.</div>
+</blockquote>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> L&rsquo;augmentation des volumes EBS est une opération longue.
+En outre, il existe un quota par volume d&rsquo;une modification toutes les 6 heures.</div>
+</blockquote>
+
+<h2 id="types-de-volumes-persistants">Types de volumes persistants</h2>
+
+<p>Les types <code>PersistentVolume</code> sont implémentés en tant que plugins.
+Kubernetes prend actuellement en charge les plugins suivants:</p>
+
+<ul>
+<li>GCEPersistentDisk</li>
+<li>AWSElasticBlockStore</li>
+<li>AzureFile</li>
+<li>AzureDisk</li>
+<li>CSI</li>
+<li>FC (Fibre Channel)</li>
+<li>FlexVolume</li>
+<li>Flocker</li>
+<li>NFS</li>
+<li>iSCSI</li>
+<li>RBD (Ceph Block Device)</li>
+<li>CephFS</li>
+<li>Cinder (OpenStack block storage)</li>
+<li>Glusterfs</li>
+<li>VsphereVolume</li>
+<li>Quobyte Volumes</li>
+<li>HostPath (Test de nœud unique uniquement &ndash; le stockage local n&rsquo;est en aucun cas pris en charge et NE FONCTIONNERA PAS dans un cluster à plusieurs nœuds)</li>
+<li>Portworx Volumes</li>
+<li>ScaleIO Volumes</li>
+<li>StorageOS</li>
+</ul>
+
+<h2 id="volumes-persistants">Volumes persistants</h2>
+
+<p>Chaque PV contient une spécification et un état, qui sont les spécifications et l&rsquo;état du volume.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolume<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>pv0003<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>capacity:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>storage:<span style="color:#bbb"> </span>5Gi<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumeMode:<span style="color:#bbb"> </span>Filesystem<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>persistentVolumeReclaimPolicy:<span style="color:#bbb"> </span>Recycle<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageClassName:<span style="color:#bbb"> </span>slow<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>mountOptions:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>hard<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>nfsvers=<span style="color:#666">4.1</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>nfs:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>path:<span style="color:#bbb"> </span>/tmp<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>server:<span style="color:#bbb"> </span><span style="color:#666">172.17.0.2</span></code></pre></div>
+<h3 id="capacité">Capacité</h3>
+
+<p>Généralement, un PV aura une capacité de stockage spécifique.
+Ceci est réglé en utilisant l&rsquo;attribut <code>capacity</code> des PV.
+Voir le Kubernetes <a href="https://git.k8s.io/community/contributors/design-proposals/scheduling/resources.md" target="_blank">modèle de ressource</a> pour comprendre les unités attendues par <code>capacity</code>.</p>
+
+<p>Actuellement, la taille du stockage est la seule ressource qui peut être définie ou demandée.
+Les futurs attributs peuvent inclure les IOPS, le débit, etc.</p>
+
+<h3 id="mode-volume">Mode volume</h3>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+Cette fonctionnalité est actuellement dans un état <em>beta</em>, c&rsquo;est-à-dire :</p>
+
+<ul>
+<li>Les noms de version contiennent: beta (par ex. v2beta3).</li>
+<li>Le code est bien testé. L&rsquo;activation de cette fonctionnalité est considérée comme sûre. Elle est activée par défaut.</li>
+<li>La prise en charge de l&rsquo;ensemble de la fonctionnalité ne sera pas supprimée, bien que des détails puissent changer.</li>
+<li>Le schéma et/ou la sémantique des objets peuvent changer de manière incompatible dans une version bêta ou stable ultérieure. Lorsque cela se produira, nous vous fournirons des instructions pour migrer vers la prochaine version. Cela peut nécessiter la suppression, l&rsquo;édition et la recréation d&rsquo;objets API. Le processus de changement de version peut nécessiter une certaine réflexion. Cela peut aussi nécessiter une interruption de service pour les applications qui s&rsquo;appuient sur cette fonctionnalité.</li>
+<li>Recommandé uniquement pour les utilisations non critiques en raison du risque de changements incompatibles dans les versions ultérieures. Si vous avez plusieurs clusters qui peuvent être mis à niveau indépendamment, vous pouvez assouplir cette restriction.</li>
+<li>Donnez votre avis sur cette fonctionnalité bêta ! Une fois qu&rsquo;elle aura quitté la version bêta, ce sera probablement moins évident pour nous d&rsquo;apporter d&rsquo;autres changements.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>Avant Kubernetes 1.9, tous les plug-ins de volume créaient un système de fichiers sur le volume persistant.
+Maintenant, vous pouvez définir la valeur de <code>volumeMode</code> sur <code>block</code> pour utiliser un périphérique de bloc brut, ou <code>filesystem</code> pour utiliser un système de fichiers.
+<code>filesystem</code> est la valeur par défaut si la valeur est omise.
+Il s&rsquo;agit d&rsquo;un paramètre API facultatif.</p>
+
+<h3 id="modes-d-accès">Modes d&rsquo;accès</h3>
+
+<p>Un <code>PersistentVolume</code> peut être monté sur un hôte de n&rsquo;importe quelle manière prise en charge par le fournisseur de ressources.
+Comme indiqué dans le tableau ci-dessous, les fournisseurs auront des capacités différentes et les modes d&rsquo;accès de chaque PV sont définis sur les modes spécifiques pris en charge par ce volume particulier.
+Par exemple, NFS peut prendre en charge plusieurs clients en lecture/écriture, mais un PV NFS spécifique peut être exporté sur le serveur en lecture seule.
+Chaque PV dispose de son propre ensemble de modes d&rsquo;accès décrivant les capacités spécifiques de ce PV.</p>
+
+<p>Les modes d&rsquo;accès sont:</p>
+
+<ul>
+<li>ReadWriteOnce &ndash; le volume peut être monté en lecture-écriture par un seul nœud</li>
+<li>ReadOnlyMany &ndash; le volume peut être monté en lecture seule par plusieurs nœuds</li>
+<li>ReadWriteMany &ndash; le volume peut être monté en lecture-écriture par de nombreux nœuds</li>
+</ul>
+
+<p>Dans la CLI, les modes d&rsquo;accès sont abrégés comme suit:</p>
+
+<ul>
+<li>RWO - ReadWriteOnce</li>
+<li>ROX - ReadOnlyMany</li>
+<li>RWX - ReadWriteMany</li>
+</ul>
+
+<blockquote>
+<p><strong>Important!</strong> Un volume ne peut être monté qu&rsquo;en utilisant un seul mode d&rsquo;accès à la fois, même s&rsquo;il prend en charge plusieurs.
+  Par exemple, un GCEPersistentDisk peut être monté en tant que ReadWriteOnce par un seul nœud ou ReadOnlyMany par plusieurs nœuds, mais pas en même temps.</p>
+</blockquote>
+
+<p>| Volume Plugin        | ReadWriteOnce    | ReadOnlyMany     | ReadWriteMany                                    |
+|-:&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;|-:-:&mdash;&mdash;&mdash;&mdash;&ndash;|-:-:&mdash;&mdash;&mdash;&mdash;&ndash;|-:-:&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-|
+| AWSElasticBlockStore | &#x2713;         | -                | -                                                |
+| AzureFile            | &#x2713;         | &#x2713;         | &#x2713;                                         |
+| AzureDisk            | &#x2713;         | -                | -                                                |
+| CephFS               | &#x2713;         | &#x2713;         | &#x2713;                                         |
+| Cinder               | &#x2713;         | -                | -                                                |
+| CSI                  | dépend du pilote | dépend du pilote | dépend du pilote                                 |
+| FC                   | &#x2713;         | &#x2713;         | -                                                |
+| FlexVolume           | &#x2713;         | &#x2713;         | dépend du pilote                                 |
+| Flocker              | &#x2713;         | -                | -                                                |
+| GCEPersistentDisk    | &#x2713;         | &#x2713;         | -                                                |
+| Glusterfs            | &#x2713;         | &#x2713;         | &#x2713;                                         |
+| HostPath             | &#x2713;         | -                | -                                                |
+| iSCSI                | &#x2713;         | &#x2713;         | -                                                |
+| Quobyte              | &#x2713;         | &#x2713;         | &#x2713;                                         |
+| NFS                  | &#x2713;         | &#x2713;         | &#x2713;                                         |
+| RBD                  | &#x2713;         | &#x2713;         | -                                                |
+| VsphereVolume        | &#x2713;         | -                | - (fonctionne lorsque les pods sont colocalisés) |
+| PortworxVolume       | &#x2713;         | -                | &#x2713;                                         |
+| ScaleIO              | &#x2713;         | &#x2713;         | -                                                |
+| StorageOS            | &#x2713;         | -                | -                                                |</p>
+
+<h3 id="classe">Classe</h3>
+
+<p>Un PV peut avoir une classe, qui est spécifiée en définissant l&rsquo;attribut <code>storageClassName</code> sur le nom d&rsquo;une <a href="/docs/concepts/storage/storage-classes/">StorageClass</a>.
+Un PV d&rsquo;une classe particulière ne peut être lié qu&rsquo;à des PVC demandant cette classe.
+Un PV sans <code>storageClassName</code> n&rsquo;a pas de classe et ne peut être lié qu&rsquo;à des PVC qui ne demandent aucune classe particulière.</p>
+
+<p>Dans le passé, l&rsquo;annotation <code>volume.beta.kubernetes.io/storage-class</code> a été utilisé à la place de l&rsquo;attribut <code>storageClassName</code>.
+Cette annotation fonctionne toujours; cependant, il deviendra complètement obsolète dans une future version de Kubernetes.</p>
+
+<h3 id="politique-de-récupration">Politique de récupration</h3>
+
+<p>Les politiques de récupération actuelles sont:</p>
+
+<ul>
+<li>Retain &ndash; remise en état manuelle</li>
+<li>Recycle &ndash; effacement de base (<code>rm -rf /thevolume/*</code>)</li>
+<li>Delete &ndash; l&rsquo;élément de stockage associé tel qu&rsquo;AWS EBS, GCE PD, Azure Disk ou le volume OpenStack Cinder est supprimé</li>
+</ul>
+
+<p>Actuellement, seuls NFS et HostPath prennent en charge le recyclage.
+Les volumes AWS EBS, GCE PD, Azure Disk et Cinder prennent en charge la suppression.</p>
+
+<h3 id="options-de-montage">Options de montage</h3>
+
+<p>Un administrateur Kubernetes peut spécifier des options de montage supplémentaires pour quand un <code>PersistentVolume</code> est monté sur un nœud.</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Tous les types de volumes persistants ne prennent pas en charge les options de montage.</div>
+</blockquote>
+
+<p>Les types de volume suivants prennent en charge les options de montage:</p>
+
+<ul>
+<li>AWSElasticBlockStore</li>
+<li>AzureDisk</li>
+<li>AzureFile</li>
+<li>CephFS</li>
+<li>Cinder (OpenStack block storage)</li>
+<li>GCEPersistentDisk</li>
+<li>Glusterfs</li>
+<li>NFS</li>
+<li>Quobyte Volumes</li>
+<li>RBD (Ceph Block Device)</li>
+<li>StorageOS</li>
+<li>VsphereVolume</li>
+<li>iSCSI</li>
+</ul>
+
+<p>Les options de montage ne sont pas validées, donc le montage échouera simplement si l&rsquo;une n&rsquo;est pas valide.</p>
+
+<p>Dans le passé, l&rsquo;annotation <code>volume.beta.kubernetes.io/mount-options</code> était utilisée à la place de l&rsquo;attribut <code>mountOptions</code>.
+Cette annotation fonctionne toujours; cependant, elle deviendra complètement obsolète dans une future version de Kubernetes.</p>
+
+<h3 id="affinité-des-nœuds">Affinité des nœuds</h3>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Pour la plupart des types de volume, vous n&rsquo;avez pas besoin de définir ce champ.
+Il est automatiquement rempli pour les volumes bloc de type <a href="/docs/concepts/storage/volumes/#awselasticblockstore">AWS EBS</a>, <a href="/docs/concepts/storage/volumes/#gcepersistentdisk">GCE PD</a> et <a href="/docs/concepts/storage/volumes/#azuredisk">Azure Disk</a>.
+Vous devez définir explicitement ceci pour les volumes <a href="/docs/concepts/storage/volumes/#local">locaux</a>.</div>
+</blockquote>
+
+<p>Un PV peut spécifier une <a href="/docs/reference/generated/kubernetes-api/v1.17/#volumenodeaffinity-v1-core">affinité de nœud</a> pour définir les contraintes qui limitent les nœuds à partir desquels ce volume est accessible.
+Les pods qui utilisent un PV seront uniquement planifiés sur les nœuds sélectionnés par l&rsquo;affinité de nœud.</p>
+
+<h3 id="phase">Phase</h3>
+
+<p>Un volume sera dans l&rsquo;une des phases suivantes:</p>
+
+<ul>
+<li>Available &ndash; une ressource libre qui n&rsquo;est pas encore liée à une demande</li>
+<li>Bound &ndash; le volume est lié à une demande</li>
+<li>Released &ndash; la demande a été supprimée, mais la ressource n&rsquo;est pas encore récupérée par le cluster</li>
+<li>Failed &ndash; le volume n&rsquo;a pas réussi sa récupération automatique</li>
+</ul>
+
+<p>Le CLI affichera le nom du PVC lié au PV.</p>
+
+<h2 id="persistentvolumeclaims">PersistentVolumeClaims</h2>
+
+<p>Chaque PVC contient une spécification et un état, qui sont les spécifications et l&rsquo;état de la réclamation.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolumeClaim<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>myclaim<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumeMode:<span style="color:#bbb"> </span>Filesystem<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>requests:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>storage:<span style="color:#bbb"> </span>8Gi<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageClassName:<span style="color:#bbb"> </span>slow<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>selector:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchLabels:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>release:<span style="color:#bbb"> </span><span style="color:#b44">&#34;stable&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>matchExpressions:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>{key:<span style="color:#bbb"> </span>environment,<span style="color:#bbb"> </span>operator:<span style="color:#bbb"> </span>In,<span style="color:#bbb"> </span>values:<span style="color:#bbb"> </span>[dev]}</code></pre></div>
+<h3 id="modes-d-accès-1">Modes d&rsquo;accès</h3>
+
+<p>Les PVC utilisent les mêmes conventions que les volumes lorsque vous demandez un stockage avec des modes d&rsquo;accès spécifiques.</p>
+
+<h3 id="modes-de-volume">Modes de volume</h3>
+
+<p>Les PVC utilisent la même convention que les volumes pour indiquer la consommation du volume en tant que système de fichiers ou périphérique de bloc.</p>
+
+<h3 id="ressources">Ressources</h3>
+
+<p>Les PVC, comme les pods, peuvent demander des quantités spécifiques d&rsquo;une ressource.
+Dans ce cas, la demande concerne le stockage.
+Le même <a href="https://git.k8s.io/community/contributors/design-proposals/scheduling/resources.md" target="_blank">modèle de ressource</a> s&rsquo;applique aux volumes et aux PVC.</p>
+
+<h3 id="sélecteur">Sélecteur</h3>
+
+<p>Les PVC peuvent spécifier un <a href="/docs/concepts/overview/working-with-objects/labels/#label-selectors">sélecteur de labels</a> pour filtrer davantage l&rsquo;ensemble des volumes.
+Seuls les volumes dont les étiquettes correspondent au sélecteur peuvent être liés au PVC.
+Le sélecteur peut comprendre deux champs:</p>
+
+<ul>
+<li><code>matchLabels</code> - le volume doit avoir un label avec cette valeur</li>
+<li><code>matchExpressions</code> - une liste des exigences définies en spécifiant la clé, la liste des valeurs et l&rsquo;opérateur qui relie la clé et les valeurs.
+Les opérateurs valides incluent In, NotIn, Exists et DoesNotExist.</li>
+</ul>
+
+<p>Toutes les exigences, à la fois de <code>matchLabels</code> et de <code>matchExpressions</code> doivent toutes être satisfaites pour correspondre (application d&rsquo;un opérateur booléen ET).</p>
+
+<h3 id="classe-1">Classe</h3>
+
+<p>Un PVC peut demander une classe particulière en spécifiant le nom d&rsquo;une <a href="/docs/concepts/storage/storage-classes/">StorageClass</a> en utilisant l&rsquo;attribut <code>storageClassName</code>.
+Seuls les PV de la classe demandée, ceux ayant le même <code>storageClassName</code> que le PVC, peuvent être liés au PVC.</p>
+
+<p>Les PVC n&rsquo;ont pas nécessairement à demander une classe.
+Un PVC avec son attribut <code>storageClassName</code> égal à <code>&quot;&quot;</code> est toujours interprété comme demandant un PV sans classe, il ne peut donc être lié qu&rsquo;à des PV sans classe (pas d&rsquo;annotation ou une annotation égal à <code>&quot;&quot;</code>).
+Un PVC sans <code>storageClassName</code> n&rsquo;est pas tout à fait la même et est traité différemment par le cluster, selon que le <a href="/docs/reference/access-authn-authz/admission-controllers/#defaultstorageclass"><code>DefaultStorageClass</code> admission plugin</a> est activé.</p>
+
+<ul>
+<li>Si le plug-in d&rsquo;admission est activé, l&rsquo;administrateur peut spécifier une valeur par défaut <code>StorageClass</code>.
+Tous les PVC qui n&rsquo;ont pas de <code>storageClassName</code> ne peuvent être liés qu&rsquo;aux PV de cette valeur par défaut.
+La spécification d&rsquo;une <code>StorageClass</code> par défaut se fait en définissant l&rsquo;annotation <code>storageclass.kubernetes.io/is-default-class</code> égal à <code>true</code> dans un objet <code>StorageClass</code>.
+Si l&rsquo;administrateur ne spécifie pas de valeur par défaut, le cluster répond à la création de PVC comme si le plug-in d&rsquo;admission était désactivé.
+Si plusieurs valeurs par défaut sont spécifiées, le plugin d&rsquo;admission interdit la création de tous les PVC.</li>
+<li>Si le plugin d&rsquo;admission est désactivé, il n&rsquo;y a aucune notion de défaut <code>StorageClass</code>.
+Tous les PVC qui n&rsquo;ont pas <code>storageClassName</code> peut être lié uniquement aux PV qui n&rsquo;ont pas de classe.
+Dans ce cas, les PVC qui n&rsquo;ont pas <code>storageClassName</code> sont traités de la même manière que les PVC qui ont leur <code>storageClassName</code> égal à <code>&quot;&quot;</code>.</li>
+</ul>
+
+<p>Selon la méthode d&rsquo;installation, une <code>StorageClass</code> par défaut peut être déployée sur un cluster Kubernetes par le gestionnaire d&rsquo;extensions pendant l&rsquo;installation.</p>
+
+<p>Lorsqu&rsquo;un PVC spécifie un <code>selector</code> en plus de demander une <code>StorageClass</code>, les exigences sont ET ensemble: seul un PV de la classe demandée et avec les labels demandées peut être lié au PVC.</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Actuellement, un PVC avec un <code>selector</code> non vide ne peut pas avoir un PV provisionné dynamiquement pour cela.</div>
+</blockquote>
+
+<p>Dans le passé, l&rsquo;annotation <code>volume.beta.kubernetes.io/storage-class</code> a été utilisé au lieu de l&rsquo;attribut <code>storageClassName</code>.
+Cette annotation fonctionne toujours; cependant, elle ne sera pas pris en charge dans une future version de Kubernetes.</p>
+
+<h2 id="pvc-sous-forme-de-volumes">PVC sous forme de volumes</h2>
+
+<p>Les pods accèdent au stockage en utilisant le PVC comme volume.
+Les PVC et les pods qui les utilisent doivent exister dans le même namespace.
+Le cluster trouve le PVC dans le namespace où se trouve le pod et l&rsquo;utilise pour obtenir le <code>PersistentVolume</code> visé par le PVC.
+Le volume est ensuite monté sur l&rsquo;hôte et dans le pod.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>mypod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>myfrontend<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>nginx<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>volumeMounts:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>-<span style="color:#bbb"> </span>mountPath:<span style="color:#bbb"> </span><span style="color:#b44">&#34;/var/www/html&#34;</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>name:<span style="color:#bbb"> </span>mypd<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>mypd<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>persistentVolumeClaim:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>claimName:<span style="color:#bbb"> </span>myclaim</code></pre></div>
+<h3 id="remarque-au-sujet-des-namespaces">Remarque au sujet des namespaces</h3>
+
+<p>Les liaisons <code>PersistentVolumes</code> sont exclusives, et comme les objets <code>PersistentVolumeClaims</code> sont des objets vivant dans un namespace donné, le montage de PVC avec les modes &ldquo;Many&rdquo; (<code>ROX</code>, <code>RWX</code>) n&rsquo;est possible qu&rsquo;au sein d&rsquo;un même namespace.</p>
+
+<h2 id="prise-en-charge-du-volume-de-bloc-brut">Prise en charge du volume de bloc brut</h2>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.13</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+Cette fonctionnalité est actuellement dans un état <em>beta</em>, c&rsquo;est-à-dire :</p>
+
+<ul>
+<li>Les noms de version contiennent: beta (par ex. v2beta3).</li>
+<li>Le code est bien testé. L&rsquo;activation de cette fonctionnalité est considérée comme sûre. Elle est activée par défaut.</li>
+<li>La prise en charge de l&rsquo;ensemble de la fonctionnalité ne sera pas supprimée, bien que des détails puissent changer.</li>
+<li>Le schéma et/ou la sémantique des objets peuvent changer de manière incompatible dans une version bêta ou stable ultérieure. Lorsque cela se produira, nous vous fournirons des instructions pour migrer vers la prochaine version. Cela peut nécessiter la suppression, l&rsquo;édition et la recréation d&rsquo;objets API. Le processus de changement de version peut nécessiter une certaine réflexion. Cela peut aussi nécessiter une interruption de service pour les applications qui s&rsquo;appuient sur cette fonctionnalité.</li>
+<li>Recommandé uniquement pour les utilisations non critiques en raison du risque de changements incompatibles dans les versions ultérieures. Si vous avez plusieurs clusters qui peuvent être mis à niveau indépendamment, vous pouvez assouplir cette restriction.</li>
+<li>Donnez votre avis sur cette fonctionnalité bêta ! Une fois qu&rsquo;elle aura quitté la version bêta, ce sera probablement moins évident pour nous d&rsquo;apporter d&rsquo;autres changements.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>Les plug-ins de volume suivants prennent en charge les volumes de blocs bruts, y compris l&rsquo;approvisionnement dynamique, le cas échéant:</p>
+
+<ul>
+<li>AWSElasticBlockStore</li>
+<li>AzureDisk</li>
+<li>FC (Fibre Channel)</li>
+<li>GCEPersistentDisk</li>
+<li>iSCSI</li>
+<li>Local volume</li>
+<li>RBD (Ceph Block Device)</li>
+<li>VsphereVolume (alpha)</li>
+</ul>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Seuls les volumes FC et iSCSI prennent en charge les volumes de blocs bruts dans Kubernetes 1.9.
+La prise en charge des plugins supplémentaires a été ajoutée dans 1.10.</div>
+</blockquote>
+
+<h3 id="volumes-persistants-utilisant-un-volume-de-bloc-brut">Volumes persistants utilisant un volume de bloc brut</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolume<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>block-pv<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>capacity:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>storage:<span style="color:#bbb"> </span>10Gi<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumeMode:<span style="color:#bbb"> </span>Block<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>persistentVolumeReclaimPolicy:<span style="color:#bbb"> </span>Retain<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>fc:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>targetWWNs:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;50060e801049cfd1&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>lun:<span style="color:#bbb"> </span><span style="color:#666">0</span><span style="color:#bbb">
+</span><span style="color:#bbb">    </span>readOnly:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">false</span></code></pre></div>
+<h3 id="revendication-de-volume-persistant-demandant-un-volume-de-bloc-brut">Revendication de volume persistant demandant un volume de bloc brut</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolumeClaim<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>block-pvc<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumeMode:<span style="color:#bbb"> </span>Block<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>requests:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>storage:<span style="color:#bbb"> </span>10Gi</code></pre></div>
+<h3 id="spécification-de-pod-ajoutant-le-chemin-du-périphérique-de-bloc-brut-dans-le-conteneur">Spécification de pod ajoutant le chemin du périphérique de bloc brut dans le conteneur</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>Pod<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>pod-with-block-volume<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>containers:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>fc-container<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>image:<span style="color:#bbb"> </span>fedora:<span style="color:#666">26</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>command:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;/bin/sh&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;-c&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>args:<span style="color:#bbb"> </span>[<span style="color:#bbb"> </span><span style="color:#b44">&#34;tail -f /dev/null&#34;</span><span style="color:#bbb"> </span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>volumeDevices:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>data<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>devicePath:<span style="color:#bbb"> </span>/dev/xvda<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>volumes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>name:<span style="color:#bbb"> </span>data<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>persistentVolumeClaim:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>claimName:<span style="color:#bbb"> </span>block-pvc</code></pre></div>
+<blockquote class="note">
+  <div><strong>Note:</strong> Lorsque vous ajoutez un périphérique de bloc brut pour un pod, vous spécifiez le chemin de périphérique dans le conteneur au lieu d&rsquo;un chemin de montage.</div>
+</blockquote>
+
+<h3 id="lier-des-volumes-bloc-bruts">Lier des volumes bloc bruts</h3>
+
+<p>Si un utilisateur demande un volume de bloc brut en l&rsquo;indiquant à l&rsquo;aide du champ <code>volumeMode</code> dans la spécification <code>PersistentVolumeClaim</code>, les règles de liaison diffèrent légèrement des versions précédentes qui ne considéraient pas ce mode comme faisant partie de la spécification.
+Voici un tableau des combinaisons possibles que l&rsquo;utilisateur et l&rsquo;administrateur peuvent spécifier pour demander un périphérique de bloc brut.
+Le tableau indique si le volume sera lié ou non compte tenu des combinaisons:
+Matrice de liaison de volume pour les volumes provisionnés statiquement:</p>
+
+<p>| PV volumeMode | PVC volumeMode | Result  |
+|&mdash;&mdash;&mdash;&mdash;&mdash;|-:-:&mdash;&mdash;&mdash;&mdash;|&ndash;:&mdash;&mdash;|
+| unspecified   | unspecified    | BIND    |
+| unspecified   | Block          | NO BIND |
+| unspecified   | Filesystem     | BIND    |
+| Block         | unspecified    | NO BIND |
+| Block         | Block          | BIND    |
+| Block         | Filesystem     | NO BIND |
+| Filesystem    | Filesystem     | BIND    |
+| Filesystem    | Block          | NO BIND |
+| Filesystem    | unspecified    | BIND    |</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> Seuls les volumes provisionnés statiquement sont pris en charge pour la version alpha.
+Les administrateurs doivent prendre en compte ces valeurs lorsqu&rsquo;ils travaillent avec des périphériques de bloc brut.</div>
+</blockquote>
+
+<h2 id="snapshot-et-restauration-de-volumes">Snapshot et restauration de volumes</h2>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.12</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>alpha</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="alpha">
+Cette fonctionnalité est actuellement dans un état <em>alpha</em>, ce qui signifie :</p>
+
+<ul>
+<li>Les noms de version contiennent: alpha (par ex. v1alpha1).</li>
+<li>La fonctionnalité peut contenir des bugs. L&rsquo;activation de cette fonctionnalité peut donc vous exposer aux effets de ces bugs. La fonctionnalité est désactivée par défaut.</li>
+<li>La prise en charge de cette fonctionnalité peut être supprimée à tout moment sans préavis.</li>
+<li>La retro-compatibilité n&rsquo;est pas assurée pour les prochaines versions.</li>
+<li>Recommandé pour une utilisation uniquement dans les clusters de test de courte durée, en raison d&rsquo;un risque accru de bugs et d&rsquo;un manque de support à long terme.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>La fonction de snapshot de volume a été ajoutée pour prendre en charge uniquement les plug-ins de volume CSI.
+Pour plus de détails, voir <a href="/docs/concepts/storage/volume-snapshots/">volume snapshots</a>.</p>
+
+<p>Pour activer la prise en charge de la restauration d&rsquo;un volume à partir d&rsquo;un snapshot de volume, activez la fonctionnalité <code>VolumeSnapshotDataSource</code> sur l&rsquo;apiserver et le controller-manager.</p>
+
+<h3 id="créer-du-pvc-à-partir-d-un-snapshot-de-volume">Créer du PVC à partir d&rsquo;un snapshot de volume</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolumeClaim<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>restore-pvc<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageClassName:<span style="color:#bbb"> </span>csi-hostpath-sc<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>dataSource:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>new-snapshot-test<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kind:<span style="color:#bbb"> </span>VolumeSnapshot<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>apiGroup:<span style="color:#bbb"> </span>snapshot.storage.k8s.io<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>requests:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>storage:<span style="color:#bbb"> </span>10Gi</code></pre></div>
+<h2 id="clonage-de-volume">Clonage de volume</h2>
+
+<div style="margin-top: 10px; margin-bottom: 10px;">
+
+
+
+<b>FEATURE STATE:</b> <code>Kubernetes v1.16</code>
+
+
+
+
+    
+    
+    
+    
+    
+<a href="#" id="feature-state-dialog-link" class="ui-state-default ui-corner-all"><span class="ui-icon ui-icon-newwin"></span>beta</a>
+<div id="feature-state-dialog" class="ui-dialog-content" title="beta">
+Cette fonctionnalité est actuellement dans un état <em>beta</em>, c&rsquo;est-à-dire :</p>
+
+<ul>
+<li>Les noms de version contiennent: beta (par ex. v2beta3).</li>
+<li>Le code est bien testé. L&rsquo;activation de cette fonctionnalité est considérée comme sûre. Elle est activée par défaut.</li>
+<li>La prise en charge de l&rsquo;ensemble de la fonctionnalité ne sera pas supprimée, bien que des détails puissent changer.</li>
+<li>Le schéma et/ou la sémantique des objets peuvent changer de manière incompatible dans une version bêta ou stable ultérieure. Lorsque cela se produira, nous vous fournirons des instructions pour migrer vers la prochaine version. Cela peut nécessiter la suppression, l&rsquo;édition et la recréation d&rsquo;objets API. Le processus de changement de version peut nécessiter une certaine réflexion. Cela peut aussi nécessiter une interruption de service pour les applications qui s&rsquo;appuient sur cette fonctionnalité.</li>
+<li>Recommandé uniquement pour les utilisations non critiques en raison du risque de changements incompatibles dans les versions ultérieures. Si vous avez plusieurs clusters qui peuvent être mis à niveau indépendamment, vous pouvez assouplir cette restriction.</li>
+<li>Donnez votre avis sur cette fonctionnalité bêta ! Une fois qu&rsquo;elle aura quitté la version bêta, ce sera probablement moins évident pour nous d&rsquo;apporter d&rsquo;autres changements.</li>
+</ul>
+</div>
+<script>
+$(function(){
+    
+    $( "#feature-state-dialog" ).dialog({
+        autoOpen: false,
+        width: "600",
+        buttons: [
+            {
+                text: "Ok",
+                click: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    
+    $( "#feature-state-dialog-link" ).click(function( event ) {
+        $( "#feature-state-dialog" ).dialog( "open" );
+        event.preventDefault();
+    });
+
+});
+</script>
+
+    
+
+</div>
+
+<p>La fonctionnalité de clonage de volume a été ajoutée pour prendre en charge uniquement les plug-ins de volume CSI.
+Pour plus de détails, voir <a href="/docs/concepts/storage/volume-pvc-datasource/">clonage de volume</a>.</p>
+
+<p>Pour activer la prise en charge du clonage d&rsquo;un volume à partir d&rsquo;une source de données PVC, activez la propriété <code>VolumePVCDataSource</code> sur l&rsquo;apiserver et le controller-manager.</p>
+
+<h3 id="créer-un-pvc-à-partir-d-un-pvc-existant">Créer un PVC à partir d&rsquo;un PVC existant</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion:<span style="color:#bbb"> </span>v1<span style="color:#bbb">
+</span><span style="color:#bbb"></span>kind:<span style="color:#bbb"> </span>PersistentVolumeClaim<span style="color:#bbb">
+</span><span style="color:#bbb"></span>metadata:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>name:<span style="color:#bbb"> </span>cloned-pvc<span style="color:#bbb">
+</span><span style="color:#bbb"></span>spec:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>storageClassName:<span style="color:#bbb"> </span>my-csi-plugin<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>dataSource:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>name:<span style="color:#bbb"> </span>existing-src-pvc-name<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kind:<span style="color:#bbb"> </span>PersistentVolumeClaim<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>accessModes:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>ReadWriteOnce<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>resources:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>requests:<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>storage:<span style="color:#bbb"> </span>10Gi</code></pre></div>
+<h2 id="écriture-d-une-configuration-portable">Écriture d&rsquo;une configuration portable</h2>
+
+<p>Si vous écrivez des templates de configuration ou des exemples qui s&rsquo;exécutent sur une large gamme de clusters et nécessitent un stockage persistant, il est recommandé d&rsquo;utiliser le modèle suivant:</p>
+
+<ul>
+<li>Incluez des objets <code>PersistentVolumeClaim</code> dans votre ensemble de config (aux côtés de <code>Deployments</code>, <code>ConfigMaps</code>, etc.).</li>
+<li>N&rsquo;incluez pas d&rsquo;objets <code>PersistentVolume</code> dans la configuration, car l&rsquo;utilisateur qui instancie la configuration peut ne pas être autorisé à créer des <code>PersistentVolumes</code>.</li>
+<li>Donnez à l&rsquo;utilisateur la possibilité de fournir un nom de classe de stockage lors de l&rsquo;instanciation du template.
+
+<ul>
+<li>Si l&rsquo;utilisateur fournit un nom de classe de stockage, mettez cette valeur dans le champ <code>persistentVolumeClaim.storageClassName</code>.
+Cela entraînera le PVC pour utiliser la bonne classe de stockage si le cluster a cette <code>StorageClasses</code> activé par l&rsquo;administrateur.</li>
+<li>Si l&rsquo;utilisateur ne fournit pas de nom de classe de stockage, laissez le champ <code>persistentVolumeClaim.storageClassName</code> à zéro.
+Cela entraînera un PV à être automatiquement provisionné pour l&rsquo;utilisateur avec la <code>StorageClass</code> par défaut dans le cluster.
+De nombreux environnements de cluster ont une <code>StorageClass</code> par défaut installée, où les administrateurs peuvent créer leur propre <code>StorageClass</code> par défaut.</li>
+</ul></li>
+<li>Dans votre outillage, surveillez les PVCs qui ne sont pas liés après un certain temps et signalez-le à l&rsquo;utilisateur, car cela peut indiquer que le cluster n&rsquo;a pas de support de stockage dynamique (auquel cas l&rsquo;utilisateur doit créer un PV correspondant) ou que le cluster n&rsquo;a aucun système de stockage (auquel cas l&rsquo;utilisateur ne peut pas déployer de configuration nécessitant des PVCs).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Cette page est elle utile ? </p>
+  <button class="button feedback--yes">Oui</button>
+  <button class="button feedback--no">Non</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/storage/persistent-volumes.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/fr\/docs\/concepts\/storage\/persistent-volumes\/",
+    "title" : "Volumes persistants",
+    "permalink" : "https:\/\/kubernetes.io\/fr\/docs\/concepts\/storage\/persistent-volumes\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Ouvrez un ticket</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/fr/docs/concepts/storage/persistent-volumes.md" class="button issue">Editez cette page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Dernière modification le January 22, 2020 at 6:36 PM PST de
+    <a href="https://github.com/kubernetes/website/commit/8caf8fcd617dfb215eb097a4f078188c7763a5d5/">Add French version of persistent volume page concept page (#18706)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/storage/persistent-volumes.md">Historique</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/fr/docs/home/">Accueil</a>
+            
+            <a href="/fr/blog/">Blog</a>
+            
+            
+            
+            <a href="/fr/partners/">Partenaires</a>
+            
+            <a href="/fr/community/">Communauté</a>
+            
+            <a href="/fr/case-studies/">Études de cas</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Calendrier</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribuer</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

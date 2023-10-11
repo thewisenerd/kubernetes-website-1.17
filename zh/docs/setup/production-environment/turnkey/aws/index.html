@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html id="docs" lang="zh" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>在 AWS EC2 上运行 Kubernetes - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/zh/docs/setup/production-environment/turnkey/aws/">
+<meta property="og:title" content="在 AWS EC2 上运行 Kubernetes">
+<meta name="twitter:title" content="在 AWS EC2 上运行 Kubernetes">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/zh/" class="logo" title="生产级别的容器编排系统 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/zh/docs/" class="active">文档</a></li>
+            
+            <li><a href="/zh/blog/">博客</a></li>
+            
+            
+            
+            <li><a href="/zh/partners/">合作伙伴</a></li>
+            
+            <li><a href="/zh/community/">社区</a></li>
+            
+            <li><a href="/zh/case-studies/">案例分析</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    中文 Chinese <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/setup/production-environment/turnkey/aws/">English</a></li>
+                
+                    <li><a href="/ja/docs/setup/production-environment/turnkey/aws/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/zh/docs/setup/production-environment/turnkey/aws/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/zh/docs/setup/production-environment/turnkey/aws/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/zh/docs/setup/production-environment/turnkey/aws/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/zh/docs/setup/production-environment/turnkey/aws/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/zh/docs/setup/production-environment/turnkey/aws/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/zh/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>学习 Kubernetes 基础知识</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/docs/home/">文档</a></h3>
+           <p>通过演练，示例和参考文档了解如何使用 Kubernetes。你甚至可以<a href="/editdocs/" data-auto-burger-exclude>帮助贡献文档</a>！</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/zh/blog/">博客</a></h3>
+           <p>阅读关于 kubernetes 和容器规范的最新信息,以及获取最新的技术。</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">想要修改 Kubernetes 的核心源代码？</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>在 GitHub 上查看</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">了解社区</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>入门</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/zh/docs/home/">主页</a></li>
+		
+		
+		<li><a href="/zh/docs/setup/" class="YAH">入门</a></li>
+		
+		
+		<li><a href="/zh/docs/concepts/">概念</a></li>
+		
+		
+		<li><a href="/zh/docs/tasks/">任务</a></li>
+		
+		
+		<li><a href="/zh/docs/tutorials/">教程</a></li>
+		
+		
+		<li><a href="/zh/docs/reference/">参考</a></li>
+		
+		
+		<li><a href="/zh/docs/contribute/">贡献</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="搜索" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  版本的文档已不再维护。您现在看到的版本来自于一份静态的快照。如需查阅最新文档，请点击
+	 <a href="https://kubernetes.io/docs/home/">最新版本。</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="入门" href="/zh/docs/setup/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="Kubernetes 发行说明和版本偏差">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Kubernetes 发行说明和版本偏差" href="/zh/docs/setup/release/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="v1.17 Release Notes <small>(EN)</small>" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 版本及版本倾斜支持策略" href="/zh/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="学习环境">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="学习环境" href="/zh/docs/setup/learning-environment/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kind <small>(EN)</small>" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Minikube 安装 Kubernetes" href="/zh/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 创建一个单主集群" href="/zh/docs/setup/independent/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="生产环境">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="生产环境" href="/zh/docs/setup/production-environment/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="容器运行时" href="/zh/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Turnkey 云解决方案">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Turnkey 云解决方案" href="/zh/docs/setup/production-environment/turnkey/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on CenturyLink Cloud <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running Kubernetes on Google Compute Engine <small>(EN)</small>" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 IBM Cloud Private 在多个云上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 AWS EC2 上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在 Azure 上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在腾讯云容器服务上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="在阿里云上运行 Kubernetes" href="/zh/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="使用部署工具安装 Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用部署工具安装 Kubernetes" href="/zh/docs/setup/production-environment/tools/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="使用 kubeadm 引导集群">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="使用 kubeadm 引导集群" href="/zh/docs/setup/production-environment/tools/kubeadm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="安装 kubeadm" href="/zh/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="对 kubeadm 进行故障排查" href="/zh/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Creating a single control-plane cluster with kubeadm <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 定制控制平面配置" href="/zh/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="高可用拓扑选项" href="/zh/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="利用 kubeadm 创建高可用集群" href="/zh/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 创建一个高可用 etcd 集群" href="/zh/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 kubeadm 配置集群中的每个 kubelet" href="/zh/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="配置您的 kubernetes 集群以自托管控制平台" href="/zh/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with KRIB <small>(EN)</small>" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="使用 Kops 安装 Kubernetes" href="/zh/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Kubernetes with Kubespray <small>(EN)</small>" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="本地 VMs">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="本地 VMs" href="/zh/docs/setup/production-environment/on-premises-vm/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloudstack <small>(EN)</small>" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="DC/OS 上的 Kubernetes" href="/zh/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="oVirt" href="/zh/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows Kubernetes">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="Windows Kubernetes" href="/zh/docs/setup/production-environment/windows/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Intro to Windows support in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Guide for adding Windows Nodes in Kubernetes <small>(EN)</small>" href="/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes 中调度 Windows 容器的指南" href="/zh/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="最佳实践">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="最佳实践" href="/zh/docs/setup/best-practices/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Running in multiple zones <small>(EN)</small>" href="/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="创建大型集群" href="/zh/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="校验节点设置" href="/zh/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI 证书和要求" href="/zh/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/setup/production-environment/turnkey/aws.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>在 AWS EC2 上运行 Kubernetes</h1>
+
+
+
+
+<!--
+This page describes how to install a Kubernetes cluster on AWS.
+-->
+
+<p>本页面介绍了如何在 AWS 上安装 Kubernetes 集群。</p>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e5%87%86%e5%a4%87%e5%bc%80%e5%a7%8b">准备开始</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%e9%9b%86%e7%be%a4%e5%85%a5%e9%97%a8">集群入门</a></li>
+
+
+
+
+<li><a href="#%e9%9b%86%e7%be%a4%e4%bc%b8%e7%bc%a9">集群伸缩</a></li>
+
+
+
+
+<li><a href="#%e9%9b%86%e7%be%a4%e6%8b%86%e9%99%a4">集群拆除</a></li>
+
+
+
+
+<li><a href="#%e6%94%af%e6%8c%81%e7%ad%89%e7%ba%a7">支持等级</a></li>
+
+
+
+
+<li><a href="#%e8%bf%9b%e4%b8%80%e6%ad%a5%e9%98%85%e8%af%bb">进一步阅读</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</ul>
+
+
+
+<h2 id="准备开始">准备开始</h2>
+<!--
+To create a Kubernetes cluster on AWS, you will need an Access Key ID and a Secret Access Key from AWS.
+-->
+
+<p>在 AWS 上创建 Kubernetes 集群，您将需要 AWS 的 Access Key ID 和 Secret Access Key。</p>
+
+<!--
+### Supported Production Grade Tools
+-->
+
+<h3 id="支持的生产级别工具">支持的生产级别工具</h3>
+
+<!--
+* [conjure-up](/docs/getting-started-guides/ubuntu/) is an open-source installer for Kubernetes that creates Kubernetes clusters with native AWS integrations on Ubuntu.
+-->
+
+<ul>
+<li><a href="/docs/getting-started-guides/ubuntu/">conjure-up</a> 是 Kubernetes 的开源安装程序，可在 Ubuntu 上创建与原生 AWS 集成的 Kubernetes 集群。</li>
+</ul>
+
+<!--
+* [Kubernetes Operations](https://github.com/kubernetes/kops) - Production Grade K8s Installation, Upgrades, and Management. Supports running Debian, Ubuntu, CentOS, and RHEL in AWS.
+-->
+
+<ul>
+<li><a href="https://github.com/kubernetes/kops" target="_blank">Kubernetes Operations</a> - 生产级 K8s 的安装、升级和管理。支持在 AWS 运行 Debian、Ubuntu、CentOS 和 RHEL。</li>
+</ul>
+
+<!--
+* [CoreOS Tectonic](https://coreos.com/tectonic/) includes the open-source [Tectonic Installer](https://github.com/coreos/tectonic-installer) that creates Kubernetes clusters with Container Linux nodes on AWS.
+-->
+
+<ul>
+<li><a href="https://coreos.com/tectonic/" target="_blank">CoreOS Tectonic</a> 包括开源的 <a href="https://github.com/coreos/tectonic-installer" target="_blank">Tectonic 安装程序</a>，它用于在 AWS 上创建带有 Container Linux 节点的 Kubernetes 集群。</li>
+</ul>
+
+<!--
+* CoreOS originated and the Kubernetes Incubator maintains [a CLI tool, kube-aws](https://github.com/kubernetes-incubator/kube-aws), that creates and manages Kubernetes clusters with [Container Linux](https://coreos.com/why/) nodes, using AWS tools: EC2, CloudFormation and Autoscaling.
+-->
+
+<ul>
+<li>起源于 CoreOS，Kubernetes Incubator 维护的 <a href="https://github.com/kubernetes-incubator/kube-aws" target="_blank">CLI 工具， kube-aws </a>，该工具使用 <a href="https://coreos.com/why/" target="_blank">Container Linux</a> 节点创建和管理 Kubernetes 集群，它使用了 AWS 工具：EC2、CloudFormation 和 Autoscaling。</li>
+</ul>
+
+<!--
+* [KubeOne](https://github.com/kubermatic/kubeone) is an open source cluster lifecycle management tool that creates, upgrades and manages Kubernetes Highly-Available clusters.
+-->
+
+<ul>
+<li><a href="https://github.com/kubermatic/kubeone" target="_blank">KubeOne</a> 是一个开源集群生命周期管理工具，它可用于创建，升级和管理高可用 Kubernetes 集群。</li>
+</ul>
+
+
+
+
+<!--
+## Getting started with your cluster
+-->
+
+<h2 id="集群入门">集群入门</h2>
+
+<!--
+### Command line administration tool: kubectl
+-->
+
+<h3 id="命令行管理工具-kubectl">命令行管理工具：kubectl</h3>
+
+<!--
+The cluster startup script will leave you with a `kubernetes` directory on your workstation.
+Alternately, you can download the latest Kubernetes release from [this page](https://github.com/kubernetes/kubernetes/releases).
+
+Next, add the appropriate binary folder to your `PATH` to access kubectl:
+-->
+
+<p>集群启动脚本将在您的工作站上为您提供一个 <code>kubernetes</code> 目录。
+或者，您可以从<a href="https://github.com/kubernetes/kubernetes/releases" target="_blank">此页面</a>下载最新的 Kubernetes 版本。</p>
+
+<p>接下来，将适当的二进制文件夹添加到您的 <code>PATH</code> 以访问 kubectl：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#080;font-style:italic"># macOS</span>
+<span style="color:#a2f">export</span> <span style="color:#b8860b">PATH</span><span style="color:#666">=</span>&lt;path/to/kubernetes-directory&gt;/platforms/darwin/amd64:<span style="color:#b8860b">$PATH</span>
+
+<span style="color:#080;font-style:italic"># Linux</span>
+<span style="color:#a2f">export</span> <span style="color:#b8860b">PATH</span><span style="color:#666">=</span>&lt;path/to/kubernetes-directory&gt;/platforms/linux/amd64:<span style="color:#b8860b">$PATH</span></code></pre></div>
+<!--
+An up-to-date documentation page for this tool is available here: [kubectl manual](/docs/user-guide/kubectl/)
+
+By default, `kubectl` will use the `kubeconfig` file generated during the cluster startup for authenticating against the API.
+For more information, please read [kubeconfig files](/docs/tasks/access-application-cluster/configure-access-multiple-clusters/)
+-->
+
+<p>此工具的最新文档页面位于此处：<a href="/docs/user-guide/kubectl/">kubectl 手册</a></p>
+
+<p>默认情况下，<code>kubectl</code> 将使用在集群启动期间生成的 <code>kubeconfig</code> 文件对 API 进行身份验证。
+有关更多信息，请阅读 <a href="/docs/tasks/access-application-cluster/configure-access-multiple-clusters/">kubeconfig 文件</a>。</p>
+
+<!--
+### Examples
+
+See [a simple nginx example](/docs/tasks/run-application/run-stateless-application-deployment/) to try out your new cluster.
+
+The "Guestbook" application is another popular example to get started with Kubernetes: [guestbook example](https://github.com/kubernetes/examples/tree/v1.17.17/guestbook/)
+
+For more complete applications, please look in the [examples directory](https://github.com/kubernetes/examples/tree/v1.17.17/)
+-->
+
+<h3 id="示例">示例</h3>
+
+<p>请参阅<a href="/docs/tasks/run-application/run-stateless-application-deployment/">一个简单的 nginx 示例</a>试用您的新集群。</p>
+
+<p>“Guestbook” 应用程序是另一个入门 Kubernetes 的流行示例：<a href="https://github.com/kubernetes/examples/tree/v1.17.17/guestbook/" target="_blank">guestbook 示例</a>。</p>
+
+<p>有关更完整的应用程序，请查看<a href="https://github.com/kubernetes/examples/tree/v1.17.17/" target="_blank">示例目录</a>。</p>
+
+<!--
+## Scaling the cluster
+
+Adding and removing nodes through `kubectl` is not supported. You can still scale the amount of nodes manually through adjustments of the 'Desired' and 'Max' properties within the [Auto Scaling Group](http://docs.aws.amazon.com/autoscaling/latest/userguide/as-manual-scaling.html), which was created during the installation.
+-->
+
+<h2 id="集群伸缩">集群伸缩</h2>
+
+<p>不支持通过 <code>kubectl</code> 添加和删除节点。您仍然可以通过调整在安装过程中创建的 <a href="http://docs.aws.amazon.com/autoscaling/latest/userguide/as-manual-scaling.html" target="_blank">Auto Scaling Group</a> 中的 “Desired” 和 “Max” 属性来手动伸缩节点数量。</p>
+
+<!--
+## Tearing down the cluster
+
+Make sure the environment variables you used to provision your cluster are still exported, then call the following script inside the
+`kubernetes` directory:
+-->
+
+<h2 id="集群拆除">集群拆除</h2>
+
+<p>确保您用于配置集群的环境变量已被导出，然后在运行如下在 Kubernetes 目录的脚本：</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">cluster/kube-down.sh</code></pre></div>
+<!--
+## Support Level
+
+IaaS Provider        | Config. Mgmt | OS            | Networking  | Docs                                          | Conforms | Support Level
+-------------------- | ------------ | ------------- | ----------  | --------------------------------------------- | ---------| ----------------------------
+AWS                  | kops         | Debian        | k8s (VPC)   | [docs](https://github.com/kubernetes/kops)    |          | Community ([@justinsb](https://github.com/justinsb))
+AWS                  | CoreOS       | CoreOS        | flannel     | [docs](/docs/getting-started-guides/aws)      |          | Community
+AWS                  | Juju         | Ubuntu        | flannel, calico, canal     | [docs](/docs/getting-started-guides/ubuntu)      | 100%     | Commercial, Community
+AWS                  | KubeOne         | Ubuntu, CoreOS, CentOS   | canal, weavenet     | [docs](https://github.com/kubermatic/kubeone)      | 100%    | Commercial, Community
+-->
+
+<h2 id="支持等级">支持等级</h2>
+
+<table>
+<thead>
+<tr>
+<th>IaaS 提供商</th>
+<th>配置管理</th>
+<th>操作系统</th>
+<th>网络</th>
+<th>文档</th>
+<th>符合率</th>
+<th>支持等级</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>AWS</td>
+<td>kops</td>
+<td>Debian</td>
+<td>k8s (VPC)</td>
+<td><a href="https://github.com/kubernetes/kops" target="_blank">docs</a></td>
+<td></td>
+<td>Community (<a href="https://github.com/justinsb" target="_blank">@justinsb</a>)</td>
+</tr>
+
+<tr>
+<td>AWS</td>
+<td>CoreOS</td>
+<td>CoreOS</td>
+<td>flannel</td>
+<td><a href="/docs/getting-started-guides/aws">docs</a></td>
+<td></td>
+<td>Community</td>
+</tr>
+
+<tr>
+<td>AWS</td>
+<td>Juju</td>
+<td>Ubuntu</td>
+<td>flannel, calico, canal</td>
+<td><a href="/docs/getting-started-guides/ubuntu">docs</a></td>
+<td>100%</td>
+<td>Commercial, Community</td>
+</tr>
+
+<tr>
+<td>AWS</td>
+<td>KubeOne</td>
+<td>Ubuntu, CoreOS, CentOS</td>
+<td>canal, weavenet</td>
+<td><a href="https://github.com/kubermatic/kubeone" target="_blank">docs</a></td>
+<td>100%</td>
+<td>Commercial, Community</td>
+</tr>
+</tbody>
+</table>
+
+<!--
+## Further reading
+
+Please see the [Kubernetes docs](/docs/) for more details on administering
+and using a Kubernetes cluster.
+-->
+
+<h2 id="进一步阅读">进一步阅读</h2>
+
+<p>请参阅 <a href="/docs/">Kubernetes 文档</a>了解有关管理和使用 Kubernetes 集群的更多详细信息。</p>
+
+
+
+
+
+
+<!--
+---
+reviewers:
+- justinsb
+- clove
+title: Running Kubernetes on AWS EC2
+content_template: templates/task
+---
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+            
+  <h2>反馈</h2>
+  <p class="feedback--prompt">此页是否对您有帮助？ </p>
+  <button class="button feedback--yes">是</button>
+  <button class="button feedback--no">否</button>
+  <p class="feedback--response feedback--response__hidden">
+    感谢反馈。如果您有一个关于如何使用 Kubernetes 的特定的、需要答案的问题，可以访问
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    在 GitHub 仓库上登记新的问题
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      报告问题</a>
+    或者
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      提出改进建议</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/production-environment/turnkey/aws.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/zh\/docs\/setup\/production-environment\/turnkey\/aws\/",
+    "title" : "在 AWS EC2 上运行 Kubernetes",
+    "permalink" : "https:\/\/kubernetes.io\/zh\/docs\/setup\/production-environment\/turnkey\/aws\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">报告 GitHub 问题</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/zh/docs/setup/production-environment/turnkey/aws.md" class="button issue">修改本页面</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    页面最后一次修改于 December 25, 2019 at 8:51 AM PST 由：
+    <a href="https://github.com/kubernetes/website/commit/b8b2cc7c7443e32de70834a2b3d2186cae6eea5a/">ZH-trans: merge release1.16-temporary to master (#18217)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/production-environment/turnkey/aws.md">页面历史</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/zh/docs/home/">主页</a>
+            
+            <a href="/zh/blog/">博客</a>
+            
+            
+            
+            <a href="/zh/partners/">合作伙伴</a>
+            
+            <a href="/zh/community/">社区</a>
+            
+            <a href="/zh/case-studies/">案例分析</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>论坛</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>事件日历</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">贡献</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes 作者 | 文档发布基于 <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a> 授权许可</a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 Linux 基金会&reg;。保留所有权利。Linux 基金会已注册并使用商标。如需了解 Linux 基金会的商标列表，请访问<a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">商标使用页面</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

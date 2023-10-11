@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html id="docs" lang="en" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>Set up a High Availability etcd cluster with kubeadm - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/">
+<meta property="og:title" content="Set up a High Availability etcd cluster with kubeadm">
+<meta name="twitter:title" content="Set up a High Availability etcd cluster with kubeadm">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/" class="logo" title="Production-Grade Container Orchestration - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/docs/" class="active">Documentation</a></li>
+            
+            <li><a href="/blog/">Blog</a></li>
+            
+            <li><a href="/training/">Training</a></li>
+            
+            <li><a href="/partners/">Partners</a></li>
+            
+            <li><a href="/community/">Community</a></li>
+            
+            <li><a href="/case-studies/">Case Studies</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    English <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/zh/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/">中文 Chinese</a></li>
+                
+                    <li><a href="/ja/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/">日本語 Japanese</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>Learn Kubernetes Basics</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/docs/home/">Documentation</a></h3>
+           <p>Learn how to use Kubernetes with conceptual, tutorial, and reference documentation. You can even <a href="/editdocs/" data-auto-burger-exclude>help contribute to the docs</a>!</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/blog/">Blog</a></h3>
+           <p>Read the latest news for Kubernetes and the containers space in general, and get technical how-tos hot off the presses.</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">Interested in hacking on the core Kubernetes code base?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>View On GitHub</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">Explore the community</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+<h1>Getting started</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/docs/home/">HOME</a></li>
+		
+		
+		<li><a href="/docs/setup/" class="YAH">GETTING STARTED</a></li>
+		
+		
+		<li><a href="/docs/concepts/">CONCEPTS</a></li>
+		
+		
+		<li><a href="/docs/tasks/">TASKS</a></li>
+		
+		
+		<li><a href="/docs/tutorials/">TUTORIALS</a></li>
+		
+		
+		<li><a href="/docs/reference/">REFERENCE</a></li>
+		
+		
+		<li><a href="/docs/contribute/">CONTRIBUTE</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="Search" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  documentation is no longer actively maintained. The version you are currently viewing is a static snapshot. For up-to-date documentation, see the 
+	 <a href="https://kubernetes.io/docs/home/">latest version.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="Getting started" href="/docs/setup/"></a>
+
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Release notes and version skew">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="v1.17 Release Notes" href="/docs/setup/release/notes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes version and version skew support policy" href="/docs/setup/release/version-skew-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Learning environment">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Minikube" href="/docs/setup/learning-environment/minikube/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Kind" href="/docs/setup/learning-environment/kind/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Production environment">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Container runtimes" href="/docs/setup/production-environment/container-runtimes/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="Installing Kubernetes with deployment tools">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+<div class="item" data-title="Bootstrapping clusters with kubeadm">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Installing kubeadm" href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Troubleshooting kubeadm" href="/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Creating a single control-plane cluster with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Customizing control plane configuration with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/control-plane-flags/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Options for Highly Available topology" href="/docs/setup/production-environment/tools/kubeadm/ha-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Creating Highly Available clusters with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/high-availability/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Set up a High Availability etcd cluster with kubeadm" href="/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuring each kubelet in your cluster using kubeadm" href="/docs/setup/production-environment/tools/kubeadm/kubelet-integration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Configuring your kubernetes cluster to self-host the control plane" href="/docs/setup/production-environment/tools/kubeadm/self-hosting/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with kops" href="/docs/setup/production-environment/tools/kops/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with KRIB" href="/docs/setup/production-environment/tools/krib/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Installing Kubernetes with Kubespray" href="/docs/setup/production-environment/tools/kubespray/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Turnkey Cloud Solutions">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Alibaba Cloud" href="/docs/setup/production-environment/turnkey/alibaba-cloud/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on AWS EC2" href="/docs/setup/production-environment/turnkey/aws/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Azure" href="/docs/setup/production-environment/turnkey/azure/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on CenturyLink Cloud" href="/docs/setup/production-environment/turnkey/clc/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Google Compute Engine" href="/docs/setup/production-environment/turnkey/gce/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Multiple Clouds with IBM Cloud Private" href="/docs/setup/production-environment/turnkey/icp/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Running Kubernetes on Tencent Kubernetes Engine" href="/docs/setup/production-environment/turnkey/tencent/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="On-Premises VMs">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Cloudstack" href="/docs/setup/production-environment/on-premises-vm/cloudstack/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Kubernetes on DC/OS" href="/docs/setup/production-environment/on-premises-vm/dcos/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="oVirt" href="/docs/setup/production-environment/on-premises-vm/ovirt/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Windows in Kubernetes">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Intro to Windows support in Kubernetes" href="/docs/setup/production-environment/windows/intro-windows-in-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for adding Windows Nodes in Kubernetes" href="/docs/setup/production-environment/windows/user-guide-windows-nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Guide for scheduling Windows containers in Kubernetes" href="/docs/setup/production-environment/windows/user-guide-windows-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Best practices">
+	<div class="container">
+		
+		
+	
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Running in multiple zones" href="/docs/setup/best-practices/multiple-zones/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Building large clusters" href="/docs/setup/best-practices/cluster-large/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="Validate node setup" href="/docs/setup/best-practices/node-conformance/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="PKI certificates and requirements" href="/docs/setup/best-practices/certificates/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>Set up a High Availability etcd cluster with kubeadm</h1>
+
+
+
+
+<blockquote class="note">
+  <div><strong>Note:</strong> While kubeadm is being used as the management tool for external etcd nodes
+in this guide, please note that kubeadm does not plan to support certificate rotation
+or upgrades for such nodes. The long term plan is to empower the tool
+<a href="https://github.com/kubernetes-sigs/etcdadm" target="_blank">etcdadm</a> to manage these
+aspects.</div>
+</blockquote>
+
+<p>Kubeadm defaults to running a single member etcd cluster in a static pod managed
+by the kubelet on the control plane node. This is not a high availability setup
+as the etcd cluster contains only one member and cannot sustain any members
+becoming unavailable. This task walks through the process of creating a high
+availability etcd cluster of three members that can be used as an external etcd
+when using kubeadm to set up a kubernetes cluster.</p>
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#before-you-begin">Before you begin</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#setting-up-the-cluster">Setting up the cluster</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#what-s-next">What's next</a></li>
+
+
+
+</ul>
+
+
+
+<h2 id="before-you-begin">Before you begin</h2>
+<ul>
+<li>Three hosts that can talk to each other over ports 2379 and 2380. This
+document assumes these default ports. However, they are configurable through
+the kubeadm config file.</li>
+<li>Each host must <a href="/docs/setup/production-environment/tools/kubeadm/install-kubeadm/">have docker, kubelet, and kubeadm installed</a>.</li>
+<li>Some infrastructure to copy files between hosts. For example <code>ssh</code> and <code>scp</code>
+can satisfy this requirement.</li>
+</ul>
+
+
+
+
+<h2 id="setting-up-the-cluster">Setting up the cluster</h2>
+
+<p>The general approach is to generate all certs on one node and only distribute
+the <em>necessary</em> files to the other nodes.</p>
+
+<blockquote class="note">
+  <div><strong>Note:</strong> kubeadm contains all the necessary crytographic machinery to generate
+the certificates described below; no other cryptographic tooling is required for
+this example.</div>
+</blockquote>
+
+<ol>
+<li><p>Configure the kubelet to be a service manager for etcd.</p>
+
+<p>Since etcd was created first, you must override the service priority by creating a new unit file
+that has higher precedence than the kubeadm-provided kubelet unit file.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cat <span style="color:#b44">&lt;&lt; EOF &gt; /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
+</span><span style="color:#b44">[Service]
+</span><span style="color:#b44">ExecStart=
+</span><span style="color:#b44">#  Replace &#34;systemd&#34; with the cgroup driver of your container runtime. The default value in the kubelet is &#34;cgroupfs&#34;.
+</span><span style="color:#b44">ExecStart=/usr/bin/kubelet --address=127.0.0.1 --pod-manifest-path=/etc/kubernetes/manifests --cgroup-driver=systemd
+</span><span style="color:#b44">Restart=always
+</span><span style="color:#b44">EOF</span>
+
+systemctl daemon-reload
+systemctl restart kubelet</code></pre></div></li>
+
+<li><p>Create configuration files for kubeadm.</p>
+
+<p>Generate one kubeadm configuration file for each host that will have an etcd
+member running on it using the following script.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#080;font-style:italic"># Update HOST0, HOST1, and HOST2 with the IPs or resolvable names of your hosts</span>
+<span style="color:#a2f">export</span> <span style="color:#b8860b">HOST0</span><span style="color:#666">=</span><span style="color:#666">10</span>.0.0.6
+<span style="color:#a2f">export</span> <span style="color:#b8860b">HOST1</span><span style="color:#666">=</span><span style="color:#666">10</span>.0.0.7
+<span style="color:#a2f">export</span> <span style="color:#b8860b">HOST2</span><span style="color:#666">=</span><span style="color:#666">10</span>.0.0.8
+
+<span style="color:#080;font-style:italic"># Create temp directories to store files that will end up on other hosts.</span>
+mkdir -p /tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST0</span><span style="color:#b68;font-weight:bold">}</span>/ /tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST1</span><span style="color:#b68;font-weight:bold">}</span>/ /tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST2</span><span style="color:#b68;font-weight:bold">}</span>/
+
+<span style="color:#b8860b">ETCDHOSTS</span><span style="color:#666">=(</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST0</span><span style="color:#b68;font-weight:bold">}</span> <span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST1</span><span style="color:#b68;font-weight:bold">}</span> <span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST2</span><span style="color:#b68;font-weight:bold">}</span><span style="color:#666">)</span>
+<span style="color:#b8860b">NAMES</span><span style="color:#666">=(</span><span style="color:#b44">&#34;infra0&#34;</span> <span style="color:#b44">&#34;infra1&#34;</span> <span style="color:#b44">&#34;infra2&#34;</span><span style="color:#666">)</span>
+
+<span style="color:#a2f;font-weight:bold">for</span> i in <span style="color:#b44">&#34;</span><span style="color:#b68;font-weight:bold">${</span>!ETCDHOSTS[@]<span style="color:#b68;font-weight:bold">}</span><span style="color:#b44">&#34;</span>; <span style="color:#a2f;font-weight:bold">do</span>
+<span style="color:#b8860b">HOST</span><span style="color:#666">=</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">ETCDHOSTS</span>[<span style="color:#b8860b">$i</span>]<span style="color:#b68;font-weight:bold">}</span>
+<span style="color:#b8860b">NAME</span><span style="color:#666">=</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">NAMES</span>[<span style="color:#b8860b">$i</span>]<span style="color:#b68;font-weight:bold">}</span>
+cat <span style="color:#b44">&lt;&lt; EOF &gt; /tmp/${HOST}/kubeadmcfg.yaml
+</span><span style="color:#b44">apiVersion: &#34;kubeadm.k8s.io/v1beta2&#34;
+</span><span style="color:#b44">kind: ClusterConfiguration
+</span><span style="color:#b44">etcd:
+</span><span style="color:#b44">    local:
+</span><span style="color:#b44">        serverCertSANs:
+</span><span style="color:#b44">        - &#34;${HOST}&#34;
+</span><span style="color:#b44">        peerCertSANs:
+</span><span style="color:#b44">        - &#34;${HOST}&#34;
+</span><span style="color:#b44">        extraArgs:
+</span><span style="color:#b44">            initial-cluster: ${NAMES[0]}=https://${ETCDHOSTS[0]}:2380,${NAMES[1]}=https://${ETCDHOSTS[1]}:2380,${NAMES[2]}=https://${ETCDHOSTS[2]}:2380
+</span><span style="color:#b44">            initial-cluster-state: new
+</span><span style="color:#b44">            name: ${NAME}
+</span><span style="color:#b44">            listen-peer-urls: https://${HOST}:2380
+</span><span style="color:#b44">            listen-client-urls: https://${HOST}:2379
+</span><span style="color:#b44">            advertise-client-urls: https://${HOST}:2379
+</span><span style="color:#b44">            initial-advertise-peer-urls: https://${HOST}:2380
+</span><span style="color:#b44">EOF</span>
+<span style="color:#a2f;font-weight:bold">done</span></code></pre></div></li>
+
+<li><p>Generate the certificate authority</p>
+
+<p>If you already have a CA then the only action that is copying the CA&rsquo;s <code>crt</code> and
+<code>key</code> file to <code>/etc/kubernetes/pki/etcd/ca.crt</code> and
+<code>/etc/kubernetes/pki/etcd/ca.key</code>. After those files have been copied,
+proceed to the next step, &ldquo;Create certificates for each member&rdquo;.</p>
+
+<p>If you do not already have a CA then run this command on <code>$HOST0</code> (where you
+generated the configuration files for kubeadm).</p>
+
+<pre><code>kubeadm init phase certs etcd-ca
+</code></pre>
+
+<p>This creates two files</p>
+
+<ul>
+<li><code>/etc/kubernetes/pki/etcd/ca.crt</code></li>
+<li><code>/etc/kubernetes/pki/etcd/ca.key</code></li>
+</ul></li>
+
+<li><p>Create certificates for each member</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubeadm init phase certs etcd-server --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST2</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+kubeadm init phase certs etcd-peer --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST2</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+kubeadm init phase certs etcd-healthcheck-client --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST2</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+kubeadm init phase certs apiserver-etcd-client --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST2</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+cp -R /etc/kubernetes/pki /tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST2</span><span style="color:#b68;font-weight:bold">}</span>/
+<span style="color:#080;font-style:italic"># cleanup non-reusable certificates</span>
+find /etc/kubernetes/pki -not -name ca.crt -not -name ca.key -type f -delete
+
+kubeadm init phase certs etcd-server --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST1</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+kubeadm init phase certs etcd-peer --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST1</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+kubeadm init phase certs etcd-healthcheck-client --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST1</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+kubeadm init phase certs apiserver-etcd-client --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST1</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+cp -R /etc/kubernetes/pki /tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST1</span><span style="color:#b68;font-weight:bold">}</span>/
+find /etc/kubernetes/pki -not -name ca.crt -not -name ca.key -type f -delete
+
+kubeadm init phase certs etcd-server --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST0</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+kubeadm init phase certs etcd-peer --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST0</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+kubeadm init phase certs etcd-healthcheck-client --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST0</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+kubeadm init phase certs apiserver-etcd-client --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST0</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+<span style="color:#080;font-style:italic"># No need to move the certs because they are for HOST0</span>
+
+<span style="color:#080;font-style:italic"># clean up certs that should not be copied off this host</span>
+find /tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST2</span><span style="color:#b68;font-weight:bold">}</span> -name ca.key -type f -delete
+find /tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST1</span><span style="color:#b68;font-weight:bold">}</span> -name ca.key -type f -delete</code></pre></div></li>
+
+<li><p>Copy certificates and kubeadm configs</p>
+
+<p>The certificates have been generated and now they must be moved to their
+respective hosts.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"> <span style="color:#b8860b">USER</span><span style="color:#666">=</span>ubuntu
+ <span style="color:#b8860b">HOST</span><span style="color:#666">=</span><span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST1</span><span style="color:#b68;font-weight:bold">}</span>
+ scp -r /tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST</span><span style="color:#b68;font-weight:bold">}</span>/* <span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span>@<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST</span><span style="color:#b68;font-weight:bold">}</span>:
+ ssh <span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">USER</span><span style="color:#b68;font-weight:bold">}</span>@<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST</span><span style="color:#b68;font-weight:bold">}</span>
+ USER@HOST $ sudo -Es
+ root@HOST $ chown -R root:root pki
+ root@HOST $ mv pki /etc/kubernetes/</code></pre></div></li>
+
+<li><p>Ensure all expected files exist</p>
+
+<p>The complete list of required files on <code>$HOST0</code> is:</p>
+
+<pre><code>/tmp/${HOST0}
+└── kubeadmcfg.yaml
+---
+/etc/kubernetes/pki
+├── apiserver-etcd-client.crt
+├── apiserver-etcd-client.key
+└── etcd
+    ├── ca.crt
+    ├── ca.key
+    ├── healthcheck-client.crt
+    ├── healthcheck-client.key
+    ├── peer.crt
+    ├── peer.key
+    ├── server.crt
+    └── server.key
+</code></pre>
+
+<p>On <code>$HOST1</code>:</p>
+
+<pre><code>$HOME
+└── kubeadmcfg.yaml
+---
+/etc/kubernetes/pki
+├── apiserver-etcd-client.crt
+├── apiserver-etcd-client.key
+└── etcd
+    ├── ca.crt
+    ├── healthcheck-client.crt
+    ├── healthcheck-client.key
+    ├── peer.crt
+    ├── peer.key
+    ├── server.crt
+    └── server.key
+</code></pre>
+
+<p>On <code>$HOST2</code></p>
+
+<pre><code>$HOME
+└── kubeadmcfg.yaml
+---
+/etc/kubernetes/pki
+├── apiserver-etcd-client.crt
+├── apiserver-etcd-client.key
+└── etcd
+    ├── ca.crt
+    ├── healthcheck-client.crt
+    ├── healthcheck-client.key
+    ├── peer.crt
+    ├── peer.key
+    ├── server.crt
+    └── server.key
+</code></pre></li>
+
+<li><p>Create the static pod manifests</p>
+
+<p>Now that the certificates and configs are in place it&rsquo;s time to create the
+manifests. On each host run the <code>kubeadm</code> command to generate a static manifest
+for etcd.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">root@HOST0 $ kubeadm init phase etcd <span style="color:#a2f">local</span> --config<span style="color:#666">=</span>/tmp/<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST0</span><span style="color:#b68;font-weight:bold">}</span>/kubeadmcfg.yaml
+root@HOST1 $ kubeadm init phase etcd <span style="color:#a2f">local</span> --config<span style="color:#666">=</span>/home/ubuntu/kubeadmcfg.yaml
+root@HOST2 $ kubeadm init phase etcd <span style="color:#a2f">local</span> --config<span style="color:#666">=</span>/home/ubuntu/kubeadmcfg.yaml</code></pre></div></li>
+
+<li><p>Optional: Check the cluster health</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker run --rm -it <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--net host <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>-v /etc/kubernetes:/etc/kubernetes k8s.gcr.io/etcd:<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">ETCD_TAG</span><span style="color:#b68;font-weight:bold">}</span> etcdctl <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--cert /etc/kubernetes/pki/etcd/peer.crt <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--key /etc/kubernetes/pki/etcd/peer.key <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--cacert /etc/kubernetes/pki/etcd/ca.crt <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span>--endpoints https://<span style="color:#b68;font-weight:bold">${</span><span style="color:#b8860b">HOST0</span><span style="color:#b68;font-weight:bold">}</span>:2379 endpoint health --cluster
+...
+https://<span style="color:#666">[</span>HOST0 IP<span style="color:#666">]</span>:2379 is healthy: successfully committed proposal: <span style="color:#b8860b">took</span> <span style="color:#666">=</span> <span style="color:#666">16</span>.283339ms
+https://<span style="color:#666">[</span>HOST1 IP<span style="color:#666">]</span>:2379 is healthy: successfully committed proposal: <span style="color:#b8860b">took</span> <span style="color:#666">=</span> <span style="color:#666">19</span>.44402ms
+https://<span style="color:#666">[</span>HOST2 IP<span style="color:#666">]</span>:2379 is healthy: successfully committed proposal: <span style="color:#b8860b">took</span> <span style="color:#666">=</span> <span style="color:#666">35</span>.926451ms</code></pre></div>
+<ul>
+<li>Set <code>${ETCD_TAG}</code> to the version tag of your etcd image. For example <code>3.4.3-0</code>. To see the etcd image and tag that kubeadm uses execute <code>kubeadm config images list --kubernetes-version ${K8S_VERSION}</code>, where <code>${K8S_VERSION}</code> is for example <code>v1.17.0</code></li>
+<li>Set <code>${HOST0}</code>to the IP address of the host you are testing.</li>
+</ul></li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="what-s-next">What&#39;s next</h2>
+<p>Once you have a working 3 member etcd cluster, you can continue setting up a
+highly available control plane using the <a href="/docs/setup/production-environment/tools/kubeadm/high-availability/">external etcd method with
+kubeadm</a>.</p>
+
+
+
+
+
+
+
+    
+            
+  <h2>Feedback</h2>
+  <p class="feedback--prompt">Was this page helpful? </p>
+  <button class="button feedback--yes">Yes</button>
+  <button class="button feedback--no">No</button>
+  <p class="feedback--response feedback--response__hidden">
+    Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    Open an issue in the GitHub repo if you want to 
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      report a problem</a>
+    or
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      suggest an improvement</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/docs\/setup\/production-environment\/tools\/kubeadm\/setup-ha-etcd-with-kubeadm\/",
+    "title" : "Set up a High Availability etcd cluster with kubeadm",
+    "permalink" : "https:\/\/kubernetes.io\/docs\/setup\/production-environment\/tools\/kubeadm\/setup-ha-etcd-with-kubeadm\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">Create an Issue</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/en/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm.md" class="button issue">Edit This Page</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    Page last modified on January 03, 2020 at 11:43 AM PST by
+    <a href="https://github.com/kubernetes/website/commit/70936d4dbd8226a48a63ea38672f4e2a323bd3d9/">Update cluster health check command for newer etcd (#18392)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm.md">Page History</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/docs/home/">Home</a>
+            
+            <a href="/blog/">Blog</a>
+            
+            <a href="/training/">Training</a>
+            
+            <a href="/partners/">Partners</a>
+            
+            <a href="/community/">Community</a>
+            
+            <a href="/case-studies/">Case Studies</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>Events Calendar</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">Contribute</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html id="docs" lang="ko" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>보안 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/ko/docs/concepts/security/">
+<meta property="og:title" content="보안">
+<meta name="twitter:title" content="보안">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ko/" class="logo" title="운영 수준의 컨테이너 오케스트레이션 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ko/docs/" class="active">문서</a></li>
+            
+            
+            
+            <li><a href="/ko/training/">교육</a></li>
+            
+            
+            
+            
+            
+            <li><a href="/ko/case-studies/">사례 연구</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    한국어 Korean <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/concepts/security/">English</a></li>
+                
+                    <li><a href="/zh/docs/concepts/security/">中文 Chinese</a></li>
+                
+                    <li><a href="/fr/docs/concepts/security/">Français</a></li>
+                
+                    <li><a href="/id/docs/concepts/security/">Bahasa Indonesia</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ko/docs/concepts/security/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ko/docs/concepts/security/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ko/docs/concepts/security/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ko/docs/concepts/security/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ko/docs/concepts/security/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ko/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>쿠버네티스 기초 학습</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/home/">문서</a></h3>
+           <p>개념, 튜토리얼 및 참조 문서와 함께 쿠버네티스 사용하는 방법을 익힐 수 있다. 또한, <a href="/editdocs/" data-auto-burger-exclude>문서에 기여하는 것도 도움을 줄 수 있다</a>!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">코어 쿠버네티스 코드 베이스를 살펴보는데 관심이 있으십니까?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHub에서 보기</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">커뮤니티 둘러보기</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+<h1>개념</h1>
+<h5></h5>
+
+
+
+
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ko/docs/home/">홈</a></li>
+		
+		
+		<li><a href="/ko/docs/setup/">시작하기</a></li>
+		
+		
+		<li><a href="/ko/docs/concepts/" class="YAH">개념</a></li>
+		
+		
+		<li><a href="/ko/docs/tasks/">태스크</a></li>
+		
+		
+		<li><a href="/ko/docs/tutorials/">튜토리얼</a></li>
+		
+		
+		<li><a href="/ko/docs/reference/">레퍼런스</a></li>
+		
+		
+		<li><a href="/ko/docs/contribute/">기여</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="검색하기" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  문서는 더 이상 적극적으로 관리되지 않음. 현재 보고있는 문서는 정적 스냅샷임. 최신 문서를 위해서는, 다음을 참고. 
+	 <a href="https://kubernetes.io/docs/home/">최신 버전.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="개념" href="/ko/docs/concepts/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="개요">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스란 무엇인가" href="/ko/docs/concepts/overview/what-is-kubernetes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스 컴포넌트" href="/ko/docs/concepts/overview/components/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스 API" href="/ko/docs/concepts/overview/kubernetes-api/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="쿠버네티스 오브젝트로 작업하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스 오브젝트 이해하기" href="/ko/docs/concepts/overview/working-with-objects/kubernetes-objects/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스 오브젝트 관리" href="/ko/docs/concepts/overview/working-with-objects/object-management/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="오브젝트 이름과 ID" href="/ko/docs/concepts/overview/working-with-objects/names/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="네임스페이스" href="/ko/docs/concepts/overview/working-with-objects/namespaces/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="레이블과 셀렉터" href="/ko/docs/concepts/overview/working-with-objects/labels/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="어노테이션" href="/ko/docs/concepts/overview/working-with-objects/annotations/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="필드 셀렉터" href="/ko/docs/concepts/overview/working-with-objects/field-selectors/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="권장 레이블" href="/ko/docs/concepts/overview/working-with-objects/common-labels/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="클러스터 아키텍처">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="노드" href="/ko/docs/concepts/architecture/nodes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="마스터-노드 커뮤니케이션" href="/ko/docs/concepts/architecture/master-node-communication/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="컨트롤러" href="/ko/docs/concepts/architecture/controller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="클라우트 컨트롤러 매니저 기반에 관한 개념" href="/ko/docs/concepts/architecture/cloud-controller/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="컨테이너">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Containers overview <small>(EN)</small>" href="/docs/concepts/containers/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="이미지" href="/ko/docs/concepts/containers/images/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="런타임 클래스" href="/ko/docs/concepts/containers/runtime-class/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="컨테이너 환경 변수" href="/ko/docs/concepts/containers/container-environment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="컨테이너 라이프사이클 훅(Hook)" href="/ko/docs/concepts/containers/container-lifecycle-hooks/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="워크로드">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="파드">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="파드(Pod) 개요" href="/ko/docs/concepts/workloads/pods/pod-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="파드" href="/ko/docs/concepts/workloads/pods/pod/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="파드 라이프사이클" href="/ko/docs/concepts/workloads/pods/pod-lifecycle/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="초기화 컨테이너" href="/ko/docs/concepts/workloads/pods/init-containers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="파드 토폴로지 분배 제약 조건" href="/ko/docs/concepts/workloads/pods/pod-topology-spread-constraints/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="파드 프리셋" href="/ko/docs/concepts/workloads/pods/podpreset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="중단(disruption)" href="/ko/docs/concepts/workloads/pods/disruptions/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="임시(Ephemeral) 컨테이너" href="/ko/docs/concepts/workloads/pods/ephemeral-containers/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="컨트롤러">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="레플리카셋" href="/ko/docs/concepts/workloads/controllers/replicaset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="레플리케이션 컨트롤러" href="/ko/docs/concepts/workloads/controllers/replicationcontroller/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="디플로이먼트" href="/ko/docs/concepts/workloads/controllers/deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="스테이트풀셋" href="/ko/docs/concepts/workloads/controllers/statefulset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="데몬셋" href="/ko/docs/concepts/workloads/controllers/daemonset/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="가비지(Garbage) 수집" href="/ko/docs/concepts/workloads/controllers/garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="완료된 리소스를 위한 TTL 컨트롤러" href="/ko/docs/concepts/workloads/controllers/ttlafterfinished/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="잡 - 실행부터 완료까지" href="/ko/docs/concepts/workloads/controllers/jobs-run-to-completion/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="크론잡" href="/ko/docs/concepts/workloads/controllers/cron-jobs/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="서비스, 로드밸런싱, 네트워킹">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="서비스" href="/ko/docs/concepts/services-networking/service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="서비스 토폴로지" href="/ko/docs/concepts/services-networking/service-topology/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="엔드포인트슬라이스" href="/ko/docs/concepts/services-networking/endpoint-slices/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="서비스 및 파드용 DNS" href="/ko/docs/concepts/services-networking/dns-pod-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="서비스와 애플리케이션 연결하기" href="/ko/docs/concepts/services-networking/connect-applications-service/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="인그레스" href="/ko/docs/concepts/services-networking/ingress/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="인그레스 컨트롤러" href="/ko/docs/concepts/services-networking/ingress-controllers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="네트워크 정책" href="/ko/docs/concepts/services-networking/network-policies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="HostAliases로 파드의 /etc/hosts 항목 추가하기" href="/ko/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="IPv4/IPv6 이중 스택" href="/ko/docs/concepts/services-networking/dual-stack/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="스토리지">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="볼륨" href="/ko/docs/concepts/storage/volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Persistent Volumes <small>(EN)</small>" href="/docs/concepts/storage/persistent-volumes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Volume Snapshots <small>(EN)</small>" href="/docs/concepts/storage/volume-snapshots/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="CSI 볼륨 복제하기" href="/ko/docs/concepts/storage/volume-pvc-datasource/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Storage Classes <small>(EN)</small>" href="/docs/concepts/storage/storage-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="볼륨 스냅샷 클래스" href="/ko/docs/concepts/storage/volume-snapshot-classes/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Dynamic Volume Provisioning <small>(EN)</small>" href="/docs/concepts/storage/dynamic-provisioning/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Node-specific Volume Limits <small>(EN)</small>" href="/docs/concepts/storage/storage-limits/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="구성">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Bin Packing for Extended Resources <small>(EN)</small>" href="/docs/concepts/configuration/resource-bin-packing/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="구성 모범 사례" href="/ko/docs/concepts/configuration/overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Compute Resources for Containers <small>(EN)</small>" href="/docs/concepts/configuration/manage-compute-resources-container/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Overhead <small>(EN)</small>" href="/docs/concepts/configuration/pod-overhead/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="노드에 파드 할당하기" href="/ko/docs/concepts/configuration/assign-pod-node/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Taints and Tolerations <small>(EN)</small>" href="/docs/concepts/configuration/taint-and-toleration/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Secrets <small>(EN)</small>" href="/docs/concepts/configuration/secret/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="kubeconfig 파일을 사용하여 클러스터 접근 구성하기" href="/ko/docs/concepts/configuration/organize-cluster-access-kubeconfig/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Priority and Preemption <small>(EN)</small>" href="/docs/concepts/configuration/pod-priority-preemption/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Scheduling Framework <small>(EN)</small>" href="/docs/concepts/configuration/scheduling-framework/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="보안">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="클라우드 네이티브 보안 개요" href="/ko/docs/concepts/security/overview/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Policies">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Limit Ranges <small>(EN)</small>" href="/docs/concepts/policy/limit-range/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Resource Quotas <small>(EN)</small>" href="/docs/concepts/policy/resource-quotas/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Pod Security Policies <small>(EN)</small>" href="/docs/concepts/policy/pod-security-policy/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="스케줄링">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Kubernetes Scheduler <small>(EN)</small>" href="/docs/concepts/scheduling/kube-scheduler/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="스케줄러 성능 튜닝" href="/ko/docs/concepts/scheduling/scheduler-perf-tuning/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="클러스터 관리">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="클러스터 관리 개요" href="/ko/docs/concepts/cluster-administration/cluster-administration-overview/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Certificates <small>(EN)</small>" href="/docs/concepts/cluster-administration/certificates/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cloud Providers <small>(EN)</small>" href="/docs/concepts/cluster-administration/cloud-providers/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Managing Resources <small>(EN)</small>" href="/docs/concepts/cluster-administration/manage-deployment/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Cluster Networking <small>(EN)</small>" href="/docs/concepts/cluster-administration/networking/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Logging Architecture <small>(EN)</small>" href="/docs/concepts/cluster-administration/logging/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Metrics For The Kubernetes Control Plane <small>(EN)</small>" href="/docs/concepts/cluster-administration/monitoring/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Configuring kubelet Garbage Collection <small>(EN)</small>" href="/docs/concepts/cluster-administration/kubelet-garbage-collection/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="쿠버네티스에서 프락시(Proxy)" href="/ko/docs/concepts/cluster-administration/proxies/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Installing Addons <small>(EN)</small>" href="/docs/concepts/cluster-administration/addons/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="쿠버네티스 확장하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Extending your Kubernetes Cluster <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/extend-cluster/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="쿠버네티스 API 확장하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Custom Resources <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/api-extension/custom-resources/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="애그리게이션 레이어(aggregation layer)로 쿠버네티스 API 확장하기" href="/ko/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="Compute, Storage, and Networking Extensions">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Network Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Device Plugins <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Operator pattern <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/operator/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Service Catalog <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/service-catalog/"></a>
+
+		
+	
+		
+			
+
+<a class="item" target="_blank" data-title="Poseidon-Firmament Scheduler <small>(EN)</small>" href="/docs/concepts/extend-kubernetes/poseidon-firmament-alternate-scheduler/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+    
+    
+    
+    
+    
+    
+	 
+    
+    
+    
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/concepts/security/overview.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>클라우드 네이티브 보안 개요</h1>
+
+
+
+<p>쿠버네티스 보안(일반적인 보안)은 관련된 많은 부분이 상호작용하는
+방대한 주제다. 오늘날에는 웹 애플리케이션의 실행을 돕는
+수많은 시스템에 오픈소스 소프트웨어가 통합되어 있으며,
+전체적인 보안에 대하여 생각할 수 있는 방법에 대한 통찰력을 도울 수 있는
+몇 가지 중요한 개념이 있다. 이 가이드는 클라우드 네이티브 보안과 관련된
+몇 가지 일반적인 개념에 대한 멘탈 모델(mental model)을 정의한다. 멘탈 모델은 완전히 임의적이며
+소프트웨어 스택을 보호할 위치를 생각하는데 도움이되는 경우에만 사용해야
+한다.</p>
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%ed%81%b4%eb%9d%bc%ec%9a%b0%eb%93%9c-%eb%84%a4%ec%9d%b4%ed%8b%b0%eb%b8%8c-%eb%b3%b4%ec%95%88%ec%9d%98-4c">클라우드 네이티브 보안의 4C</a></li>
+
+
+
+
+<li><a href="#%ed%81%b4%eb%9d%bc%ec%9a%b0%eb%93%9c">클라우드</a></li>
+
+
+
+
+<li><a href="#%ed%81%b4%eb%9f%ac%ec%8a%a4%ed%84%b0">클러스터</a></li>
+
+
+
+
+<li><a href="#%ec%bb%a8%ed%85%8c%ec%9d%b4%eb%84%88">컨테이너</a></li>
+
+
+
+
+<li><a href="#%ec%bd%94%eb%93%9c">코드</a></li>
+
+
+
+
+<li><a href="#%ea%b0%95%eb%a0%a5%ed%95%9c-robust-%ec%9e%90%eb%8f%99%ed%99%94">강력한(robust) 자동화</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%eb%8b%a4%ec%9d%8c-%eb%82%b4%ec%9a%a9">다음 내용</a></li>
+
+
+
+</ul>
+
+
+<h2 id="클라우드-네이티브-보안의-4c">클라우드 네이티브 보안의 4C</h2>
+
+<p>계층적인 보안에 대해서 어떻게 생각할 수 있는지 이해하는 데 도움이 될 수 있는 다이어그램부터 살펴보자.
+<blockquote class="note">
+  <div><strong>참고:</strong> 이 계층화된 접근 방식은 보안에 대한 <a href="https://en.wikipedia.org/wiki/Defense_in_depth_(computing)" target="_blank">심층 방어</a>
+접근 방식을 강화하며, 소프트웨어 시스템의 보안을 위한 모범 사례로
+널리 알려져 있다. 4C는 클라우드(Cloud), 클러스터(Clusters), 컨테이너(Containers) 및 코드(Code)이다.</div>
+</blockquote></p>
+
+<figure>
+    <img src="/images/docs/4c.png"/> <figcaption>
+            <h4>클라우드 네이티브 보안의 4C</h4>
+        </figcaption>
+</figure>
+
+<p>위 그림에서 볼 수 있듯이,
+4C는 각각의 사각형의 보안에 따라 다르다. 코드
+수준의 보안만 처리하여 클라우드, 컨테이너 및 코드의 열악한 보안 표준으로부터
+보호하는 것은 거의 불가능하다. 그러나 이런 영역들의 보안이 적절하게
+처리되고, 코드에 보안을 추가한다면 이미 강력한 기반이 더욱
+강화될 것이다. 이러한 관심 분야는 아래에서 더 자세히 설명한다.</p>
+
+<h2 id="클라우드">클라우드</h2>
+
+<p>여러 면에서 클라우드(또는 공동 위치 서버, 또는 기업의 데이터 센터)는 쿠버네티스 클러스터 구성을 위한
+<a href="https://en.wikipedia.org/wiki/Trusted_computing_base" target="_blank">신뢰 컴퓨팅 기반(trusted computing base)</a>
+이다. 이러한 구성 요소 자체가 취약하거나(또는 취약한 방법으로 구성된)
+경우 이 기반 위에서 구축된 모든 구성 요소의 보안을
+실제로 보장할 방법이 없다. 각 클라우드 공급자는 그들의 환경에서 워크로드를
+안전하게 실행하는 방법에 대해 고객에게 광범위한 보안 권장 사항을
+제공한다. 모든 클라우드 공급자와 워크로드는 다르기 때문에
+클라우드 보안에 대한 권장 사항을 제공하는 것은 이 가이드의 범위를 벗어난다. 다음은
+알려진 클라우드 공급자의 보안 문서의 일부와
+쿠버네티스 클러스터를 구성하기 위한 인프라
+보안에 대한 일반적인 지침을 제공한다.</p>
+
+<h3 id="클라우드-공급자-보안-표">클라우드 공급자 보안 표</h3>
+
+<table>
+<thead>
+<tr>
+<th>IaaS 공급자</th>
+<th>링크</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Alibaba Cloud</td>
+<td><a href="https://www.alibabacloud.com/trust-center" target="_blank">https://www.alibabacloud.com/trust-center</a></td>
+</tr>
+
+<tr>
+<td>Amazon Web Services</td>
+<td><a href="https://aws.amazon.com/security/" target="_blank">https://aws.amazon.com/security/</a></td>
+</tr>
+
+<tr>
+<td>Google Cloud Platform</td>
+<td><a href="https://cloud.google.com/security/" target="_blank">https://cloud.google.com/security/</a></td>
+</tr>
+
+<tr>
+<td>IBM Cloud</td>
+<td><a href="https://www.ibm.com/cloud/security" target="_blank">https://www.ibm.com/cloud/security</a></td>
+</tr>
+
+<tr>
+<td>Microsoft Azure</td>
+<td><a href="https://docs.microsoft.com/en-us/azure/security/azure-security" target="_blank">https://docs.microsoft.com/en-us/azure/security/azure-security</a></td>
+</tr>
+
+<tr>
+<td>VMWare VSphere</td>
+<td><a href="https://www.vmware.com/security/hardening-guides.html" target="_blank">https://www.vmware.com/security/hardening-guides.html</a></td>
+</tr>
+</tbody>
+</table>
+
+<p>자체 하드웨어나 다른 클라우드 공급자를 사용하는 경우 보안에 대한
+모범 사례는 해당 문서를 참조한다.</p>
+
+<h3 id="일반적인-인프라-지침-표">일반적인 인프라 지침 표</h3>
+
+<table>
+<thead>
+<tr>
+<th>쿠버네티스 인프라에서 고려할 영역</th>
+<th>추천</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>API 서버에 대한 네트워크 접근(마스터)</td>
+<td>이상적으로는 인터넷에서 쿠버네티스 마스터에 대한 모든 접근을 공개적으로 허용하지 않으며 클러스터를 관리하는데 필요한 IP 주소 집합으로 제한된 네트워크 접근 제어 목록(ACL)에 의해 제어되어야 한다.</td>
+</tr>
+
+<tr>
+<td>노드에 대한 네트워크 접근(워커 서버)</td>
+<td>노드는 마스터의 지정된 포트 연결<em>만</em> 허용하고(네트워크 접근 제어 목록의 사용), NodePort와 LoadBalancer 유형의 쿠버네티스 서비스에 대한 연결을 허용하도록 구성해야 한다. 가능한 노드가 공용 인터넷에 완전히 노출되어서는 안된다.</td>
+</tr>
+
+<tr>
+<td>클라우드 공급자 API에 대한 쿠버네티스 접근</td>
+<td>각 클라우드 공급자는 쿠버네티스 마스터 및 노드에 서로 다른 권한을 부여해야 함으로써, 이런 권장 사항이 더 일반적이다. 관리해야 하는 리소스에 대한 <a href="https://en.wikipedia.org/wiki/Principle_of_least_privilege" target="_blank">최소 권한의 원칙</a>을 따르는 클라우드 공급자의 접근 권한을 클러스터에 구성하는 것이 가장 좋다. AWS의 Kops에 대한 예제: <a href="https://github.com/kubernetes/kops/blob/master/docs/iam_roles.md#iam-roles" target="_blank">https://github.com/kubernetes/kops/blob/master/docs/iam_roles.md#iam-roles</a></td>
+</tr>
+
+<tr>
+<td>etcd에 대한 접근</td>
+<td>etcd (쿠버네티스의 데이터저장소)에 대한 접근은 마스터로만 제한되어야 한다. 구성에 따라 TLS를 통해 etcd를 사용해야 한다. 자세한 정보: <a href="https://github.com/etcd-io/etcd/tree/master/Documentation#security" target="_blank">https://github.com/etcd-io/etcd/tree/master/Documentation#security</a></td>
+</tr>
+
+<tr>
+<td>etcd 암호화</td>
+<td>가능한 모든 드라이브를 유휴 상태에서 암호화 하는 것이 좋은 방법이지만, etcd는 전체 클러스터(시크릿 포함)의 상태를 유지하고 있기에 디스크의 암호화는 유휴 상태에서 암호화 되어야 한다.</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="클러스터">클러스터</h2>
+
+<p>이 섹션에서는 쿠버네티스의 워크로드
+보안을 위한 링크를 제공한다. 쿠버네티스
+보안에 영향을 미치는 다음 두 가지 영역이 있다.</p>
+
+<ul>
+<li>클러스터를 구성하는 설정 가능한 컴포넌트의 보안</li>
+<li>클러스터에서 실행되는 컴포넌트의 보안</li>
+</ul>
+
+<h3 id="클러스터-의-컴포넌트">클러스터<em>의</em> 컴포넌트</h3>
+
+<p>우발적이거나 악의적인 접근으로부터 클러스터를 보호하고,
+모범 사례에 대한 정보를 채택하기 위해서는
+<a href="/docs/tasks/administer-cluster/securing-a-cluster/">클러스터 보안</a>에 대한 조언을 읽고 따른다.</p>
+
+<h3 id="클러스터-내-컴포넌트-애플리케이션">클러스터 <em>내</em> 컴포넌트(애플리케이션)</h3>
+
+<p>애플리케이션의 공격 영역에 따라, 보안의 특정 측면에
+중점을 둘 수 있다. 예를 들어, 다른 리소스 체인에 중요한 서비스(서비스 A)와
+리소스 소진 공격에 취약한 별도의 작업 부하(서비스 B)를 실행하는 경우,
+리소스 제한을 설정하지 않은 서비스 B에 의해
+서비스 A 또한 손상시킬 위험이 있다. 다음은 쿠버네티스에서
+실행 중인 워크로드를 보호할 때 고려해야 할 사항에 대한 링크 표이다.</p>
+
+<table>
+<thead>
+<tr>
+<th>워크로드 보안에서 고려할 영역</th>
+<th>추천</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>RBAC 인증(쿠버네티스 API에 대한 접근)</td>
+<td><a href="https://kubernetes.io/docs/reference/access-authn-authz/rbac/" target="_blank">https://kubernetes.io/docs/reference/access-authn-authz/rbac/</a></td>
+</tr>
+
+<tr>
+<td>인증</td>
+<td><a href="https://kubernetes.io/docs/reference/access-authn-authz/controlling-access/" target="_blank">https://kubernetes.io/docs/reference/access-authn-authz/controlling-access/</a></td>
+</tr>
+
+<tr>
+<td>애플리케이션 시크릿 관리(및 유휴 상태에서의 etcd 암호화 등)</td>
+<td><a href="https://kubernetes.io/docs/concepts/configuration/secret/" target="_blank">https://kubernetes.io/docs/concepts/configuration/secret/</a> <br> <a href="https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/" target="_blank">https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/</a></td>
+</tr>
+
+<tr>
+<td>파드 보안 정책</td>
+<td><a href="https://kubernetes.io/docs/concepts/policy/pod-security-policy/" target="_blank">https://kubernetes.io/docs/concepts/policy/pod-security-policy/</a></td>
+</tr>
+
+<tr>
+<td>서비스 품질(및 클러스터 리소스 관리)</td>
+<td><a href="https://kubernetes.io/docs/tasks/configure-pod-container/quality-service-pod/" target="_blank">https://kubernetes.io/docs/tasks/configure-pod-container/quality-service-pod/</a></td>
+</tr>
+
+<tr>
+<td>네트워크 정책</td>
+<td><a href="https://kubernetes.io/ko/docs/concepts/services-networking/network-policies/" target="_blank">https://kubernetes.io/ko/docs/concepts/services-networking/network-policies/</a></td>
+</tr>
+
+<tr>
+<td>쿠버네티스 인그레스를 위한 TLS</td>
+<td><a href="https://kubernetes.io/ko/docs/concepts/services-networking/ingress/#tls" target="_blank">https://kubernetes.io/ko/docs/concepts/services-networking/ingress/#tls</a></td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="컨테이너">컨테이너</h2>
+
+<p>쿠버네티스에서 소프트웨어를 실행하려면, 소프트웨어는 컨테이너에 있어야 한다. 이로 인해,
+쿠버네티스의 원시적인 워크로드 보안으로부터 이점을 얻기 위해서
+반드시 고려해야 할 보안 사항이 있다. 컨테이너 보안
+또한 이 가이드의 범위를 벗어나지만, 해당 주제에 대한 추가적인 설명을 위하여
+일반 권장사항 및 링크 표를 아래에 제공한다.</p>
+
+<table>
+<thead>
+<tr>
+<th>컨테이너에서 고려할 영역</th>
+<th>추천</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>컨테이너 취약점 스캔 및 OS에 종속적인 보안</td>
+<td>이미지 빌드 단계의 일부 또는 정기적으로 <a href="https://github.com/coreos/clair/" target="_blank">CoreOS의 Clair</a>와 같은 도구를 사용해서 컨테이너에 알려진 취약점이 있는지 검사한다.</td>
+</tr>
+
+<tr>
+<td>이미지 서명 및 시행</td>
+<td>두 개의 다른 CNCF 프로젝트(TUF 와 Notary)는 컨테이너 이미지에 서명하고 컨테이너 내용에 대한 신뢰 시스템을 유지하는데 유용한 도구이다. 도커를 사용하는 경우 도커 엔진에 <a href="https://docs.docker.com/engine/security/trust/content_trust/" target="_blank">도커 컨텐츠 신뢰</a>가 내장되어 있다. 시행 부분에서의 <a href="https://github.com/IBM/portieris" target="_blank">IBM의 Portieris</a> 프로젝트는 쿠버네티스 다이나믹 어드미션 컨트롤러로 실행되는 도구로, 클러스터에서 허가하기 전에 Notary를 통해 이미지가 적절하게 서명되었는지 확인한다.</td>
+</tr>
+
+<tr>
+<td>권한있는 사용자의 비허용</td>
+<td>컨테이너를 구성할 때 컨테이너의 목적을 수행하는데 필요한 최소 권한을 가진 사용자를 컨테이너 내에 만드는 방법에 대해서는 설명서를 참조한다.</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="코드">코드</h2>
+
+<p>마지막으로 애플리케이션의 코드 수준으로 내려가면, 가장 많은 제어를 할 수 있는
+주요 공격 영역 중 하나이다. 이런 코드 수준은 쿠버네티스의 범위
+밖이지만 몇가지 권장사항이 있다.</p>
+
+<h3 id="일반적인-코드-보안-지침표">일반적인 코드 보안 지침표</h3>
+
+<table>
+<thead>
+<tr>
+<th>코드에서 고려할 영역</th>
+<th>추천</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>TLS를 통한 접근</td>
+<td>코드가 TCP를 통해 통신해야 한다면, 클라이언트와 먼저 TLS 핸드 셰이크를 수행하는 것이 이상적이다. 몇 가지 경우를 제외하고, 기본 동작은 전송 중인 모든 것을 암호화하는 것이다. 한걸음 더 나아가, VPC의 &ldquo;방화벽 뒤&rdquo;에서도 서비스 간 네트워크 트래픽을 암호화하는 것이 좋다. 이것은 인증서를 가지고 있는 두 서비스의 양방향 검증을 <a href="https://en.wikipedia.org/wiki/Mutual_authentication" target="_blank">mTLS</a>를 통해 수행할 수 있다. 이것을 수행하기 위해 쿠버네티스에는 <a href="https://linkerd.io/" target="_blank">Linkerd</a> 및 <a href="https://istio.io/" target="_blank">Istio</a>와 같은 수많은 도구가 있다.</td>
+</tr>
+
+<tr>
+<td>통신 포트 범위 제한</td>
+<td>이 권장사항은 당연할 수도 있지만, 가능하면 통신이나 메트릭 수집에 꼭 필요한 서비스의 포트만 노출시켜야 한다.</td>
+</tr>
+
+<tr>
+<td>타사 종속성 보안</td>
+<td>애플리케이션은 자체 코드베이스의 외부에 종속적인 경향이 있기 때문에, 코드의 종속성을 정기적으로 스캔하여 현재 알려진 취약점이 없는지 확인하는 것이 좋다. 각 언어에는 이런 검사를 자동으로 수행하는 도구를 가지고 있다.</td>
+</tr>
+
+<tr>
+<td>정적 코드 분석</td>
+<td>대부분 언어에는 잠재적으로 안전하지 않은 코딩 방법에 대해 코드 스니펫을 분석할 수 있는 방법을 제공한다. 가능한 언제든지 일반적인 보안 오류에 대해 코드베이스를 스캔할 수 있는 자동화된 도구를 사용하여 검사를 한다. 도구는 다음에서 찾을 수 있다: <a href="https://www.owasp.org/index.php/Source_Code_Analysis_Tools" target="_blank">https://www.owasp.org/index.php/Source_Code_Analysis_Tools</a></td>
+</tr>
+
+<tr>
+<td>동적 탐지 공격</td>
+<td>일반적으로 서비스에서 발생할 수 있는 잘 알려진 공격 중 일부를 서비스에 테스트할 수 있는 자동화된 몇 가지 도구가 있다. 이런 잘 알려진 공격에는 SQL 인젝션, CSRF 및 XSS가 포함된다. 가장 널리 사용되는 동적 분석 도구는 OWASP Zed Attack 프록시다. <a href="https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project" target="_blank">https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project</a></td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="강력한-robust-자동화">강력한(robust) 자동화</h2>
+
+<p>위에서 언급한 대부분의 제안사항은 실제로 일련의 보안 검사의 일부로 코드를
+전달하는 파이프라인에 의해 자동화 될 수 있다. 소프트웨어 전달을 위한
+&ldquo;지속적인 해킹(Continuous Hacking)&ldquo;에 대한 접근 방식에 대해 알아 보려면, 자세한 설명을 제공하는 <a href="https://thenewstack.io/beyond-ci-cd-how-continuous-hacking-of-docker-containers-and-pipeline-driven-security-keeps-ygrene-secure/" target="_blank">이 기사</a>를 참고한다.</p>
+
+
+
+
+
+
+
+<p>
+</p>
+
+
+
+
+<h2 id="다음-내용">다음 내용</h2>
+<ul>
+<li><a href="/ko/docs/concepts/services-networking/network-policies/">파드에 대한 네트워크 정책</a> 알아보기</li>
+<li><a href="/docs/tasks/administer-cluster/securing-a-cluster/">클러스터 보안</a>에 대해 알아보기</li>
+<li><a href="/docs/reference/access-authn-authz/controlling-access/">API 접근 통제</a>에 대해 알아보기</li>
+<li>컨트롤 플레인에 대한 <a href="/docs/tasks/tls/managing-tls-in-a-cluster/">전송 데이터 암호화</a> 알아보기</li>
+<li><a href="/docs/tasks/administer-cluster/encrypt-data/">Rest에서 데이터 암호화</a> 알아보기</li>
+<li><a href="/docs/concepts/configuration/secret/">쿠버네티스 시크릿</a>에 대해 알아보기</li>
+</ul>
+
+
+
+
+
+
+    
+    
+
+    
+            
+  <h2>피드백</h2>
+  <p class="feedback--prompt">이 페이지가 도움이 되었나요? </p>
+  <button class="button feedback--yes">네</button>
+  <button class="button feedback--no">아니요</button>
+  <p class="feedback--response feedback--response__hidden">
+    피드백 감사합니다. 쿠버네티스 사용 방법에 대해서 구체적이고 답변 가능한 질문이 있다면, 다음 링크에서 질문하십시오.
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    원한다면 GitHub 리포지터리에 이슈를 열어서
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      문제 리포트</a>
+    또는
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      개선 제안이 가능합니다.</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/concepts/security/_index.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ko\/docs\/concepts\/security\/",
+    "title" : "보안",
+    "permalink" : "https:\/\/kubernetes.io\/ko\/docs\/concepts\/security\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">이슈 생성하기</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/concepts/security/_index.md" class="button issue">페이지 편집하기</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    최종 수정일시 March 13, 2020 at 10:40 AM PST , 다음 변경에 의해서:
+    <a href="https://github.com/kubernetes/website/commit/3a3d25736ab612a15076b785346eb3117a969f10/">Merge sixth Korean l10n work for release 1.17 (#19615)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/concepts/security/_index.md">페이지 변경 이력</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ko/docs/home/">홈</a>
+            
+            
+            
+            <a href="/ko/training/">교육</a>
+            
+            
+            
+            
+            
+            <a href="/ko/case-studies/">사례 연구</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">기여하기</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>

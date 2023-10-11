@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html id="docs" lang="ko" class="">
+	<head>
+	
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-36037335-10"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-36037335-10');
+</script>
+<meta charset="utf-8">
+<title>예제: PHP / Redis 방명록 예제에 로깅과 메트릭 추가 - Kubernetes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#326ce5">
+<link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/style.b7b8403eb5b1fddd0a2da2a8383d5b53e6ef81c23e4b0e292e6103bd91f9502d.css" integrity="sha256-t7hAPrWx/d0KLaKoOD1bU&#43;bvgcI&#43;Sw4pLmEDvZH5UC0=">
+
+
+<link rel="stylesheet" href="/css/base_fonts.css">
+<link rel="stylesheet" href="/css/jquery-ui.min.css">
+<link rel="stylesheet" href="/css/callouts.css">
+<link rel="stylesheet" href="/css/custom-jekyll/tags.css">
+
+
+
+<meta name="description" content="">
+<meta property="og:description" content="">
+<meta name="twitter:description" content="">
+<meta property="og:url" content="https://kubernetes.io/ko/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">
+<meta property="og:title" content="예제: PHP / Redis 방명록 예제에 로깅과 메트릭 추가">
+<meta name="twitter:title" content="예제: PHP / Redis 방명록 예제에 로깅과 메트릭 추가">
+<meta name="twitter:image" content="https://kubernetes.io/images/favicon.png" />
+
+<meta name="twitter:image:alt" content="Kubernetes">
+
+<meta property="og:image" content="/images/kubernetes-horizontal-color.png">
+
+<meta property="og:type" content="article">
+<script src="/js/anchor-4.1.1.min.js"></script>
+<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="/js/jquery-ui-1.12.1.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/sweetalert-2.1.2.min.js"></script>
+
+<script src="/js/script.js"></script>
+<script src="/js/custom-jekyll/tags.js"></script>
+
+
+	</head>
+	<body>
+		<div id="cellophane" onclick="kub.toggleMenu()"></div>
+
+<header>
+    <a href="/ko/" class="logo" title="운영 수준의 컨테이너 오케스트레이션 - Kubernetes" aria-label="Kubernetes website"></a>
+
+    <div class="nav-buttons" data-auto-burger="primary">
+        <ul class="global-nav">
+            
+            
+            <li><a href="/ko/docs/" class="active">문서</a></li>
+            
+            
+            
+            <li><a href="/ko/training/">교육</a></li>
+            
+            
+            
+            
+            
+            <li><a href="/ko/case-studies/">사례 연구</a></li>
+            
+            
+            
+             <li>
+                <a href="#">
+                    한국어 Korean <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">English</a></li>
+                
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    v1.17 <span class="ui-icon ui-icon-carat-1-s"></span>
+                </a>
+                <ul>
+                
+                    <li><a href="https://kubernetes.io/ko/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">v1.21</a></li>
+                
+                    <li><a href="https://v1-20.docs.kubernetes.io/ko/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">v1.20</a></li>
+                
+                    <li><a href="https://v1-19.docs.kubernetes.io/ko/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">v1.19</a></li>
+                
+                    <li><a href="https://v1-18.docs.kubernetes.io/ko/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">v1.18</a></li>
+                
+                    <li><a href="https://v1-17.docs.kubernetes.io/ko/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/">v1.17</a></li>
+                
+                </ul>
+            </li>
+        </ul>
+        
+        <a href="/ko/docs/tutorials/kubernetes-basics/" class="button" id="tryKubernetes" data-auto-burger-exclude>쿠버네티스 기초 학습</a>
+        
+
+        <button id="hamburger" onclick="kub.toggleMenu()" data-auto-burger-exclude><div></div></button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="main-section" data-auto-burger="primary">
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/tutorials/hello-minikube/">Get Started</a></h3>
+           <p>Ready to get your hands dirty? Build a simple Kubernetes cluster that runs "Hello World" for Node.js.</p>
+
+            </div>
+         
+           <div class="nav-box">
+            <h3><a href="/ko/docs/home/">문서</a></h3>
+           <p>개념, 튜토리얼 및 참조 문서와 함께 쿠버네티스 사용하는 방법을 익힐 수 있다. 또한, <a href="/editdocs/" data-auto-burger-exclude>문서에 기여하는 것도 도움을 줄 수 있다</a>!</p>
+
+            </div>
+         
+        </div>
+        <div class="main-section" data-auto-burger="primary">
+            <div class="left">
+                <h5 class="github-invite">코어 쿠버네티스 코드 베이스를 살펴보는데 관심이 있으십니까?</h5>
+                <a href="https://github.com/kubernetes/kubernetes" class="button" data-auto-burger-exclude>GitHub에서 보기</a>
+            </div>
+
+            <div class="right">
+                <h5 class="github-invite">커뮤니티 둘러보기</h5>
+                <div class="social">
+                    <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                    <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                    <a href="http://slack.k8s.io/" class="slack"><span>Slack Slack</span></a>
+                    <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                    <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                    <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                    <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+                </div>
+            </div>
+            <div class="clear" style="clear: both"></div>
+        </div>
+    </nav>
+</header>
+
+		
+		
+		<section id="hero" class="light-text no-sub">
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1>튜토리얼</h1>
+<h5></h5>
+
+
+
+
+
+
+<div id="vendorStrip" class="light-text">
+	<ul>
+		
+		
+		<li><a href="/ko/docs/home/">홈</a></li>
+		
+		
+		<li><a href="/ko/docs/setup/">시작하기</a></li>
+		
+		
+		<li><a href="/ko/docs/concepts/">개념</a></li>
+		
+		
+		<li><a href="/ko/docs/tasks/">태스크</a></li>
+		
+		
+		<li><a href="/ko/docs/tutorials/" class="YAH">튜토리얼</a></li>
+		
+		
+		<li><a href="/ko/docs/reference/">레퍼런스</a></li>
+		
+		
+		<li><a href="/ko/docs/contribute/">기여</a></li>
+		
+	</ul>
+	<form id="searchBox" action="/docs/search/" role="search">
+		<input type="text" id="search" name="q" placeholder="검색하기" aria-label="Search">
+	</form>
+</div>
+
+		</section>
+		
+    
+		
+<section id="deprecationWarning">
+  <main>
+    <div class="content deprecation-warning">
+      <h3>
+	 Kubernetes v1.17
+	  문서는 더 이상 적극적으로 관리되지 않음. 현재 보고있는 문서는 정적 스냅샷임. 최신 문서를 위해서는, 다음을 참고. 
+	 <a href="https://kubernetes.io/docs/home/">최신 버전.</a>
+      </h3>
+    </div>
+  </main>
+</section>
+
+
+    <main>
+        <section id="encyclopedia">
+          
+<div id="docsToc">
+     <div class="pi-accordion">
+    	
+        
+        
+        
+        
+        
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+             
+         
+             
+                 
+                          
+                          
+                 
+             
+         
+             
+         
+             
+         
+         
+        
+        <a class="item" data-title="튜토리얼" href="/ko/docs/tutorials/"></a>
+
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Hello Minikube" href="/ko/docs/tutorials/hello-minikube/"></a>
+
+		
+	
+		
+			
+<div class="item" data-title="쿠버네티스 기초 학습">
+	<div class="container">
+		
+		
+		
+		<a class="item" data-title="쿠버네티스 기초 학습" href="/ko/docs/tutorials/kubernetes-basics/"></a>
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+<div class="item" data-title="클러스터 생성하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="Minikube를 사용해서 클러스터 생성하기" href="/ko/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="대화형 튜토리얼 - 클러스터 생성하기" href="/ko/docs/tutorials/kubernetes-basics/create-cluster/cluster-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="앱 배포하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="kubectl을 사용해서 디플로이먼트 생성하기" href="/ko/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="대화형 튜토리얼 - 앱 배포하기" href="/ko/docs/tutorials/kubernetes-basics/deploy-app/deploy-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="앱 조사하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="파드와 노드 보기" href="/ko/docs/tutorials/kubernetes-basics/explore/explore-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="대화형 튜토리얼 - 앱 조사하기" href="/ko/docs/tutorials/kubernetes-basics/explore/explore-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="앱 외부로 노출하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="앱 노출을 위해 서비스 이용하기" href="/ko/docs/tutorials/kubernetes-basics/expose/expose-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="대화형 튜토리얼 - 앱 노출하기" href="/ko/docs/tutorials/kubernetes-basics/expose/expose-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="앱 스케일링하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="복수의 앱 인스턴스를 구동하기" href="/ko/docs/tutorials/kubernetes-basics/scale/scale-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="대화형 튜토리얼 - 앱 스케일링하기" href="/ko/docs/tutorials/kubernetes-basics/scale/scale-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="앱 업데이트하기">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="롤링 업데이트 수행하기" href="/ko/docs/tutorials/kubernetes-basics/update/update-intro/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="대화형 튜토리얼 - 앱 업데이트 하기" href="/ko/docs/tutorials/kubernetes-basics/update/update-interactive/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="설정">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="컨피그 맵을 사용해서 Redis 설정하기" href="/ko/docs/tutorials/configuration/configure-redis-using-configmap/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="상태 유지를 하지 않는 애플리케이션">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="외부 IP 주소를 노출하여 클러스터의 애플리케이션에 접속하기" href="/ko/docs/tutorials/stateless-application/expose-external-ip-address/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="예시: Redis를 사용한 PHP 방명록 애플리케이션 배포하기" href="/ko/docs/tutorials/stateless-application/guestbook/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="예제: PHP / Redis 방명록 예제에 로깅과 메트릭 추가" href="/ko/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="상태 유지가 필요한(stateful) 애플리케이션">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="스테이트풀셋 기본" href="/ko/docs/tutorials/stateful-application/basic-stateful-set/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="예시: WordPress와 MySQL을 퍼시스턴트 볼륨에 배포하기" href="/ko/docs/tutorials/stateful-application/mysql-wordpress-persistent-volume/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="예시: 카산드라를 스테이트풀셋으로 배포하기" href="/ko/docs/tutorials/stateful-application/cassandra/"></a>
+
+		
+	
+		
+			
+
+<a class="item" data-title="분산 시스템 코디네이터 ZooKeeper 실행하기" href="/ko/docs/tutorials/stateful-application/zookeeper/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="클러스터">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="AppArmor" href="/ko/docs/tutorials/clusters/apparmor/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+		
+			
+<div class="item" data-title="서비스">
+	<div class="container">
+		
+		
+	
+	
+			
+			
+			
+			
+			
+		
+	
+	
+	
+		
+			
+
+<a class="item" data-title="소스 IP 주소 이용하기" href="/ko/docs/tutorials/services/source-ip/"></a>
+
+		
+	
+
+	</div>
+</div>
+
+		
+	
+
+
+
+
+
+     </div> 
+    <button class="push-menu-close-button" onclick="kub.toggleToc()"></button>
+</div> 
+
+
+          <div id="docsContent">
+            
+
+<p>
+  <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk.md" id="editPageButton" target="_blank">
+    Edit This Page
+  </a>
+</p>
+
+<h1>예제: PHP / Redis 방명록 예제에 로깅과 메트릭 추가</h1>
+
+
+
+<p>이 튜토리얼은 <a href="../guestbook">Redis를 이용한 PHP 방명록</a> 튜토리얼을 기반으로 한다. Elastic의 경량 로그, 메트릭, 네트워크 데이터 오픈소스 배송기인 <em>Beats</em> 를 방명록과 동일한 쿠버네티스 클러스터에 배포한다. Beats는 데이터를 수집하고 구문분석하여 Elasticsearch에 색인화하므로, Kibana에서 동작 정보를 결과로 보며 분석할 수 있다. 이 예시는 다음과 같이 구성되어 있다.</p>
+
+<ul>
+<li><a href="../guestbook">Redis를 이용한 PHP 방명록</a>을 실행한 인스턴스</li>
+<li>Elasticsearch와 Kibana</li>
+<li>Filebeat</li>
+<li>Metricbeat</li>
+<li>Packetbeat</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+<ul id="markdown-toc">
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%eb%aa%a9%ec%a0%81">목적</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%ec%8b%9c%ec%9e%91%ed%95%98%ea%b8%b0-%ec%a0%84%ec%97%90">시작하기 전에</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#redis%eb%a5%bc-%ec%9d%b4%ec%9a%a9%ed%95%9c-php-%eb%b0%a9%eb%aa%85%eb%a1%9d-%ec%8b%9c%ec%9e%91">Redis를 이용한 PHP 방명록 시작</a></li>
+
+
+
+
+<li><a href="#%ed%81%b4%eb%9f%ac%ec%8a%a4%ed%84%b0-%eb%a1%a4-%eb%b0%94%ec%9d%b8%eb%94%a9-%ec%b6%94%ea%b0%80">클러스터 롤 바인딩 추가</a></li>
+
+
+
+
+<li><a href="#kube-state-metrics-%ec%84%a4%ec%b9%98">kube-state-metrics 설치</a></li>
+
+
+
+
+<li><a href="#elastic%ec%9d%98-%ec%98%88%ec%a0%9c%eb%a5%bc-github-%eb%a6%ac%ed%8f%ac%ec%a7%80%ed%84%b0%eb%a6%ac%ec%97%90-%ed%81%b4%eb%a1%a0%ed%95%9c%eb%8b%a4">Elastic의 예제를 GitHub 리포지터리에 클론한다.</a></li>
+
+
+
+
+<li><a href="#%ec%bf%a0%eb%b2%84%eb%84%a4%ed%8b%b0%ec%8a%a4-%ec%8b%9c%ed%81%ac%eb%a6%bf-%eb%a7%8c%eb%93%a4%ea%b8%b0">쿠버네티스 시크릿 만들기</a></li>
+
+
+
+
+<li><a href="#%ea%b4%80%eb%a6%ac-%ec%84%9c%eb%b9%84%ec%8a%a4">관리 서비스</a></li>
+
+
+
+
+<li><a href="#deploy-the-beats">Beats 배포하기</a></li>
+
+
+
+
+<li><a href="#kibana%ec%97%90%ec%84%9c-%eb%b3%b4%ea%b8%b0">Kibana에서 보기</a></li>
+
+
+
+
+<li><a href="#%eb%94%94%ed%94%8c%eb%a1%9c%ec%9d%b4%eb%a8%bc%ed%8a%b8%eb%a5%bc-%ed%99%95%ec%9e%a5%ed%95%98%ea%b3%a0-%eb%aa%a8%eb%8b%88%ed%84%b0%eb%a7%81%ec%a4%91%ec%9d%b8-%ec%83%88-%ed%8c%8c%eb%93%9c%eb%a5%bc-%ed%99%95%ec%9d%b8%ed%95%98%ea%b8%b0">디플로이먼트를 확장하고 모니터링중인 새 파드를 확인하기</a></li>
+
+
+
+
+<li><a href="#kibana%ec%97%90%ec%84%9c-%eb%b3%80%ed%99%94-%ed%99%95%ec%9d%b8%ed%95%98%ea%b8%b0">Kibana에서 변화 확인하기</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%ec%a0%95%eb%a6%ac%ed%95%98%ea%b8%b0">정리하기</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="#%eb%8b%a4%ec%9d%8c-%eb%82%b4%ec%9a%a9">다음 내용</a></li>
+
+
+
+</ul>
+
+
+
+<h2 id="목적">목적</h2>
+<ul>
+<li>Redis를 이용한 PHP 방명록 시작.</li>
+<li>kube-state-metrics 설치.</li>
+<li>쿠버네티스 시크릿 생성.</li>
+<li>Beats 배포.</li>
+<li>로그와 메트릭의 대시보드 보기.</li>
+</ul>
+
+
+
+
+
+<h2 id="시작하기-전에">시작하기 전에</h2>
+<p>쿠버네티스 클러스터가 필요하고, kubectl 커맨드-라인 툴이 클러스터와
+통신할 수 있도록 설정되어 있어야 합니다.
+만약, 아직 클러스터를 가지고 있지 않다면,
+<a href="/docs/setup/learning-environment/minikube/">Minikube</a>를 사용해서 만들거나,
+다음의 쿠버네티스 플레이그라운드 중 하나를 사용할 수 있습니다:</p>
+
+<ul>
+<li><a href="https://www.katacoda.com/courses/kubernetes/playground" target="_blank">Katacoda</a></li>
+<li><a href="http://labs.play-with-k8s.com/" target="_blank">Play with Kubernetes</a></li>
+</ul>
+
+<p>버전 확인을 위해서, 다음 커맨드를 실행 <code>kubectl version</code>.</p>
+
+<p>추가로 다음이 필요하다.</p>
+
+<ul>
+<li><p>실행 중인 <a href="../guestbook">Redis를 이용한 PHP 방명록</a> 튜토리얼의 배포본.</p></li>
+
+<li><p>실행 중인 Elasticsearch와 Kibana 디플로이먼트. <a href="https://cloud.elastic.co" target="_blank">Elastic Cloud의 Elasticsearch 서비스</a>를 사용하거나, <a href="https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html" target="_blank">파일을 내려받아</a> 워크스테이션이나 서버에서 운영하거나, <a href="https://github.com/elastic/helm-charts" target="_blank">Elastic의 Helm 차트</a>를 이용한다.</p></li>
+</ul>
+
+
+
+
+<h2 id="redis를-이용한-php-방명록-시작">Redis를 이용한 PHP 방명록 시작</h2>
+
+<p>이 튜토리얼은 <a href="../guestbook">Redis를 이용한 PHP 방명록</a>을 기반으로 한다. 방명록 애플리케이션을 실행 중이라면, 이를 모니터링할 수 있다. 실행되지 않은 경우라면 지침을 따라 방명록을 배포하고 <strong>정리하기</strong> 단계는 수행하지 말자. 방명록을 실행할 때 이 페이지로 돌아오자.</p>
+
+<h2 id="클러스터-롤-바인딩-추가">클러스터 롤 바인딩 추가</h2>
+
+<p><a href="/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding">클러스터 단위 롤 바인딩</a>을 생성하여, 클러스터 수준(kube-system 안에)으로 kube-state-metrics와 Beats를 배포할 수 있게 한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create clusterrolebinding cluster-admin-binding <span style="color:#b62;font-weight:bold">\
+</span><span style="color:#b62;font-weight:bold"></span> --clusterrole<span style="color:#666">=</span>cluster-admin --user<span style="color:#666">=</span>&lt;your email associated with the k8s provider account&gt;</code></pre></div>
+<h2 id="kube-state-metrics-설치">kube-state-metrics 설치</h2>
+
+<p><a href="https://github.com/kubernetes/kube-state-metrics" target="_blank"><em>kube-state-metrics</em></a>는 쿠버네티스 API 서버를 모니터링하며 오브젝트 상태에 대한 메트릭을 생성하는 간단한 서비스이다. 이런 메트릭을 Metricbeat이 보고한다. 방명록이 실행된 쿠버네티스 클러스터에서 kube-state-metrics을 추가한다.</p>
+
+<h3 id="kube-state-metrics-실행-여부-확인">kube-state-metrics 실행 여부 확인</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods --namespace<span style="color:#666">=</span>kube-system | grep kube-state</code></pre></div>
+<h3 id="필요하면-kube-state-metrics-설치">필요하면 kube-state-metrics 설치</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">git clone https://github.com/kubernetes/kube-state-metrics.git kube-state-metrics
+kubectl create -f examples/standard
+kubectl get pods --namespace<span style="color:#666">=</span>kube-system | grep kube-state-metrics</code></pre></div>
+<p>kube-state-metrics이 실행 중이고 준비되었는지 확인한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods -n kube-system -l app.kubernetes.io/name<span style="color:#666">=</span>kube-state-metrics</code></pre></div>
+<p>출력</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME                                 READY   STATUS    RESTARTS   AGE
+kube-state-metrics-89d656bf8-vdthm   <span style="color:#666">2</span>/2     Running     <span style="color:#666">0</span>          21s</code></pre></div>
+<h2 id="elastic의-예제를-github-리포지터리에-클론한다">Elastic의 예제를 GitHub 리포지터리에 클론한다.</h2>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">git clone https://github.com/elastic/examples.git</code></pre></div>
+<p>나머지 커맨드는 <code>examples/beats-k8s-send-anywhere</code> 디렉터리의 파일을 참조할 것이라서, 그쪽으로 현재 디렉터리를 변경한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#a2f">cd</span> examples/beats-k8s-send-anywhere</code></pre></div>
+<h2 id="쿠버네티스-시크릿-만들기">쿠버네티스 시크릿 만들기</h2>
+
+<p>쿠버네티스 <a class='glossary-tooltip' href='/docs/concepts/configuration/secret/' target='_blank'>시크릿<span class='tooltip-text'>Stores sensitive information, such as passwords, OAuth tokens, and ssh keys.</span>
+</a>은 암호나 토큰, 키 같이 소량의 민감한 데이터를 포함하는 오브젝트이다. 이러한 정보는 다른 방식으로도 파드 스펙이나 이미지에 넣을 수 있을 것이다. 시크릿 오브젝트에 넣으면 이것이 어떻게 사용되는지 다양하게 제어할 수 있고, 우발적인 노출 사고의 위험이 줄일 수 있다.</p>
+
+<blockquote class="note">
+  <div><strong>참고:</strong> 여기에는 방식이 나뉘는데, 하나는 <em>자체 관리(Self managed)</em> 로 Elasticsearch와 Kibana(Elastic의 Helm 차트를 이용하여 사용자 서버를 구동하는)를 사용하는 경우이고 다른 경우는 Elastic Cloud의 Elasticsearch 서비스의 <em>관리 서비스(Managed service)</em> 를 사용하는 방식이다. 이 튜토리얼에서는 사용할 Elasticsearch와 Kibana 시스템의 종류에 따라 시크릿을 만들어야 한다.</div>
+</blockquote>
+
+<div id="tab-with-md">
+<ul>
+    
+      
+  <li><a href="#tab-with-md-0">자체 관리(Self Managed)</a></li>
+
+      
+  <li><a href="#tab-with-md-1">관리 서비스(Managed service)</a></li>
+
+</ul>
+
+
+<div id="tab-with-md-0">
+    
+        <h3 id="자체-관리">자체 관리</h3>
+
+<p>Elastic Cloud의 Elasticsearch 서비스로 연결한다면 <strong>관리 서비스</strong> 탭으로 전환한다.</p>
+
+<h3 id="자격증명-credentials-설정">자격증명(credentials) 설정</h3>
+
+<p>자체 관리 Elasticsearch와 Kibana(자체 관리는 사실상 Elastic Cloud의 관리 서비스 Elasticsearch와 다르다) 서비스에 접속할 때에 4개 파일을 수정하여 쿠버네티스 시크릿을 생성한다. 파일은 다음과 같다.</p>
+
+<ol>
+<li>ELASTICSEARCH_HOSTS</li>
+<li>ELASTICSEARCH_PASSWORD</li>
+<li>ELASTICSEARCH_USERNAME</li>
+<li>KIBANA_HOST</li>
+</ol>
+
+<p>이 정보를 Elasticsearch 클러스터와 Kibana 호스트에 지정한다. 여기 예시(또는 <a href="https://stackoverflow.com/questions/59892896/how-to-connect-from-minikube-to-elasticsearch-installed-on-host-local-developme/59892897#59892897" target="_blank"><em>이 구성</em></a>을 본다)가 있다.</p>
+
+<h4 id="elasticsearch-hosts"><code>ELASTICSEARCH_HOSTS</code></h4>
+
+<ol>
+<li><p>Elastic의 Elasticsearch Helm 차트에서 노드 그룹(nodeGroup).</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#666">[</span><span style="color:#b44">&#34;http://elasticsearch-master.default.svc.cluster.local:9200&#34;</span><span style="color:#666">]</span></code></pre></div></li>
+
+<li><p>Mac을 위한 Docker에서 Beats를 운영 중인 Mac에서 운영하는 단일 Elasticsearch 노드.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#666">[</span><span style="color:#b44">&#34;http://host.docker.internal:9200&#34;</span><span style="color:#666">]</span></code></pre></div></li>
+
+<li><p>VM이나 물리 장비에서 운영 중인 두 개의 ELASTICSEARCH 노드.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#666">[</span><span style="color:#b44">&#34;http://host1.example.com:9200&#34;</span>, <span style="color:#b44">&#34;http://host2.example.com:9200&#34;</span><span style="color:#666">]</span></code></pre></div></li>
+</ol>
+
+<p><code>ELASTICSEARCH_HOSTS</code> 수정한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">vi ELASTICSEARCH_HOSTS</code></pre></div>
+<h4 id="elasticsearch-password"><code>ELASTICSEARCH_PASSWORD</code></h4>
+
+<p>화이트 스페이스나 인용 부호나 &lt;&gt; 도 없는 암호이다.</p>
+
+<pre><code>&lt;사용자의 시크릿 암호&gt;
+</code></pre>
+
+<p><code>ELASTICSEARCH_PASSWORD</code> 수정한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">vi ELASTICSEARCH_PASSWORD</code></pre></div>
+<h4 id="elasticsearch-username"><code>ELASTICSEARCH_USERNAME</code></h4>
+
+<p>화이트 스페이스나 인용 부호나 &lt;&gt; 도 없는 이름이다.</p>
+
+<pre><code>&lt;Elasticsearch를 위한 수집 사용자 이름&gt;
+</code></pre>
+
+<p><code>ELASTICSEARCH_USERNAME</code> 수정한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">vi ELASTICSEARCH_USERNAME</code></pre></div>
+<h4 id="kibana-host"><code>KIBANA_HOST</code></h4>
+
+<p>1.Elastic의 Kibana Helm 차트의 인스턴스이다. 하위 도메인 <code>default</code>는 기본 네임스페이스를 참조한다. 다른 네임스페이스를 사용하여 Helm 차트를 배포한 경우 하위 도메인이 다릅니다.</p>
+
+<pre><code>```shell
+&quot;kibana-kibana.default.svc.cluster.local:5601&quot;
+```
+</code></pre>
+
+<ol>
+<li><p>Mac 용 Docker에서 실행하는 Beats가 있는 Mac에서 실행하는 Kibana 인스턴스</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b44">&#34;host.docker.internal:5601&#34;</span></code></pre></div></li>
+
+<li><p>가상머신이나 물리적 하드웨어에서 실행 중인 두 개의 Elasticsearch 노드</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#b44">&#34;host1.example.com:5601&#34;</span></code></pre></div></li>
+</ol>
+
+<p><code>KIBANA_HOST</code>를 편집한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">vi KIBANA_HOST</code></pre></div>
+<h3 id="쿠버네티스-시크릿-만들기">쿠버네티스 시크릿 만들기</h3>
+
+<p>이 커맨드는 방금 편집한 파일을 기반으로 쿠버네티스의 시스템 수준의 네임스페이스(kube-system)에 시크릿을 만든다.</p>
+
+<pre><code>kubectl create secret generic dynamic-logging \
+  --from-file=./ELASTICSEARCH_HOSTS \
+  --from-file=./ELASTICSEARCH_PASSWORD \
+  --from-file=./ELASTICSEARCH_USERNAME \
+  --from-file=./KIBANA_HOST \
+  --namespace=kube-system
+</code></pre>
+
+	
+</div>
+
+<div id="tab-with-md-1">
+	
+		<h2 id="관리-서비스">관리 서비스</h2>
+
+<p>이 탭은 Elastic Cloud에서 Elasticsearch 서비스 만에 대한 것으로, 이미 자체 관리 Elasticsearch와 Kibana 배포로 시크릿을 생성했다면, <a href="#deploy-the-beats">Beats 배포</a>를 계속한다.</p>
+
+<h3 id="자격증명-credentials-설정">자격증명(credentials) 설정</h3>
+
+<p>Elastic Cloud에서 관리되는 Elastic 서비스에 연결할 때, 쿠버네티스 시크릿을 생성하기 위해 편집할 두 파일이 있다. 파일은 다음과 같다.</p>
+
+<ol>
+<li>ELASTIC_CLOUD_AUTH</li>
+<li>ELASTIC_CLOUD_ID</li>
+</ol>
+
+<p>디플로이먼트를 생성할 때에 Elasticsearch 콘솔에서 제공한 정보로 이를 설정한다. 여기 예시들이 있다.</p>
+
+<h4 id="elastic-cloud-id">ELASTIC_CLOUD_ID</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">devk8s:ABC123def456ghi789jkl123mno456pqr789stu123vwx456yza789bcd012efg345hijj678klm901nop345zEwOTJjMTc5YWQ0YzQ5OThlN2U5MjAwYTg4NTIzZQ<span style="color:#666">==</span></code></pre></div>
+<h4 id="elastic-cloud-auth">ELASTIC_CLOUD_AUTH</h4>
+
+<p>사용자 이름, 콜론(<code>:</code>) 및 비밀번호인데, 공백 또는 따옴표는 없다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">elastic:VFxJJf9Tjwer90wnfTghsn8w</code></pre></div>
+<h3 id="필요-파일-편집하기">필요 파일 편집하기</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">vi ELASTIC_CLOUD_ID
+vi ELASTIC_CLOUD_AUTH</code></pre></div>
+<h3 id="쿠버네티스-시크릿-생성하기">쿠버네티스 시크릿 생성하기</h3>
+
+<p>이 커맨드는 방금 편집한 파일을 기반으로 쿠버네티스의 시스템 수준의 네임스페이스(kube-system)에 시크릿을 생성한다.</p>
+
+<pre><code>kubectl create secret generic dynamic-logging \
+  --from-file=./ELASTIC_CLOUD_ID \
+  --from-file=./ELASTIC_CLOUD_AUTH \
+  --namespace=kube-system
+</code></pre>
+
+	
+</div>
+
+<p></div></p>
+
+<script>$(function(){$("#tab-with-md").tabs();});</script>
+
+<h2 id="deploy-the-beats">Beats 배포하기</h2>
+
+<p>각 Beat마다 메니페스트 파일을 제공한다. 이 메니페스트 파일은 앞서 생성한 시크릿을 사용하여, Elasticsearch 및 Kibana 서버에 연결하도록 Beats를 구성한다.</p>
+
+<h3 id="filebeat에-대해">Filebeat에 대해</h3>
+
+<p>Filebeat는 쿠버네티스 노드와 해당 노두에서 실행되는 각 파드에서 실행되는 컨테이너의 로그를 수집한다. Filebeat는 <a class='glossary-tooltip' href='/ko/docs/concepts/workloads/controllers/daemonset' target='_blank'>데몬 셋<span class='tooltip-text'>파드의 복제본을 클러스터 노드 집합에서 동작하게 한다.</span>
+</a>으로 배포한다. Filebeat는 쿠버네티스 클러스터에서 실행 중인 애플리케이션을 자동 검색할 수 있다. 시작시에 Filebeat는 기존 컨테이너를 검색하고 이에 적절한 구성을 시작하고 새 시작/종료 이벤트를 감시한다.</p>
+
+<p>아래 내용은 Filebeat가 방명록 애플리케이션과 함께 배포된 Redis 컨테이너에서 Redis 로그를 찾아 구문분석할 수 있게 하는 자동 검색 구성이다. 이 구성은 <code>filebeat-kubernetes.yaml</code>파일에 있다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">-<span style="color:#bbb"> </span>condition.contains:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kubernetes.labels.app:<span style="color:#bbb"> </span>redis<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>config:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>module:<span style="color:#bbb"> </span>redis<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>log:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>input:<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>type:<span style="color:#bbb"> </span>docker<span style="color:#bbb">
+</span><span style="color:#bbb">          </span>containers.ids:<span style="color:#bbb">
+</span><span style="color:#bbb">            </span>-<span style="color:#bbb"> </span>${data.kubernetes.container.id}<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>slowlog:<span style="color:#bbb">
+</span><span style="color:#bbb">        </span>enabled:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">        </span>var.hosts:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;${data.host}:${data.port}&#34;</span>]</code></pre></div>
+<p>이것은 <code>redis</code> 컨테이너가 <code>app</code> 문자열을 포함하는 레이블로 감지될 때에 Filebeat 모듈 <code>redis</code>를 적용하도록 Filebeat를 구성한다. Redis 모듈은 Docker 입력 유형을 사용하여 컨테이너에서 <code>로그</code> 스트림을 수집할 수 있다(이 Redis 컨테이너의 STDOUT 스트림과 연관된 쿠버네티스 노드에서 파일 읽기). 또한 이 모듈은 컨테이너 메타 데이터에 제공되는 적절한 파드 호스트와 포트에 연결하여 Redis의 <code>slowlog</code> 항목을 수집할 수 있다.</p>
+
+<h3 id="filebeat-배포">Filebeat 배포</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f filebeat-kubernetes.yaml</code></pre></div>
+<h4 id="확인">확인</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods -n kube-system -l k8s-app<span style="color:#666">=</span>filebeat-dynamic</code></pre></div>
+<h3 id="metricbeat에-대해">Metricbeat에 대해</h3>
+
+<p>Metricbeat 자동 검색은 Filebeat와 같은 방식으로 구성된다. 다음은 Redis 컨테이너에 대한 Metricbeat의 자동 검색 구성이다. 이 구성은 <code>metricbeat-kubernetes.yaml</code>에 있다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">-<span style="color:#bbb"> </span>condition.equals:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>kubernetes.labels.tier:<span style="color:#bbb"> </span>backend<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>config:<span style="color:#bbb">
+</span><span style="color:#bbb">    </span>-<span style="color:#bbb"> </span>module:<span style="color:#bbb"> </span>redis<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>metricsets:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;info&#34;</span>,<span style="color:#bbb"> </span><span style="color:#b44">&#34;keyspace&#34;</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">      </span>period:<span style="color:#bbb"> </span>10s<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span><span style="color:#080;font-style:italic"># Redis hosts</span><span style="color:#bbb">
+</span><span style="color:#bbb">      </span>hosts:<span style="color:#bbb"> </span>[<span style="color:#b44">&#34;${data.host}:${data.port}&#34;</span>]</code></pre></div>
+<p>이것은 컨테이너가 <code>tier</code> 레이블이 <code>backend</code> 문자열과 같은 레이블로 감지될 때에 Metricbeat 모듈 <code>redis</code>를 적용하도록 Metricbeat를 구성한다. <code>redis</code> 모듈은 컨테이너 메타데이터에 제공되는 적절한 파드 호스트와 포트에 연결하여 컨테이너에서 <code>info</code> 및 <code>keyspace</code> 메트릭을 수집할 수 있다.</p>
+
+<h3 id="metricbeat-배포">Metricbeat 배포</h3>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f metricbeat-kubernetes.yaml</code></pre></div>
+<h4 id="확인-1">확인</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods -n kube-system -l k8s-app<span style="color:#666">=</span>metricbeat</code></pre></div>
+<h3 id="packetbeat에-대해">Packetbeat에 대해</h3>
+
+<p>Packetbeat 구성은 Filebeat와 Metricbeat와는 다르다. 컨테이너 레이블과 일치시킬 패턴을 지정하지 않고, 구성은 관련 프로토콜 및 포트 번호를 기반으로 한다. 아래는 포트 번호의 하위 집합이다.</p>
+
+<blockquote class="note">
+  <div><strong>참고:</strong> 비표준 포트로 서비스를 실행했다면 해당 포트를 <code>filebeat.yaml</code>에 적절한 유형에 추가하고, Packetbeat 데몬 셋을 삭제하고 생성한다.</div>
+</blockquote>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">packetbeat.interfaces.device:<span style="color:#bbb"> </span>any<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>packetbeat.protocols:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>dns<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb"> </span>[<span style="color:#666">53</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>include_authorities:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span>include_additionals:<span style="color:#bbb"> </span><span style="color:#a2f;font-weight:bold">true</span><span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>http<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb"> </span>[<span style="color:#666">80</span>,<span style="color:#bbb"> </span><span style="color:#666">8000</span>,<span style="color:#bbb"> </span><span style="color:#666">8080</span>,<span style="color:#bbb"> </span><span style="color:#666">9200</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>mysql<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb"> </span>[<span style="color:#666">3306</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>-<span style="color:#bbb"> </span>type:<span style="color:#bbb"> </span>redis<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>ports:<span style="color:#bbb"> </span>[<span style="color:#666">6379</span>]<span style="color:#bbb">
+</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>packetbeat.flows:<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>timeout:<span style="color:#bbb"> </span>30s<span style="color:#bbb">
+</span><span style="color:#bbb">  </span>period:<span style="color:#bbb"> </span>10s</code></pre></div>
+<h4 id="packetbeat-배포하기">Packetbeat 배포하기</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl create -f packetbeat-kubernetes.yaml</code></pre></div>
+<h4 id="확인하기">확인하기</h4>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get pods -n kube-system -l k8s-app<span style="color:#666">=</span>packetbeat-dynamic</code></pre></div>
+<h2 id="kibana에서-보기">Kibana에서 보기</h2>
+
+<p>브라우저에서 Kibana를 열고, <strong>대시보드</strong> 애플리케이션을 열어보자. 검색창에 kubernetes를 입력하고 쿠버네티스를 위한 Metricbeat 대시보드를 클릭한다. 이 대시보드에는 노드 상태, 배포 등의 보고 내용이 있다.</p>
+
+<p>대시보드 페이지에 Packetbeat를 검색하고 Packetbeat의 개요 페이지를 살펴보자.</p>
+
+<p>마찬가지로 Apache와 Redis를 위한 대시보드를 확인한다. 각 로그와 메트릭에 대한 대시보드가 표시된다. 이 Apache Metricbeat 대시보드는 비어 있다. Apache Filebeat 대시보드를 보고, 맨 아래로 스크롤하여 Apache 오류 로그를 확인한다. Apache에서 보여줄 메트릭이 없는 이유를 알려줄 것이다.</p>
+
+<p>Metricbeat에서 Apache 메트릭을 가져올 수 있게 하려면, mod-status 구성 파일을 포함한 컨피그맵을 추가하고 방명록을 재배포하여 서버 상태를 활성화해야 한다.</p>
+
+<h2 id="디플로이먼트를-확장하고-모니터링중인-새-파드를-확인하기">디플로이먼트를 확장하고 모니터링중인 새 파드를 확인하기</h2>
+
+<p>기존 디플로이먼트를 확인한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl get deployments</code></pre></div>
+<p>출력</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">NAME            READY   UP-TO-DATE   AVAILABLE   AGE
+frontend        <span style="color:#666">3</span>/3     <span style="color:#666">3</span>            <span style="color:#666">3</span>           3h27m
+redis-master    <span style="color:#666">1</span>/1     <span style="color:#666">1</span>            <span style="color:#666">1</span>           3h27m
+redis-slave     <span style="color:#666">2</span>/2     <span style="color:#666">2</span>            <span style="color:#666">2</span>           3h27m</code></pre></div>
+<p>front의 디플로이먼트를 두 개의 파드로 축소한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kubectl scale --replicas<span style="color:#666">=</span><span style="color:#666">2</span> deployment/frontend</code></pre></div>
+<p>출력</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">deployment.extensions/frontend scaled</code></pre></div>
+<h2 id="kibana에서-변화-확인하기">Kibana에서 변화 확인하기</h2>
+
+<p>스크린 캡처를 확인하여, 표시된 필터를 추가하고 해당 열을 뷰에 추가한다. ScalingReplicaSet 항목이 표시되고, 여기에서 이벤트 목록의 맨 위에 풀링되는 이미지, 마운트된 볼륨, 파드 시작 등을 보여준다.
+<img src="https://raw.githubusercontent.com/elastic/examples/master/beats-k8s-send-anywhere/scaling-discover.png" alt="Kibana 디스커버리" /></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="정리하기">정리하기</h2>
+<p>디플로이먼트와 서비스를 삭제하면 실행중인 파드도 삭제된다. 한 커맨드로 여러 개의 리소스를 삭제하기 위해 레이블을 이용한다.</p>
+
+<ol>
+<li><p>다음 커맨드를 실행하여 모든 파드, 디플로이먼트, 서비스를 삭제한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  kubectl delete deployment -l <span style="color:#b8860b">app</span><span style="color:#666">=</span>redis
+  kubectl delete service -l <span style="color:#b8860b">app</span><span style="color:#666">=</span>redis
+  kubectl delete deployment -l <span style="color:#b8860b">app</span><span style="color:#666">=</span>guestbook
+  kubectl delete service -l <span style="color:#b8860b">app</span><span style="color:#666">=</span>guestbook
+  kubectl delete -f filebeat-kubernetes.yaml
+  kubectl delete -f metricbeat-kubernetes.yaml
+  kubectl delete -f packetbeat-kubernetes.yaml
+  kubectl delete secret dynamic-logging -n kube-system</code></pre></div></li>
+
+<li><p>실행 중인 파드가 없음을 확인하기 위해 파드 목록을 조회한다.</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  kubectl get pods</code></pre></div>
+<p>커맨드의 출력은 다음과 같아야 한다.</p>
+
+<pre><code>  No resources found.
+</code></pre></li>
+</ol>
+
+
+
+
+
+<h2 id="다음-내용">다음 내용</h2>
+<ul>
+<li><a href="/ko/docs/tasks/debug-application-cluster/resource-usage-monitoring/">리소스 모니터링 도구</a>를 공부한다.</li>
+<li><a href="/docs/concepts/cluster-administration/logging/">로깅 아키텍처</a>를 더 읽어본다.</li>
+<li><a href="/ko/docs/tasks/debug-application-cluster/">애플리케이션 검사 및 디버깅</a>을 더 읽어본다.</li>
+<li><a href="/ko/docs/tasks/debug-application-cluster/resource-usage-monitoring/">애플리케이션 문제 해결</a>을 더 읽어본다.</li>
+</ul>
+
+
+
+
+
+
+
+
+    
+            
+  <h2>피드백</h2>
+  <p class="feedback--prompt">이 페이지가 도움이 되었나요? </p>
+  <button class="button feedback--yes">네</button>
+  <button class="button feedback--no">아니요</button>
+  <p class="feedback--response feedback--response__hidden">
+    피드백 감사합니다. 쿠버네티스 사용 방법에 대해서 구체적이고 답변 가능한 질문이 있다면, 다음 링크에서 질문하십시오.
+    <a target="_blank" rel="noopener"
+      href="https://stackoverflow.com/questions/tagged/kubernetes">
+      Stack Overflow</a>.
+    원한다면 GitHub 리포지터리에 이슈를 열어서
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Issue%20with%20k8s.io">
+      문제 리포트</a>
+    또는
+    <a class="feedback--link" target="_blank" rel="noopener"
+      href="https://github.com/kubernetes/website/issues/new?title=Improvement%20for%20k8s.io">
+      개선 제안이 가능합니다.</a>.
+  </p>
+  <script>
+    const yes = document.querySelector('.feedback--yes');
+    const no = document.querySelector('.feedback--no');
+    document.querySelectorAll('.feedback--link').forEach(link => {
+      link.href = link.href + window.location.pathname;
+    });
+    const sendFeedback = (value) => {
+      if (!gtag) { console.log('!gtag'); }
+      gtag('event', 'click', {
+        'event_category': 'Helpful',
+        'event_label': window.location.pathname,
+        value
+      });
+    };
+    const disableButtons = () => {
+      yes.disabled = true;
+      yes.classList.add('feedback--button__disabled');
+      no.disabled = true;
+      no.classList.add('feedback--button__disabled');
+    };
+    yes.addEventListener('click', () => {
+      sendFeedback(1);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+    no.addEventListener('click', () => {
+      sendFeedback(0);
+      disableButtons();
+      document.querySelector('.feedback--response').classList.remove('feedback--response__hidden');
+    });
+  </script>
+
+
+    
+            <div id="pre-footer"> 
+  <hr />
+
+  <div class="issue-button-container">
+    <p><a href=""><img src="https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk.md?pixel" alt="Analytics" /></a></p>
+    
+    
+    <script type="text/javascript">
+    PDRTJS_settings_8345992 = {
+    "id" : "8345992",
+    "unique_id" : "\/ko\/docs\/tutorials\/stateless-application\/guestbook-logs-metrics-with-elk\/",
+    "title" : "예제: PHP \/ Redis 방명록 예제에 로깅과 메트릭 추가",
+    "permalink" : "https:\/\/kubernetes.io\/ko\/docs\/tutorials\/stateless-application\/guestbook-logs-metrics-with-elk\/"
+    };
+    (function(d,c,j){if(!document.getElementById(j)){var pd=d.createElement(c),s;pd.id=j;pd.src=('https:'==document.location.protocol)?'https://polldaddy.com/js/rating/rating.js':'http://i0.poll.fm/js/rating/rating.js';s=document.getElementsByTagName(c)[0];s.parentNode.insertBefore(pd,s);}}(document,'script','pd-rating-js'));
+    </script>
+    <a href="" onclick="window.open('https://github.com/kubernetes/website/issues/new?template=bug-report.md&title=Issue%20with%20' +
+    'k8s.io'+window.location.pathname)" class="button issue">이슈 생성하기</a>
+    
+    
+    
+    <a href="https://github.com/kubernetes/website/edit/master/content/ko/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk.md" class="button issue">페이지 편집하기</a>
+    
+  </div>
+  
+
+  <div id="lastedit" class="lastedit issue-button-container">
+    최종 수정일시 March 26, 2020 at 10:58 PM PST , 다음 변경에 의해서:
+    <a href="https://github.com/kubernetes/website/commit/c38acbc4f65bf9ec02ba1eeff8bd339dfd5d0752/">Seventh Korean l10n Work For Release 1.17 (#19858)</a> (<a href="https://github.com/kubernetes/website/commits/master/content/en/docs/tutorials/stateless-application/guestbook-logs-metrics-with-elk.md">페이지 변경 이력</a>)
+  </div>
+  
+</div>
+
+          </div>
+        </section>
+    </main>
+		<footer>
+    <div class="light-text main-section">
+        <nav>
+            
+            
+            
+            <a href="/ko/docs/home/">홈</a>
+            
+            
+            
+            <a href="/ko/training/">교육</a>
+            
+            
+            
+            
+            
+            <a href="/ko/case-studies/">사례 연구</a>
+            
+        </nav>
+        <div class="social" role="region" aria-label="Social hyperlinks">
+            <div>
+                <a href="https://twitter.com/kubernetesio" class="twitter"><span>Twitter</span></a>
+                <a href="https://github.com/kubernetes/kubernetes" class="github"><span>GitHub</span></a>
+                <a href="https://slack.k8s.io/" class="slack"><span>Slack</span></a>
+            </div>
+            <div>
+                <a href="https://stackoverflow.com/questions/tagged/kubernetes" class="stack-overflow"><span>Stack Overflow</span></a>
+                <a href="https://www.youtube.com/kubernetescommunity" class="youtube"><span>YouTube</span></a>
+                <a href="https://discuss.kubernetes.io" class="mailing-list"><span>Forum</span></a>
+                <a href="https://calendar.google.com/calendar/embed?src=nt2tcnbtbied3l6gi2h29slvc0%40group.calendar.google.com" class="calendar"><span>이벤트 캘린더</span></a>
+            </div>
+            <div>
+                
+                <a href="https://git.k8s.io/community/contributors/guide" class="button">기여하기</a>
+            </div>
+        </div>
+        <div class="miceType center">
+            &copy; 2023 The Kubernetes Authors | Documentation Distributed under <a href="https://git.k8s.io/website/LICENSE" class="light-text">CC BY 4.0</a></a>
+        </div>
+        <div class="miceType center">
+            Copyright &copy; 2023 The Linux Foundation &reg;. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/trademark-usage" class="light-text">Trademark Usage page</a>
+        </div>
+        <div class="miceType center">
+            ICP license: 京ICP备17074266号-3
+        </div>
+    </div>
+</footer>
+
+		<button class="flyout-button" onclick="kub.toggleToc()" aria-label="Toggle table of contents visibility"></button>
+
+<script>
+
+(function () {
+    window.addEventListener('DOMContentLoaded', init)
+
+        
+        function init() {
+            window.removeEventListener('DOMContentLoaded', init)
+                hideNav()
+        }
+
+    function hideNav(toc){
+        if (!toc) toc = document.querySelector('#docsToc')
+        if (!toc) return
+            var container = toc.querySelector('.container')
+
+                
+                if (container) {
+                    if (container.childElementCount === 0 || toc.querySelectorAll('a.item').length === 1) {
+                        toc.style.display = 'none'
+                            document.getElementById('docsContent').style.width = '100%'
+                    }
+                } else {
+                    requestAnimationFrame(function () {
+                        hideNav(toc)
+                    })
+                }
+    }
+})();
+</script>
+
+
+
+    <script language="application/javascript">
+      
+      (function addHeadingLinks(){
+        var article = document.getElementById('docsContent');
+        var headings = article.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(function(heading){
+          if(heading.id){
+            var a = document.createElement('a');
+            a.innerHTML = heading.innerHTML;
+            a.href = '#'+heading.id;
+            a.classList.add('inpage_heading');
+            heading.innerHTML = '';
+            heading.appendChild(a);
+          }
+        });
+      })();
+    </script>
+	</body>
+</html>
